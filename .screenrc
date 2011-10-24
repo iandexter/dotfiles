@@ -1,0 +1,34 @@
+# Default shell
+shell "/bin/bash"
+
+# Default sessions
+screen -t HOME 0
+
+# Scrolling buffer
+defscrollback 99999
+altscreen on
+
+# PuTTY fix
+term xterm
+termcapinfo xterm ti@:te@
+
+# Status line
+hardstatus alwayslastline
+hardstatus string '%{= kG}%-Lw%{= bW}%50> %n %t %{= kG}%+Lw%< '
+
+# Key bindings
+bindkey -k k6 detach
+bindkey -k k7 quit
+bindkey -k k8 hardstatus alwayslastline
+bindkey -k k9 hardstatus alwaysignore
+bindkey "^[[1;5I" next
+bindkey "^[[1;6I" prev
+
+# Other stuff
+vbell on
+startup_message off
+autodetach on
+defutf8 on
+crlf off
+setenv LC_CTYPE en_US.UTF-8
+setenv LC_ALL C

@@ -1,0 +1,15 @@
+Term=xterm
+BackspaceSendsBS=yes
+RightClickAction=paste
+BellSound=no
+BellFlash=yes
+Columns=180
+Rows=40
+ScrollbackLines=100000
+Scrollbar=none
+CursorType=line
+Font=Consolas
+FontHeight=9
+BoldAsFont=no
+Printer=PrimoPDF
+Transparency=high

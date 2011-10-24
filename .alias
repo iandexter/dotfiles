@@ -1,0 +1,24 @@
+alias rm='rm -i'
+alias mv='mv -i'
+alias l='ls -lartF --color=auto'
+alias ll='ls -lrt'
+genrand() {
+	[ -z "$1" ] && num=8 || num=$1
+	strings /dev/urandom | grep -o '[[:alnum:]]' | head -n $num | tr -d '\n'
+	echo
+}
+wiki() {
+	dig +short txt $1.wp.dg.cx
+}
+logMessage() {
+	COMMAND="$*"
+	sh -c "${COMMAND} | awk '{
+		\"echo \\\"$(date +%b\ %e\ %T) $(hostname) $(basename $0)[$$]:\\\"\"|getline timestamp;
+		close(\"echo \\\"$(date +%b\ %e\ %T) $(hostname) $(basename $0)[$$]:\\\"\");
+		printf(\"%s %s\n\", timestamp, \$0)
+	}'"
+}
+svnadd() {
+	svn add --auto-props $1
+	svn propset svn:keywords "Date Id URL Rev Author" $1
+}
