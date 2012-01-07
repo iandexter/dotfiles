@@ -1,0 +1,15 @@
+[user]
+	name = Ian Dexter R Marquez
+	email = iandexter+tech@gmail.com
+[core]
+	excludesfile = /Users/iandexter/.gitignore
+	editor = vim
+[alias]
+	st = status
+	ci = commit
+	co = checkout
+[color]
+	branch = auto
+	diff = auto
+	interactive = auto
+	status = auto
