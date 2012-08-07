@@ -22,3 +22,12 @@ svnadd() {
 	svn add --auto-props $1
 	svn propset svn:keywords "Date Id URL Rev Author" $1
 }
+headtails() {
+	[ -z "$2" ] && num='' || num="-n $2"
+	head -n ${num} $1
+	echo "..."
+	tail -n ${num} $1
+}
+mkcd() {
+	[ ! -d $1 ] && mkdir $1 && cd $1
+}
