@@ -32,3 +32,4 @@ defutf8 on
 crlf off
 setenv LC_CTYPE en_US.UTF-8
 setenv LC_ALL C
+setenv SSH_AUTH_SOCK "$SSH_AUTH_SOCK"
