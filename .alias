@@ -1,11 +1,14 @@
 alias rm='rm -i'
 alias mv='mv -i'
 alias l='ls -lartF --color=auto'
-alias ll='ls -lrt'
+alias ll='ls -lrt --color=auto'
 genrand() {
-	[ -z "$1" ] && num=8 || num=$1
-	strings /dev/urandom | grep -o '[[:alnum:]]' | head -n $num | tr -d '\n'
-	echo
+    [ -z "$1" ] && num=8 || num=$1
+    strings /dev/urandom | grep -o '[[:alnum:]]' | head -n $num | tr -d '\n'
+    echo
+}
+genurand() {
+    echo `</dev/urandom tr -dc 'a-zA-Z0-9~!@#$%^&*()_+{}|[]\:;<>?,./' | head -c $1`
 }
 wiki() {
 	dig +short txt $1.wp.dg.cx
@@ -30,4 +33,47 @@ headtails() {
 }
 mkcd() {
 	[ ! -d $1 ] && mkdir $1 && cd $1
+}
+newscreen() {
+    [ -z "$1" ] && name='DEV' || name="$1"
+    unset TMOUT
+    screen -S $name -T xterm -U
+}
+rup() {
+    while [[ -n "$1" ]] ; do
+        echo "${1}: " $(ssh $1 uptime)
+        shift
+    done
+}
+rtop() {
+    [ -z "$2" ] && num='-n 50' || num="-n $2"
+    echo -n "$1: "
+    ssh -t $1 top -b -n 1 | head ${num}
+}
+rping() {
+    while [[ -n "$1" ]] ; do
+        if ping -c 1 $1 &>/dev/null ; then echo "$1 is alive" ; else echo "$1 is dead" ; fi
+        shift
+    done
+}
+ssh-agent-key() {
+    eval `ssh-agent` && \
+    ssh-add && \
+    ssh-add -l
+}
+rot13() {
+    echo "$@" | tr '[a-m][n-z][A-M][N-Z] -' '[n-z][a-m][N-Z][A-M]_+'
+}
+rdiff() {
+    if [[ $# -lt 3 ]] ; then
+        echo "rdiff [options] host1 host2 file"
+    else
+        if [[ ! "$1" =~ "-" ]] ; then
+            diff -bBu <(ssh $1 cat $3) <(ssh $2 cat $3)
+        elif [[ "$1" =~ "-c" ]] ; then
+            diff -bBu <(ssh $2 cat $4) <(ssh $3 cat $4) | vim -R "+set nonumber" "+syntax on" -
+        else
+            diff $1 -bB <(ssh $2 cat $4) <(ssh $3 cat $4)
+        fi
+    fi
 }
