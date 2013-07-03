@@ -10,3 +10,12 @@ export HISTTIMEFORMAT="%D %T "
 shopt -s histappend
 # Locale
 export LC_ALL=C
+# Timeout
+unset TMOUT
+# GPG
+if [[ -e "${HOME}/.gpg-agent-info" ]] ; then
+    . "${HOME}/.gpg-agent-info"
+    export GPG_AGENT_INFO
+    export SSH_AUTH_SOCK
+    export SSH_AGENT_PID
+fi
