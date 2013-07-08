@@ -41,20 +41,20 @@ newscreen() {
 }
 rup() {
     while [[ -n "$1" ]] ; do
-    	h=$(host $1 | awk '{print $1}')
+    	[[ $1 =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] && h=$1 || h=$(host $1 | awk '{print $1}')
         echo "${h}: " $(ssh $h uptime)
         shift
     done
 }
 rtop() {
     [ -z "$2" ] && num='-n 50' || num="-n $2"
-    h=$(host $1 | awk '{print $1}')
+    [[ $1 =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] && h=$1 || h=$(host $1 | awk '{print $1}')
     echo -n "$h: "
     ssh -t $h top -b -n 1 | head ${num}
 }
 rping() {
     while [[ -n "$1" ]] ; do
-    	h=$(host $1 | awk '{print $1}')
+    	[[ $1 =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] && h=$1 || h=$(host $1 | awk '{print $1}')
         if ping -c 1 $h &>/dev/null ; then echo "$h is alive" ; else echo "$h is dead" ; fi
         shift
     done
