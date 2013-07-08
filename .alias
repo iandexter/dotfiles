@@ -41,18 +41,21 @@ newscreen() {
 }
 rup() {
     while [[ -n "$1" ]] ; do
-        echo "${1}: " $(ssh $1 uptime)
+    	h=$(host $1 | awk '{print $1}')
+        echo "${h}: " $(ssh $h uptime)
         shift
     done
 }
 rtop() {
     [ -z "$2" ] && num='-n 50' || num="-n $2"
-    echo -n "$1: "
-    ssh -t $1 top -b -n 1 | head ${num}
+    h=$(host $1 | awk '{print $1}')
+    echo -n "$h: "
+    ssh -t $h top -b -n 1 | head ${num}
 }
 rping() {
     while [[ -n "$1" ]] ; do
-        if ping -c 1 $1 &>/dev/null ; then echo "$1 is alive" ; else echo "$1 is dead" ; fi
+    	h=$(host $1 | awk '{print $1}')
+        if ping -c 1 $h &>/dev/null ; then echo "$h is alive" ; else echo "$h is dead" ; fi
         shift
     done
 }
