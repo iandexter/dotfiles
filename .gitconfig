@@ -5,11 +5,16 @@
 	excludesfile = /Users/iandexter/.gitignore
 	editor = vim
 [alias]
-	st = status
 	ci = commit
 	co = checkout
+	lo = log --oneline --decorate
+	ld = log --pretty=format:\"%ad %C(yellow)%h %Cred%d %Creset%s%Cblue [%cn]\" --decorate --date=relative
+	st = status
+	up = pull
 [color]
 	branch = auto
 	diff = auto
 	interactive = auto
 	status = auto
+[format]
+	pretty = oneline
