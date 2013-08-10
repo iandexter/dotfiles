@@ -13,7 +13,10 @@ set number
 set ruler
 syntax on
 set showmatch
+set hlsearch
 
+" Highlight characters that exceed column width
+match ErrorMsg '\%>80v.\+'
 " Automatically remove trailing spaces on :w
 autocmd BufWritePre * :%s/\s\+$//e
 " Remember last cursor position
