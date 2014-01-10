@@ -1,3 +1,9 @@
+" Key bindings
+set term=builtin_ansi
+set timeout
+set timeoutlen=100
+set ttimeoutlen=100
+
 " Formatting
 " set autoindent
 set smartindent
