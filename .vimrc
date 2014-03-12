@@ -21,9 +21,20 @@ syntax on
 set showmatch
 set hlsearch
 
+" Highlight unwanted white spaces
+highlight default link UnwantedSpaces ErrorMsg
+match UnwantedSpaces / \+\ze\t/
+match UnwantedSpaces /\s\+$/
+
 " Highlight characters that exceed column width
-match ErrorMsg '\%>80v.\+'
+match UnwantedSpaces '\%>81v.\+'
+
 " Automatically remove trailing spaces on :w
 autocmd BufWritePre * :%s/\s\+$//e
+
 " Remember last cursor position
 autocmd BufReadPost * if line("'\"") > 0 && line ("'\"") <= line("$") | exe "normal! g'\"" | endif
+
+" Filetype-specific indentation
+autocmd BufEnter *.c setl noet ts=8 sw=8 cin
+autocmd FileType make setl noet ts=8 sw=8 cin
