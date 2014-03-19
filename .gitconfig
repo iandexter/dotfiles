@@ -10,7 +10,7 @@
 	lo = log --oneline --decorate
 	ld = log --pretty=format:\"%ad %C(yellow)%h %Cred%d %Creset%s%Cblue [%cn]\" --decorate --date=relative
 	st = status
-	up = pull
+	up = "!git remote update -p; git merge --ff-only @{u}"
 [color]
 	branch = auto
 	diff = auto
