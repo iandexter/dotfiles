@@ -1,7 +1,9 @@
 alias rm='rm -i'
 alias mv='mv -i'
-alias l='ls -lartF --color=auto'
-alias ll='ls -lrt --color=auto'
+alias l='ls -lartF'
+alias ll='ls -lrt'
+alias gpg='gpg2'
+alias strings='strings -a'
 genrand() {
     [ -z "$1" ] && num=8 || num=$1
     strings /dev/urandom | grep -o '[[:alnum:]]' | head -n $num | tr -d '\n'
