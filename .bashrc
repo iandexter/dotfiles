@@ -19,3 +19,7 @@ if [[ -e "${HOME}/.gpg-agent-info" ]] ; then
     export SSH_AUTH_SOCK
     export SSH_AGENT_PID
 fi
+# Mac optimizations
+if [[ $(uname) = 'Darwin' ]] ; then
+    eval $(gpg-agent --daemon --allow-preset-passphrase --default-cache-ttl 6000)
+fi

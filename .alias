@@ -82,3 +82,10 @@ rdiff() {
         fi
     fi
 }
+urlopen() {
+    if [[ $# -lt 1 ]] ; then
+        echo "urlopen url"
+    else
+        /usr/bin/open -a "Google Chrome Canary" $1 --args --incognito
+    fi
+}

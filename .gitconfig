@@ -1,20 +1,23 @@
 [user]
-	name = Ian Dexter R Marquez
-	email = iandexter+tech@gmail.com
+    name = Ian Dexter D Marquez
+    email = iandexter@users.noreply.github.com
+    logallrefupdates = true
 [core]
-	excludesfile = /Users/iandexter/.gitignore
-	editor = vim
+    excludesfile = /Users/iandexter/.gitignore
+    editor = vim
 [alias]
-	ci = commit
-	co = checkout
-	lo = log --oneline --decorate
-	ld = log --pretty=format:\"%ad %C(yellow)%h %Cred%d %Creset%s%Cblue [%cn]\" --decorate --date=relative
-	st = status
-	up = "!git remote update -p; git merge --ff-only @{u}"
+    ci = commit
+    co = checkout
+    lo = log --oneline --decorate
+    ld = log --pretty=format:\"%ad %C(yellow)%h %Cred%d %Creset%s%Cblue [%cn]\" --decorate --date=relative
+    st = status
+    up = "!git remote update -p; git merge --ff-only @{u}"
 [color]
-	branch = auto
-	diff = auto
-	interactive = auto
-	status = auto
+    branch = auto
+    diff = auto
+    interactive = auto
+    status = auto
 [format]
-	pretty = oneline
+    pretty = oneline
+[push]
+    default = simple
