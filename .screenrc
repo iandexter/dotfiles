@@ -7,6 +7,7 @@ screen -t HOME 0
 # Scrolling buffer
 defscrollback 99999
 altscreen on
+nonblock on
 
 # PuTTY fix
 term xterm
@@ -17,12 +18,14 @@ hardstatus alwayslastline
 hardstatus string '%{= kG}%-Lw%{= bW}%50> %n %t %{= kG}%+Lw%< '
 
 # Key bindings
+bind o other
 bindkey -k k6 detach
 bindkey -k k7 quit
 bindkey -k k8 hardstatus alwayslastline
 bindkey -k k9 hardstatus alwaysignore
 bindkey "^[[1;5I" next
 bindkey "^[[1;6I" prev
+escape ^A^A
 
 # Other stuff
 vbell on
