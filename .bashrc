@@ -21,5 +21,5 @@ if [[ -e "${HOME}/.gpg-agent-info" ]] ; then
 fi
 # Mac optimizations
 if [[ $(uname) = 'Darwin' ]] ; then
-    eval $(gpg-agent --daemon --allow-preset-passphrase --default-cache-ttl 6000)
+    eval $(gpg-agent --daemon --allow-preset-passphrase --default-cache-ttl 6000 --use-standard-socket)
 fi
