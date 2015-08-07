@@ -8,6 +8,7 @@ export HISTCONTROL=ignoreboth
 export HISTSIZE=99999
 export HISTTIMEFORMAT="%D %T "
 shopt -s histappend
+export PROMPT_COMMAND='history -a'
 # Locale
 export LC_ALL=C
 # Timeout
@@ -21,5 +22,9 @@ if [[ -e "${HOME}/.gpg-agent-info" ]] ; then
 fi
 # Mac optimizations
 if [[ $(uname) = 'Darwin' ]] ; then
-    eval $(gpg-agent --daemon --allow-preset-passphrase --default-cache-ttl 6000 --use-standard-socket)
+    if ps -ef | grep -q [g]pg-agent ; then
+        echo "gpg-agent is already running"
+    else
+        eval $(gpg-agent --daemon --allow-preset-passphrase --default-cache-ttl 6000 --use-standard-socket)
+    fi
 fi
