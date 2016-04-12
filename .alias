@@ -112,7 +112,7 @@ gpgrep() {
         echo "gpgrep expression" && return 1
     else
         /usr/local/bin/gpg2 -d ~/.crypto/.crypt.gpg 2>/dev/null | \
-            grep -iE "$@"
+            grep -iE "$@" | grep -vE 'MOVED|DEPRECATED'
     fi
 }
 alias gam='python ~/bin/gam/src/gam.py'
@@ -135,4 +135,22 @@ killtunnel() {
     else
         echo "No SSH tunnel session found." && return 1
     fi
+}
+weather() {
+    [[ $# -lt 1 ]] && echo "weather airportcode" && return 1
+    curl wttr.in/$1
+}
+clearcache() {
+    api_url1="http://www.ap-northeast-1.api-hk-v1.compareglobal.co.uk/redis/clear/HK"
+    api_url2="http://www.ap-northeast-1.api-hk-v1.compareglobal.co.uk/redis/clear/DK"
+    cache_url="http://www.moneyhero.com.hk/Ab5NJ4T8mxQck36pYj"
+    curl -sXDELETE "${api_url1}"| grep count
+    curl -sXDELETE "${api_url2}"| grep count
+    curl -XGET "${cache_url}"
+}
+awsssh() {
+    [[ $# -lt 1 ]] && echo "awsssh jumphost key user ipaddress" && return 1
+    ssh -t ${1} \
+        ssh -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile=/dev/null" \
+        -i /home/iandexter/.ssh/${2}.pem ${3}@${4}
 }

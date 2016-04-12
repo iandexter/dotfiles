@@ -27,4 +27,10 @@ if [[ $(uname) = 'Darwin' ]] ; then
     else
         eval $(gpg-agent --daemon --allow-preset-passphrase --default-cache-ttl 6000 --use-standard-socket)
     fi
+    if [[ -f $(brew --prefix)/etc/bash_completion ]] ; then
+        . $(brew --prefix)/etc/bash_completion
+    fi
 fi
+# Password manager
+export PASSWORD_STORE_DIR=$HOME/.crypto/.passwords
+export PASSWORD_STORE_GIT=$HOME/.crypto/.passwords
