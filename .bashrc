@@ -30,6 +30,7 @@ if [[ $(uname) = 'Darwin' ]] ; then
     if [[ -f $(brew --prefix)/etc/bash_completion ]] ; then
         . $(brew --prefix)/etc/bash_completion
     fi
+    export PATH=$PATH:/Library/TeX/texbin:$HOME/projects/compareglobal/awsebcli/bin
 fi
 # Password manager
 export PASSWORD_STORE_DIR=$HOME/.crypto/.passwords

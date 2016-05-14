@@ -154,3 +154,19 @@ awsssh() {
         ssh -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile=/dev/null" \
         -i /home/iandexter/.ssh/${2}.pem ${3}@${4}
 }
+udiff() {
+    [[ $# -lt 2 ]] && echo "udiff url1 url2" && return 1
+    diff -q <(curl -s ${1}) <(curl -s ${2})
+}
+dnstests() {
+    [[ $# -lt 1 ]] && echo "dnstests domain [...]" && return 1
+    while [[ -n "$1" ]] ; do
+        echo ${1}
+        echo "dig: " $(dig +short SOA ${1})
+        echo "whois: "
+        whois ${1}
+        echo "curl: " $(curl -sI ${1} | grep Location 2>/dev/null)
+        echo '---'
+        shift
+    done
+}
