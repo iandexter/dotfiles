@@ -11,6 +11,8 @@ shopt -s histappend
 export PROMPT_COMMAND='history -a'
 # Locale
 export LC_ALL=C
+LC_CTYPE=UTF-8
+export PYTHONIOENCODING=utf-8
 # Timeout
 unset TMOUT
 # GPG
@@ -35,3 +37,4 @@ fi
 # Password manager
 export PASSWORD_STORE_DIR=$HOME/.crypto/.passwords
 export PASSWORD_STORE_GIT=$HOME/.crypto/.passwords
+

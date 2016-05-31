@@ -15,6 +15,7 @@
     up = "!git remote update && git co master && git pull --rebase --prune"
     fu = "!git fetch upstream && git co master && git merge upstream/master"
 	fp = fetch -p origin
+    fr = "!git fetch origin master && git rebase origin/master"
 [color]
     branch = auto
     diff = auto

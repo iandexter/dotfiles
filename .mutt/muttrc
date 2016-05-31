@@ -1,0 +1,87 @@
+# -*- Mode: Muttrc -*-"
+
+# Identity
+set realname = "Ian Dexter D Marquez"
+set from = iandexter@compareglobalgroup.com
+set hostname = dianmasalanta.local
+set hidden_host
+set envelope_from
+set reverse_name
+
+# Credentials
+source "gpg -d ~/.mutt/.crypto.gpg |"
+### set smtp_url = "smtp://iandexter@compareglobalgroup.com@smtp.gmail.com:587/"
+### set imap_user = "iandexter@compareglobalgroup.com"
+
+# Mailboxes
+set folder = "imaps://imap.gmail.com:993"
+set spoolfile = "+INBOX"
+set postponed = "+[Gmail]/Drafts"
+set mbox = "+[Gmail]/All Mail"
+set smtp_authenticators = login
+unset record
+
+# Cache
+set header_cache = ~/.mutt/cache/headers
+set message_cachedir = ~/.mutt/cache/bodies
+set certificate_file = ~/.mutt/certificates
+
+# Misc
+set mail_check = 5
+set nomove
+set imap_keepalive = 900
+set sort = threads
+set sort_aux = reverse-last-date-received
+set edit_headers
+set editor="vim +13 -c 'set nobackup' -c 'set noswapfile' -c 'set nowritebackup' -c 'set tw=72 ft=mail noautoindent'"
+set fast_reply
+set include
+
+# Keyboard shortcuts
+bind editor <space> noop
+bind editor <tab> complete-query
+macro index,pager y "<save-message>=[Gmail]/All Mail<enter><enter>" "Archive"
+macro index,pager d "<save-message>=[Gmail]/Trash<enter><enter>" "Trash"
+macro index gi "<change-folder>=INBOX<enter>" "Go to Inbox"
+macro index ga "<change-folder>=[Gmail]/All Mail<enter>" "Go to All Mail"
+macro index gs "<change-folder>=[Gmail]/Starred<enter>" "Go to Starred"
+macro index gd "<change-folder>=[Gmail]/Drafts<enter>" "Go to Drafts"
+
+# GPG
+set pgp_decode_command = "gpg %?p?--passphrase-fd 0? --no-verbose --batch --output - %f"
+set pgp_verify_command = "gpg --no-verbose --batch --output - --verify %s %f"
+set pgp_decrypt_command = "gpg --passphrase-fd 0 --no-verbose --batch --output - %f"
+set pgp_sign_command = "gpg --no-verbose --batch --output - --passphrase-fd 0 --armor --detach-sign --textmode %?a?-u %a? %f"
+set pgp_clearsign_command = "gpg --no-verbose --batch --output - --passphrase-fd 0 --armor --textmode --clearsign %?a?-u %a? %f"
+set pgp_encrypt_only_command = "pgpewrap gpg --batch --quiet --no-verbose --output - --encrypt --textmode --armor --always-trust --encrypt-to 0x00000000 -- -r %r -- %f"
+set pgp_encrypt_sign_command = "pgpewrap gpg --passphrase-fd 0 --batch --quiet --no-verbose --textmode --output - --encrypt --sign %?a?-u %a? --armor --always-trust --encrypt-to 0x00000000 -- -r %r -- %f"
+set pgp_import_command = "gpg --no-verbose --import -v %f"
+set pgp_export_command = "gpg --no-verbose --export --armor %r"
+set pgp_verify_key_command = "gpg --no-verbose --batch --fingerprint --check-sigs %r"
+set pgp_list_pubring_command = "gpg --no-verbose --batch --with-colons --list-keys %r"
+set pgp_list_secring_command = "gpg --no-verbose --batch --with-colons --list-secret-keys %r"
+set pgp_sign_as = 0x3531E73B18A51C2F
+set pgp_timeout = 60
+set pgp_good_sign = "^gpg: Good signature from"
+set crypt_autosign
+set crypt_replyencrypt
+
+# SSL
+set ssl_force_tls
+set ssl_starttls
+set nossl_use_sslv2
+set nossl_use_sslv3
+set nossl_use_tlsv1
+set nossl_use_tlsv1_1
+set ssl_use_tlsv1_2
+set ssl_verify_dates
+set ssl_verify_host
+unset ssl_usesystemcerts
+
+# Display
+auto_view text/html
+source $HOME/.mutt/mutt-colors-solarized/mutt-colors-solarized-dark-256.muttrc
+set charset = utf-8
+set ascii_chars
+set signature = ~/.mutt/sig
+set attribution = "On %[ %a, %d %b %Y %H:%m:%S %z ], %n <%a> wrote:"
