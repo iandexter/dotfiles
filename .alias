@@ -10,6 +10,7 @@ genrand() {
     echo
 }
 genurand() {
+    export LC_ALL=C
     echo `</dev/urandom tr -dc 'a-zA-Z0-9~!@#$%^&*()_+{}|[]\:;<>?,./' \
         | head -c $1`
 }
@@ -116,7 +117,7 @@ gpgrep() {
     fi
 }
 alias gam='python ~/bin/gam/src/gam.py'
-alias nossh='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+alias nossh='LC_ALL=C ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 alias showtunnel="ps -ef | grep '[s]sh -f'"
 sshtunnel() {
     if [[ $# -lt 3 ]] ; then
@@ -150,12 +151,13 @@ clearcache() {
 }
 awsssh() {
     [[ $# -lt 1 ]] && echo "awsssh jumphost key user ipaddress" && return 1
+    LC_ALL=C
     ssh -t ${1} \
         ssh -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile=/dev/null" \
         -i /home/iandexter/.ssh/${2}.pem ${3}@${4}
 }
-udiff() {
-    [[ $# -lt 2 ]] && echo "udiff url1 url2" && return 1
+urldiff() {
+    [[ $# -lt 2 ]] && echo "urldiff url1 url2" && return 1
     diff -q <(curl -s ${1}) <(curl -s ${2})
 }
 dnstests() {
@@ -167,6 +169,21 @@ dnstests() {
         whois ${1}
         echo "curl: " $(curl -sI ${1} | grep Location 2>/dev/null)
         echo '---'
+        shift
+    done
+}
+chef_del() {
+    [[ $# -lt 1 ]] && echo "chef_del node [...]" && return 1
+    while [[ -n "$1" ]] ; do
+        knife node delete -y $1
+        knife client delete -y $1
+        shift
+    done
+}
+geoip() {
+    [[ $# -lt 1 ]] && echo "geoip ip.address [...]" && return 1
+    while [[ -n "$1" ]] ; do
+        curl -s ipinfo.io/$1 | jq -r '[.ip,.country] | @csv'
         shift
     done
 }

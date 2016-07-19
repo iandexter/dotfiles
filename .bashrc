@@ -24,6 +24,8 @@ if [[ -e "${HOME}/.gpg-agent-info" ]] ; then
 fi
 # Mac optimizations
 if [[ $(uname) = 'Darwin' ]] ; then
+    export LC_ALL=en_GB.UTF-8
+    export LANG=en_GB.UTF-8
     if ps -ef | grep -q [g]pg-agent ; then
         echo "gpg-agent is already running"
     else
@@ -37,4 +39,3 @@ fi
 # Password manager
 export PASSWORD_STORE_DIR=$HOME/.crypto/.passwords
 export PASSWORD_STORE_GIT=$HOME/.crypto/.passwords
-
