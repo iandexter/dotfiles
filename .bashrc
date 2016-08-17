@@ -22,6 +22,7 @@ if [[ -e "${HOME}/.gpg-agent-info" ]] ; then
     export SSH_AUTH_SOCK
     export SSH_AGENT_PID
 fi
+export GPG_TTY=$(tty)
 # Mac optimizations
 if [[ $(uname) = 'Darwin' ]] ; then
     export LC_ALL=en_GB.UTF-8
