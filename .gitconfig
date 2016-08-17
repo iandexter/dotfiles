@@ -2,6 +2,7 @@
     name = Ian Dexter D Marquez
     email = iandexter@users.noreply.github.com
     logallrefupdates = true
+    signingkey = 0x28435237CD6D36E8
 [core]
     excludesfile = /Users/iandexter/.gitignore
     editor = vim
@@ -14,7 +15,7 @@
     st = status
     up = "!git remote update && git co master && git pull --rebase --prune"
     fu = "!git fetch upstream && git co master && git merge upstream/master"
-	fp = fetch -p origin
+    fp = fetch -p origin
     fr = "!git fetch origin master && git rebase origin/master"
 [color]
     branch = auto
@@ -25,3 +26,5 @@
     pretty = oneline
 [push]
     default = simple
+[commit]
+    gpgsign = true

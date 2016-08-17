@@ -187,3 +187,14 @@ geoip() {
         shift
     done
 }
+awsec2id() {
+    [[ $# -lt 1 ]] && echo "awsec2id host [..]" && return 1
+    while [[ -n "$1" ]] ; do
+        echo -n "$(echo $1 | sed 's/\(.*\),.*/\1 /')"
+        ssh $1 -C \
+            "curl -s http://169.254.169.254/latest/meta-data/instance-id" \
+            2>/dev/null
+        echo
+        shift
+    done
+}
