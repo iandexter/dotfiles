@@ -14,12 +14,13 @@ set backspace=2
 set textwidth=80
 
 " Display
+syntax on
 color delek
 set number
 set ruler
-syntax on
 set showmatch
 set hlsearch
+set title
 
 " Highlight unwanted white spaces
 highlight default link UnwantedSpaces ErrorMsg
@@ -36,5 +37,6 @@ autocmd BufWritePre * :%s/\s\+$//e
 autocmd BufReadPost * if line("'\"") > 0 && line ("'\"") <= line("$") | exe "normal! g'\"" | endif
 
 " Filetype-specific indentation
+filetype plugin indent on
 autocmd BufEnter *.c setl noet ts=8 sw=8 cin
 autocmd FileType make setl noet ts=8 sw=8 cin
