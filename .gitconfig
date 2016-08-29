@@ -16,6 +16,7 @@
     fu = "!git fetch upstream && git co master && git merge upstream/master"
     fp = fetch -p origin
     fr = "!git fetch origin master && git rebase origin/master"
+    pt = show --pretty=oneline --abbrev-commit
 [color]
     branch = auto
     diff = auto
