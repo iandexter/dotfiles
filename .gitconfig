@@ -6,17 +6,19 @@
     excludesfile = /Users/iandexter/.gitignore
     editor = vim
 [alias]
-    ci = commit
+    ci = commit --amend --no-edit
     co = checkout
-    lo = log --oneline --decorate
-    ld = log --pretty=format:\"%ad %C(yellow)%h %Cred%d %Creset%s%Cblue [%cn]\" --decorate --date=relative
-    lg = log --graph --decorate --pretty=oneline --abbrev-commit
-    st = status
-    up = "!git remote update && git co master && git pull --rebase --prune"
     fu = "!git fetch upstream && git co master && git merge upstream/master"
     fp = fetch -p origin
     fr = "!git fetch origin master && git rebase origin/master"
+    lo = log --oneline --decorate
+    ld = log --pretty=format:\"%ad %C(yellow)%h %Cred%d %Creset%s%Cblue [%cn]\" --decorate --date=relative
+    lg = log --graph --decorate --pretty=oneline --abbrev-commit
+	lp = log --graph --abbrev-commit --decorate --all --format=format:\"%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(dim white) - %an%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n %C(white)%s%C(reset)\"
+    mf = merge --no-ff
     pt = show --pretty=oneline --abbrev-commit
+    st = status
+    up = "!git remote update && git co master && git pull --rebase --prune"
 [color]
     branch = auto
     diff = auto
