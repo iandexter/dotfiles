@@ -121,7 +121,7 @@ alias nossh='LC_ALL=C ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev
 alias showtunnel="ps -ef | grep '[s]sh -f'"
 sshtunnel() {
     if [[ $# -lt 3 ]] ; then
-        echo "sshjump jumphost host port" && return 1
+        echo "sshtunnel jumphost host port" && return 1
     else
         ssh -f ${1} -L ${3}:${2}:${3} -N 2>/dev/null
         echo "SSH tunnel started:"
@@ -149,8 +149,8 @@ clearcache() {
     curl -sXDELETE "${api_url2}"| grep count
     curl -XGET "${cache_url}"
 }
-awsssh() {
-    [[ $# -lt 1 ]] && echo "awsssh jumphost key user ipaddress" && return 1
+aws_ssh() {
+    [[ $# -lt 1 ]] && echo "aws_ssh jumphost key user ipaddress" && return 1
     LC_ALL=C
     ssh -t ${1} \
         ssh -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile=/dev/null" \
@@ -187,8 +187,13 @@ geoip() {
         shift
     done
 }
-awsec2id() {
-    [[ $# -lt 1 ]] && echo "awsec2id host [..]" && return 1
+myip() {
+    echo "Google: " $(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | sed 's/"//g')
+    echo "OpenDNS: " $(dig +shor myip.opendns.com @resolver1.opendns.com)
+    echo "icanhazip: " $(curl -s4 icanhazip.com)
+}
+aws_ec2id() {
+    [[ $# -lt 1 ]] && echo "aws_ec2id host [...]" && return 1
     while [[ -n "$1" ]] ; do
         echo -n "$(echo $1 | sed 's/\(.*\),.*/\1 /')"
         ssh $1 -C \
@@ -197,4 +202,57 @@ awsec2id() {
         echo
         shift
     done
+}
+aws_ec2() {
+    [[ $# -lt 1 ]] && echo "aws_ec2 instance-id [aws-region]" && return 1
+    i=$1
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    aws --profile ${p} ec2 describe-instances --instance-ids $i --region $r | jq -r '.Reservations[]|.Instances[]|[.NetworkInterfaces[].PrivateIpAddresses[], .Tags[]]'
+}
+aws_cf_search() {
+    [[ $# -lt 1 ]] && echo "aws_cf_search domain.name [...]" && return 1
+    ~/projects/compareglobal/boto3/bin/python ~/projects/compareglobal/infrastructure/tools/scripts/search_cf.py $@
+}
+aws_cf_invalidate() {
+    [[ $# -lt 2 ]] && echo "aws_cf_invalidate distribution-id paths" && return 1
+    distid=$1
+    paths="${2}"
+    profile=${3:-default}
+    aws --profile ${profile} cloudfront create-invalidation --distribution-id $distid --paths "${paths}"
+}
+aws_cf_get-invalidation() {
+    [[ $# -lt 2 ]] && echo "aws_cf_get-invalidation distribution-id invalidation-id" && return 1
+    distid=$1
+    invid=$2
+    profile=${3:-default}
+    aws --profile ${profile} cloudfront get-invalidation --distribution-id $distid --id $invid | jq -r '.Invalidation|{"Id":.Id,"Status":.Status}'
+}
+aws_eb_list-instances() {
+    [[ $# -lt 1 ]] && echo "aws_eb_list-instances environment-name [aws-region]" && return 1
+    ebenv=$1
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    aws --profile ${p} elasticbeanstalk describe-instances-health --environment-name ${ebenv} --region $r --attribute-names All | jq -r .
+}
+aws_eb_check-health() {
+    [[ $# -lt 1 ]] && echo "aws_eb_check-health environment-name [aws-region]" && return 1
+    ebenv=$1
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    aws --profile ${p} elasticbeanstalk describe-environment-health --environment-name ${ebenv} --region $r --attribute-names All | jq -r .
+}
+chef_remote() {
+	[[ $# -lt 2 ]] && echo "chef_remote stack commands [apne1|apse1|euc1| usw1]" && return 1
+	stack=$1
+	cmd="${2}"
+	r=${3:-apne1}
+	for s in $(chef_nodes $stack | awk '{print $1}') ; do echo $s ; ssh $s,$r -C "${cmd}" 2>/dev/null ; echo ; done
+}
+from_utc() {
+    if [[ $(uname) = 'Darwin' ]] ; then
+        [[ $# -lt 1 ]] && echo "from_utc \"YYYY-mm-DD HH:MM:SS\"" && return 1
+        utc="${1}"
+        date -jf "%Y-%m-%d %H:%M:%S %z" "${utc} +0000" +"%Y-%m-%d %H:%M:%S"
+    fi
 }
