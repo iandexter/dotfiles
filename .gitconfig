@@ -6,7 +6,7 @@
     excludesfile = /Users/iandexter/.gitignore
     editor = vim
 [alias]
-    ci = commit --amend --no-edit
+    ci = commit
     co = checkout
     fu = "!git fetch upstream && git co master && git merge upstream/master"
     fp = fetch -p origin
