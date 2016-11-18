@@ -189,7 +189,7 @@ geoip() {
 }
 myip() {
     echo "Google: " $(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | sed 's/"//g')
-    echo "OpenDNS: " $(dig +shor myip.opendns.com @resolver1.opendns.com)
+    echo "OpenDNS: " $(dig +short myip.opendns.com @resolver1.opendns.com)
     echo "icanhazip: " $(curl -s4 icanhazip.com)
 }
 aws_ec2id() {
@@ -215,7 +215,7 @@ aws_cf_search() {
     ~/projects/compareglobal/boto3/bin/python ~/projects/compareglobal/infrastructure/tools/scripts/search_cf.py $@
 }
 aws_cf_invalidate() {
-    [[ $# -lt 2 ]] && echo "aws_cf_invalidate distribution-id paths" && return 1
+    [[ $# -lt 2 ]] && echo "aws_cf_invalidate distribution-id paths [profile]" && return 1
     distid=$1
     paths="${2}"
     profile=${3:-default}
@@ -229,14 +229,14 @@ aws_cf_get-invalidation() {
     aws --profile ${profile} cloudfront get-invalidation --distribution-id $distid --id $invid | jq -r '.Invalidation|{"Id":.Id,"Status":.Status}'
 }
 aws_eb_list-instances() {
-    [[ $# -lt 1 ]] && echo "aws_eb_list-instances environment-name [aws-region]" && return 1
+    [[ $# -lt 1 ]] && echo "aws_eb_list-instances environment-name [aws-region] [profile]" && return 1
     ebenv=$1
     r=${2:-ap-northeast-1}
     p=${3:-default}
     aws --profile ${p} elasticbeanstalk describe-instances-health --environment-name ${ebenv} --region $r --attribute-names All | jq -r .
 }
 aws_eb_check-health() {
-    [[ $# -lt 1 ]] && echo "aws_eb_check-health environment-name [aws-region]" && return 1
+    [[ $# -lt 1 ]] && echo "aws_eb_check-health environment-name [aws-region] [profile]" && return 1
     ebenv=$1
     r=${2:-ap-northeast-1}
     p=${3:-default}
@@ -247,7 +247,7 @@ chef_remote() {
 	stack=$1
 	cmd="${2}"
 	r=${3:-apne1}
-	for s in $(chef_nodes $stack | awk '{print $1}') ; do echo $s ; ssh $s,$r -C "${cmd}" 2>/dev/null ; echo ; done
+	for s in $(chef_nodes $stack | awk '{print $1}') ; do echo $s ; ssh -t $s,$r -C "${cmd}" 2>/dev/null ; echo ; done
 }
 from_utc() {
     if [[ $(uname) = 'Darwin' ]] ; then
@@ -255,4 +255,18 @@ from_utc() {
         utc="${1}"
         date -jf "%Y-%m-%d %H:%M:%S %z" "${utc} +0000" +"%Y-%m-%d %H:%M:%S"
     fi
+}
+aws_get_eips() {
+    [[ "$1" == "--help" || "$1" == "-h" ]] && echo "aws_get_eips [aws-region] [profile]" && return 1
+    r=${1:-ap-northeast-1}
+    p=${2:-default}
+    echo "Elastic IP address in ${r} (profile: ${p})"
+    aws ec2 describe-addresses --public-ips --output text --region ${r} --profile ${p} | awk '{print $NF}' | sort -u
+}
+aws_eb_restart() {
+    [[ $# -lt 1 ]] && echo "aws_eb_restart environment-name [aws-region] [profile]" && return 1
+    ebenv=$1
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    aws --profile ${p} elasticbeanstalk restart-app-server --environment-name ${ebenv} --region $r
 }

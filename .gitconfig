@@ -6,17 +6,24 @@
     excludesfile = /Users/iandexter/.gitignore
     editor = vim
 [alias]
+    bd = branch --delete --force
     ci = commit
+    cb = checkout -b
     co = checkout
-    fu = "!git fetch upstream && git co master && git merge upstream/master"
-    fp = fetch -p origin
+    fp = fetch --prune origin
     fr = "!git fetch origin master && git rebase origin/master"
-    lo = log --oneline --decorate
+    fu = "!git fetch upstream && git co master && git merge upstream/master"
     ld = log --pretty=format:\"%ad %C(yellow)%h %Cred%d %Creset%s%Cblue [%cn]\" --decorate --date=relative
+    lo = log --oneline --decorate
     lg = log --graph --decorate --pretty=oneline --abbrev-commit
-	lp = log --graph --abbrev-commit --decorate --all --format=format:\"%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(dim white) - %an%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n %C(white)%s%C(reset)\"
+    lp = log --graph --abbrev-commit --decorate --all --format=format:\"%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(dim white) - %an%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n %C(white)%s%C(reset)\"
     mf = merge --no-ff
+    pb = push --set-upstream origin
     pt = show --pretty=oneline --abbrev-commit
+    sa = config --get-regexp '^alias\\.'
+    sb = branch --all
+    sr = remote --verbose
+    ss = status --short --branch
     st = status
     up = "!git remote update && git co master && git pull --rebase --prune"
 [color]
