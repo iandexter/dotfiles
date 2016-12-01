@@ -34,7 +34,9 @@ if [[ $(uname) = 'Darwin' ]] ; then
     fi
     if [[ -f $(brew --prefix)/etc/bash_completion ]] ; then
         . $(brew --prefix)/etc/bash_completion
+        if which kubectl > /dev/null ; then . <(kubectl completion bash) ; fi
     fi
+    ### if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
     export PATH=$PATH:/Library/TeX/texbin:$HOME/projects/compareglobal/awsebcli/bin
 fi
 # Password manager
