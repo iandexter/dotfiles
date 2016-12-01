@@ -177,6 +177,9 @@ chef_del() {
     while [[ -n "$1" ]] ; do
         knife node delete -y $1
         knife client delete -y $1
+        hname=$(echo $1 | cut -d. -f1-2)
+        dname=$(echo $1 | cut -d. -f3-)
+        echo "Remove DNS record manually: cli53 rrdelete $dname $hname A"
         shift
     done
 }
@@ -254,6 +257,10 @@ from_utc() {
         [[ $# -lt 1 ]] && echo "from_utc \"YYYY-mm-DD HH:MM:SS\"" && return 1
         utc="${1}"
         date -jf "%Y-%m-%d %H:%M:%S %z" "${utc} +0000" +"%Y-%m-%d %H:%M:%S"
+    else
+        [[ $# -lt 1 ]] && echo "from_utc \"YYYY-mm-DD HH:MM\"" && return 1
+        utc="${1}"
+        date -d "${utc} UTC"
     fi
 }
 aws_get_eips() {
