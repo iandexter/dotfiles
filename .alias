@@ -4,6 +4,7 @@ alias l='ls -lartF'
 alias ll='ls -lrt'
 alias gpg='gpg2'
 alias strings='strings -a'
+alias chmac='openssl rand -hex 6 | sed "s/\(..\)/\1:/g; s/.$//" | xargs sudo ifconfig en0 ether'
 genrand() {
     [ -z "$1" ] && num=8 || num=$1
     strings /dev/urandom | grep -o '[[:alnum:]]' | head -n $num | tr -d '\n'
@@ -213,24 +214,6 @@ aws_ec2() {
     p=${3:-default}
     aws --profile ${p} ec2 describe-instances --instance-ids $i --region $r | jq -r '.Reservations[]|.Instances[]|[.NetworkInterfaces[].PrivateIpAddresses[], .Tags[]]'
 }
-aws_cf_search() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME domain.name [...]" && return 1
-    ~/projects/compareglobal/boto3/bin/python ~/projects/compareglobal/infrastructure/tools/scripts/search_cf.py $@
-}
-aws_cf_invalidate() {
-    [[ $# -lt 2 ]] && echo "$FUNCNAME distribution-id paths [profile]" && return 1
-    distid=$1
-    paths="${2}"
-    profile=${3:-default}
-    aws --profile ${profile} cloudfront create-invalidation --distribution-id $distid --paths "${paths}"
-}
-aws_cf_get-invalidation() {
-    [[ $# -lt 2 ]] && echo "$FUNCNAME distribution-id invalidation-id" && return 1
-    distid=$1
-    invid=$2
-    profile=${3:-default}
-    aws --profile ${profile} cloudfront get-invalidation --distribution-id $distid --id $invid | jq -r '.Invalidation|{"Id":.Id,"Status":.Status}'
-}
 aws_eb_list-instances() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
     ebenv=$1
@@ -253,13 +236,11 @@ chef_remote() {
 	for s in $(chef_nodes $stack | awk '{print $1}') ; do echo $s ; ssh -t $s,$r -C "${cmd}" 2>/dev/null ; echo ; done
 }
 from_utc() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME \"YYYY-mm-DD HH:MM\"" && return 1
+    utc="${1}"
     if [[ $(uname) = 'Darwin' ]] ; then
-        [[ $# -lt 1 ]] && echo "$FUNCNAME \"YYYY-mm-DD HH:MM:SS\"" && return 1
-        utc="${1}"
-        date -jf "%Y-%m-%d %H:%M:%S %z" "${utc} +0000" +"%Y-%m-%d %H:%M:%S"
+        date -jf "%Y-%m-%d %H:%M:%S %z" "${utc}:00 +0000" +"%Y-%m-%d %H:%M:%S"
     else
-        [[ $# -lt 1 ]] && echo "$FUNCNAME \"YYYY-mm-DD HH:MM\"" && return 1
-        utc="${1}"
         date -d "${utc} UTC"
     fi
 }
@@ -281,3 +262,8 @@ spass() {
     [[ $# -lt 1 ]] && pass --help && return 1
     pass $@ && sleep 15 && clear
 }
+alias today='~/projects/compareglobal/gcal/bin/gcalcli --detail_all --detail_url short agenda today "eod today"'
+invalidate_cf() {
+    ~/projects/compareglobal/boto3/bin/python ~/projects/compareglobal/infrastructure/tools/scripts/invalidate_cf.py $@
+}
+alias cggchat='irssi --config=~/Dropbox/Documents/CompareGlobal/devops/irssi_config'
