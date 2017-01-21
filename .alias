@@ -5,6 +5,7 @@ alias ll='ls -lrt'
 alias gpg='gpg2'
 alias strings='strings -a'
 alias chmac='openssl rand -hex 6 | sed "s/\(..\)/\1:/g; s/.$//" | xargs sudo ifconfig en0 ether'
+alias ssh='LC_ALL=en_US.UTF-8 ssh'
 genrand() {
     [ -z "$1" ] && num=8 || num=$1
     strings /dev/urandom | grep -o '[[:alnum:]]' | head -n $num | tr -d '\n'
@@ -118,7 +119,7 @@ gpgrep() {
     fi
 }
 alias gam='python ~/bin/gam/src/gam.py'
-alias nossh='LC_ALL=C ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+alias nossh='LC_ALL=en_US.UTF-8 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 alias showtunnel="ps -ef | grep '[s]sh -f'"
 sshtunnel() {
     if [[ $# -lt 3 ]] ; then
@@ -145,15 +146,14 @@ weather() {
 clearcache() {
     api_url1="http://www.ap-northeast-1.api-hk-v1.compareglobal.co.uk/redis/clear/HK"
     api_url2="http://www.ap-northeast-1.api-hk-v1.compareglobal.co.uk/redis/clear/DK"
-    cache_url="http://www.moneyhero.com.hk/Ab5NJ4T8mxQck36pYj"
+    cache_url="http://www.ap-northeast-1.hk-lib-v1.compareglobal.co.uk/Ab5NJ4T8mxQck36pYj"
     curl -sXDELETE "${api_url1}"| grep count
     curl -sXDELETE "${api_url2}"| grep count
     curl -XGET "${cache_url}"
 }
 aws_ssh() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME jumphost key user ipaddress" && return 1
-    LC_ALL=C
-    ssh -t ${1} \
+    LC_ALL=en_US.UTF-8 ssh -t ${1} \
         ssh -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile=/dev/null" \
         -i /home/iandexter/.ssh/${2}.pem ${3}@${4}
 }
@@ -239,10 +239,18 @@ from_utc() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME \"YYYY-mm-DD HH:MM\"" && return 1
     utc="${1}"
     if [[ $(uname) = 'Darwin' ]] ; then
-        date -jf "%Y-%m-%d %H:%M:%S %z" "${utc}:00 +0000" +"%Y-%m-%d %H:%M:%S"
+        date -jf "%Y-%m-%d %H:%M:%S %z" "${utc}:00 +0000" +"%Y-%m-%d %H:%M:%S %z"
     else
         date -d "${utc} UTC"
     fi
+}
+to_utc() {
+    curr=${1:-$(date +"%Y-%m-%d %H:%M:%S %z")}
+    if [[ $(uname) = 'Darwin' ]] ; then
+        TZ=UTC date -jf "%Y-%m-%d %H:%M:%S %z" "${curr}" +"%Y-%m-%d %H:%M:%S %z"
+    else
+        date +"%Y-%m-%d %H:%M:%S %z" -u
+     fi
 }
 aws_get_eips() {
     [[ "$1" == "--help" || "$1" == "-h" ]] && echo "$FUNCNAME [aws-region] [profile]" && return 1
