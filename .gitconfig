@@ -32,7 +32,14 @@
     diff = auto
     interactive = auto
     status = auto
+    ui = auto
 [format]
     pretty = oneline
 [push]
     default = simple
+[diff]
+    mnemonicprefix = true
+[branch]
+    autosetupmerge = true
+[merge]
+    stat = true
