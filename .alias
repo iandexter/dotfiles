@@ -1,6 +1,7 @@
 alias rm='rm -i'
 alias mv='mv -i'
-alias l='ls -lartF'
+alias l='ls -l'
+alias la='ls -lartF'
 alias ll='ls -lrt'
 alias gpg='gpg2'
 alias strings='strings -a'
@@ -275,3 +276,10 @@ invalidate_cf() {
     ~/projects/compareglobal/boto3/bin/python ~/projects/compareglobal/infrastructure/tools/scripts/invalidate_cf.py $@
 }
 alias cggchat='irssi --config=~/Dropbox/Documents/CompareGlobal/devops/irssi_config'
+aws_listq() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME country-code [aws-region] [profile]" && return 1
+    c=$1
+    r=${2:-eu-central-1}
+    p=${3:-cgg}
+    aws sqs list-queues --region ${r} --profile ${p} | jq -r ".QueueUrls[]|select(contains(\"${c}-${c}\"))"
+}
