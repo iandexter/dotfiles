@@ -237,10 +237,10 @@ chef_remote() {
 	for s in $(chef_nodes $stack | awk '{print $1}') ; do echo $s ; ssh -t $s,$r -C "${cmd}" 2>/dev/null ; echo ; done
 }
 from_utc() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME \"YYYY-mm-DD HH:MM\"" && return 1
+    [[ $# -lt 1 ]] && echo "$FUNCNAME \"YYYY-mm-DD HH:MM:SS\"" && return 1
     utc="${1}"
     if [[ $(uname) = 'Darwin' ]] ; then
-        date -jf "%Y-%m-%d %H:%M:%S %z" "${utc}:00 +0000" +"%Y-%m-%d %H:%M:%S %z"
+        date -jf "%Y-%m-%d %H:%M:%S %z" "${utc} +0000" +"%Y-%m-%d %H:%M:%S %z"
     else
         date -d "${utc} UTC"
     fi
@@ -269,7 +269,24 @@ aws_eb_restart() {
 }
 spass() {
     [[ $# -lt 1 ]] && pass --help && return 1
-    pass $@ && sleep 15 && clear
+    if [[ $(uname) = 'Darwin' ]] ; then
+    foo=$@
+    osascript <<END
+tell application "iTerm2"
+    set newWindow to (create window with default profile)
+    tell current session of newWindow
+        set columns to 80
+        write text "pass ${foo}"
+        delay 15
+        close
+    end tell
+end tell
+END
+    else
+        pass $@
+        sleep 15
+        clear
+    fi
 }
 alias today='~/projects/compareglobal/gcal/bin/gcalcli --detail_all --detail_url short agenda today "eod today"'
 invalidate_cf() {
