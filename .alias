@@ -300,3 +300,7 @@ aws_listq() {
     p=${3:-cgg}
     aws sqs list-queues --region ${r} --profile ${p} | jq -r ".QueueUrls[]|select(contains(\"${c}-${c}\"))"
 }
+aws_list_keys() {
+    p=${1:-default}
+    for u in $(aws iam list-users --query 'Users[*].UserName' --output text --profile ${p}) ; do aws iam list-access-keys --user-name $u --output text --profile ${p} ; done
+}
