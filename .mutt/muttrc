@@ -36,6 +36,12 @@ set edit_headers
 set editor="vim +13 -c 'set nobackup' -c 'set noswapfile' -c 'set nowritebackup' -c 'set tw=72 ft=mail noautoindent'"
 set fast_reply
 set include
+set reply_to
+set narrow_tree
+ignore *
+unignore Date From To Cc Bcc Reply-To Subject
+hdr_order Date From To Cc Bcc Reply-To Subject
+set index_format = "%4C %Z %{%b %d} %-15.15L %s"
 
 # Keyboard shortcuts
 bind editor <space> noop
@@ -46,6 +52,7 @@ macro index gi "<change-folder>=INBOX<enter>" "Go to Inbox"
 macro index ga "<change-folder>=[Gmail]/All Mail<enter>" "Go to All Mail"
 macro index gs "<change-folder>=[Gmail]/Starred<enter>" "Go to Starred"
 macro index gd "<change-folder>=[Gmail]/Drafts<enter>" "Go to Drafts"
+macro index \em ":source ~/.mutt/muttrc\n" "Reload muttrc"
 
 # GPG
 set pgp_decode_command = "gpg %?p?--passphrase-fd 0? --no-verbose --batch --output - %f"

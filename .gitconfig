@@ -14,7 +14,7 @@
     co = checkout
     fp = fetch --prune origin
     fr = "!git fetch origin master && git rebase origin/master"
-    fu = "!git fetch upstream && git co master && git merge upstream/master"
+    fu = "!git fetch upstream && git checkout master && git merge upstream/master"
     ld = log --pretty=format:\"%ad %C(yellow)%h %Cred%d %Creset%s%Cblue [%cn]\" --decorate --date=relative
     lo = log --oneline --decorate
     lg = log --graph --decorate --pretty=oneline --abbrev-commit
@@ -23,10 +23,11 @@
     pb = push --set-upstream origin
     pr = "!git remote | xargs -I % git push --set-upstream %"
     rv = remote --verbose
+    sf = diff-tree --no-commit-id --name-only -r
     sp = show --pretty=oneline --abbrev-commit
     ss = status --short --branch
     st = status
-    up = "!git remote update && git co master && git pull --rebase --prune"
+    up = "!git remote update && git checkout master && git pull --rebase --prune"
 [color]
     branch = auto
     diff = auto
