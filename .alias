@@ -304,3 +304,15 @@ aws_list_keys() {
     p=${1:-default}
     for u in $(aws iam list-users --query 'Users[*].UserName' --output text --profile ${p}) ; do aws iam list-access-keys --user-name $u --output text --profile ${p} ; done
 }
+aws_eb_weblogs() {
+    [[ $# -lt 2 ]] && echo "$FUNCNAME environment-name [4|5] [aws-region] [profile]" && return 1
+    ebenv=$1
+    e=$2
+    r=${3:-ap-northeast-1}
+    p=${4:-default}
+    l=awseb-${ebenv}-webrequests
+    f='[..., status='${e}'*, size, referer, agent]'
+    for s in $(aws logs describe-log-streams --profile ${p} --region ${r} --log-group-name ${l} | jq -r '.logStreams[]|.logStreamName') ; do
+        aws logs filter-log-events --profile ${p} --region ${r} --log-group-name ${l} --filter-pattern "${f}" --log-stream-names $s ;
+    done
+}
