@@ -30,7 +30,7 @@ if [[ $(uname) = 'Darwin' ]] ; then
     if ps -ef | grep -q [g]pg-agent ; then
         echo "gpg-agent is already running"
     else
-        eval $(gpg-agent --daemon --allow-preset-passphrase --default-cache-ttl 6000 --use-standard-socket)
+        eval $(gpg-agent --daemon --allow-preset-passphrase --default-cache-ttl 6000)
     fi
     if [[ -f $(brew --prefix)/etc/bash_completion ]] ; then
         . $(brew --prefix)/etc/bash_completion
@@ -40,5 +40,7 @@ if [[ $(uname) = 'Darwin' ]] ; then
     export PATH=$PATH:/Library/TeX/texbin:$HOME/projects/compareglobal/awsebcli/bin:$HOME/bin/platform-tools
 fi
 # Password manager
-export PASSWORD_STORE_DIR=$HOME/.crypto/.passwords
-export PASSWORD_STORE_GIT=$HOME/.crypto/.passwords
+if [[ $(which pass) && -d $HOME/.crypto/.passwords ]] ; then
+    export PASSWORD_STORE_DIR=$HOME/.crypto/.passwords
+    export PASSWORD_STORE_GIT=$HOME/.crypto/.passwords
+fi
