@@ -3,80 +3,61 @@ alias mv='mv -i'
 alias l='ls -l'
 alias la='ls -lartF'
 alias ll='ls -lrt'
-alias gpg='gpg2'
 alias strings='strings -a'
-alias chmac='openssl rand -hex 6 | sed "s/\(..\)/\1:/g; s/.$//" | xargs sudo ifconfig en0 ether'
 alias ssh='LC_ALL=en_US.UTF-8 ssh'
-genrand() {
-    [ -z "$1" ] && num=8 || num=$1
-    strings /dev/urandom | grep -o '[[:alnum:]]' | head -n $num | tr -d '\n'
-    echo
-}
-genurand() {
-    export LC_ALL=C
-    echo `</dev/urandom tr -dc 'a-zA-Z0-9~!@#$%^&*()_+{}|[]\:;<>?,./' \
-        | head -c $1`
-}
 wiki() {
-	dig +short txt $1.wp.dg.cx
+	dig +short txt ${1}.wp.dg.cx
 }
 logMessage() {
 	COMMAND="$*"
 	sh -c "${COMMAND} | awk '{
-		\"echo \\\"$(date +%b\ %e\ %T) $(hostname) $(basename $0)[$$]:\\\"\"|getline timestamp;
-		close(\"echo \\\"$(date +%b\ %e\ %T) $(hostname) $(basename $0)[$$]:\\\"\");
-		printf(\"%s %s\n\", timestamp, \$0)
+		\"echo \\\"$(date +%b\ %e\ %T) $(hostname) $(basename ${0})[$$]:\\\"\"|getline timestamp;
+		close(\"echo \\\"$(date +%b\ %e\ %T) $(hostname) $(basename ${0})[$$]:\\\"\");
+		printf(\"%s %s\n\", timestamp, \${0})
 	}'"
 }
 svnadd() {
-	svn add --auto-props $1
-	svn propset svn:keywords "Date Id URL Rev Author" $1
+	svn add --auto-props ${1}
+	svn propset svn:keywords "Date Id URL Rev Author" ${1}
 }
 headtails() {
-	[ -z "$2" ] && num='' || num="-n $2"
-	head -n ${num} $1
+	head -n ${2:-10} ${1}
 	echo "..."
-	tail -n ${num} $1
+	tail -n ${2:-10} ${1}
 }
 mkcd() {
-	[ ! -d $1 ] && mkdir $1 && cd $1
+	[ ! -d ${1} ] && mkdir ${1} && cd ${1}
 }
 newscreen() {
-    [ -z "$1" ] && name='DEV' || name="$1"
     unset TMOUT
-    screen -S $name -T xterm -U
+    screen -S ${1:-DEV} -T xterm -U
+}
+randline() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME filename" && return 1
+    head -$(( ${RANDOM} % $( wc -l < ${1} ) + 1 )) ${1} | tail -1
 }
 rup() {
-    while [[ -n "$1" ]] ; do
-    	[[ $1 =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] && h=$1 \
-            || h=$(host $1 | awk '{print $1}')
-        echo "${h}: " $(ssh $h uptime)
+    while [[ -n "${1}" ]] ; do
+    	[[ ${1} =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] && h=${1} || h=$(host ${1} | awk '{print $1}')
+        echo "${h}: " $(ssh ${h} uptime)
         shift
     done
 }
 rtop() {
-    [ -z "$2" ] && num='-n 50' || num="-n $2"
-    [[ $1 =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] && h=$1 \
-        || h=$(host $1 | awk '{print $1}')
-    echo -n "$h: "
-    ssh -t $h top -b -n 1 | head ${num}
+    [[ ${1} =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] && h=${1} || h=$(host ${1} | awk '{print $1}')
+    echo -n "${h}: "
+    ssh -t ${h} top -b -n 1 | head -n ${2:-10}
 }
 rping() {
-    while [[ -n "$1" ]] ; do
-    	[[ $1 =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] && h=$1 \
-            || h=$(host $1 | awk '{print $1}')
-        if ping -c 1 $h &>/dev/null ; then
-            echo "$h is alive"
+    while [[ -n "${1}" ]] ; do
+    	[[ ${1} =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] && h=${1} || h=$(host ${1} | awk '{print $1}')
+        if ping -c 1 ${h} &>/dev/null ; then
+            echo "${h} is alive"
         else
-            echo "$h is dead" && return 1
+            echo "${h} is dead" && return 1
         fi
         shift
     done
-}
-ssh-agent-key() {
-    eval `ssh-agent` && \
-    ssh-add && \
-    ssh-add -l
 }
 rot13() {
     echo "$@" | tr '[a-m][n-z][A-M][N-Z] -' '[n-z][a-m][N-Z][A-M]_+'
@@ -85,156 +66,33 @@ rdiff() {
     if [[ $# -lt 3 ]] ; then
         echo "$FUNCNAME [options] host1 host2 file" && return 1
     else
-        if [[ ! "$1" =~ "-" ]] ; then
-            diff -bBu <(ssh $1 cat $3) <(ssh $2 cat $3)
-        elif [[ "$1" =~ "-c" ]] ; then
-            diff -bBu <(ssh $2 cat $4) <(ssh $3 cat $4) \
-                | vim -R "+set nonumber" "+syntax on" -
+        if [[ ! "${1}" =~ "-" ]] ; then
+            diff -bBu <(ssh ${1} cat ${3}) <(ssh ${2} cat ${3})
+        elif [[ "${1}" =~ "-c" ]] ; then
+            diff -bBu <(ssh ${2} cat ${4}) <(ssh ${3} cat ${4}) | vim -R "+set nonumber" "+syntax on" -
         else
-            diff $1 -bB <(ssh $2 cat $4) <(ssh $3 cat $4)
+            diff ${1} -bB <(ssh ${2} cat ${4}) <(ssh ${3} cat ${4})
         fi
     fi
 }
 urlopen() {
-    if [[ $# -lt 1 ]] ; then
-        echo "$FUNCNAME url" && return 1
+    if [[ $(uname) = 'Darwin' ]] ; then
+        if [[ $# -lt 1 ]] ; then
+            echo "$FUNCNAME url" && return 1
+        else
+            /usr/bin/open -a "Google Chrome Canary" ${1} --args --incognito
+        fi
     else
-        /usr/bin/open -a "Google Chrome Canary" $1 --args --incognito
-    fi
-}
-chef_nodes() {
-    if [[ $# -lt 1 ]] ; then
-        echo "$FUNCNAME role" && return 1
-    else
-        /usr/local/bin/knife search -aipaddress role:$1 2>/dev/null | \
-            /usr/local/bin/gsed -r 's/\s+//g;s/ipaddress//;s/://g;/^$/d' | \
-             paste -d' ' - - | sort -u
-    fi
-}
-gpgrep() {
-    if [[ $# -lt 1 ]] ; then
-        echo "$FUNCNAME expression" && return 1
-    else
-        /usr/local/bin/gpg2 -d ~/.crypto/.crypt.gpg 2>/dev/null | \
-            grep -iE "$@" | grep -vE 'MOVED|DEPRECATED'
-    fi
-}
-alias gam='python ~/bin/gam/src/gam.py'
-alias nossh='LC_ALL=en_US.UTF-8 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
-alias showtunnel="ps -ef | grep '[s]sh -f'"
-sshtunnel() {
-    if [[ $# -lt 3 ]] ; then
-        echo "$FUNCNAME jumphost host port" && return 1
-    else
-        ssh -f ${1} -L ${3}:${2}:${3} -N 2>/dev/null
-        echo "SSH tunnel started:"
-        showtunnel
-    fi
-}
-killtunnel() {
-    if ps -ef | grep -q "[s]sh -f" ; then
-        pid=$(ps -ef | awk '/[s]sh -f/ {print $2}')
-        kill -9 ${pid}
-        [[ $? -eq 0 ]] && echo "Killed SSH tunnel session: ${pid}."
-    else
-        echo "No SSH tunnel session found." && return 1
+        echo "Only available for MacOS" && return 1
     fi
 }
 weather() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME airportcode" && return 1
-    curl wttr.in/$1
-}
-clearcache() {
-    api_url1="http://www.ap-northeast-1.api-hk-v1.compareglobal.co.uk/redis/clear/HK"
-    api_url2="http://www.ap-northeast-1.api-hk-v1.compareglobal.co.uk/redis/clear/DK"
-    cache_url="http://www.ap-northeast-1.hk-lib-v1.compareglobal.co.uk/Ab5NJ4T8mxQck36pYj"
-    curl -sXDELETE "${api_url1}"| grep count
-    curl -sXDELETE "${api_url2}"| grep count
-    curl -XGET "${cache_url}"
-}
-aws_ssh() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME jumphost key user ipaddress" && return 1
-    LC_ALL=en_US.UTF-8 ssh -t ${1} \
-        ssh -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile=/dev/null" \
-        -i /home/iandexter/.ssh/${2}.pem ${3}@${4}
+    curl wttr.in/${1}
 }
 urldiff() {
     [[ $# -lt 2 ]] && echo "$FUNCNAME url1 url2" && return 1
     diff -q <(curl -s ${1}) <(curl -s ${2})
-}
-dnstests() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME domain [...]" && return 1
-    while [[ -n "$1" ]] ; do
-        echo ${1}
-        echo "dig: " $(dig +short SOA ${1})
-        echo "whois: "
-        whois ${1}
-        echo "curl: " $(curl -sI ${1} | grep Location 2>/dev/null)
-        echo '---'
-        shift
-    done
-}
-chef_del() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME node [...]" && return 1
-    while [[ -n "$1" ]] ; do
-        knife node delete -y $1
-        knife client delete -y $1
-        hname=$(echo $1 | cut -d. -f1-2)
-        dname=$(echo $1 | cut -d. -f3-)
-        echo -e "Remove DNS record manually:\ncli53 rrdelete $dname $hname A"
-        shift
-    done
-}
-geoip() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME ip.address [...]" && return 1
-    while [[ -n "$1" ]] ; do
-        curl -s ipinfo.io/$1 | jq -r '[.ip,.country] | @csv'
-        shift
-    done
-}
-myip() {
-    echo "Google: " $(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | sed 's/"//g')
-    echo "OpenDNS: " $(dig +short myip.opendns.com @resolver1.opendns.com)
-    echo "icanhazip: " $(curl -s4 icanhazip.com)
-}
-aws_ec2id() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME host [...]" && return 1
-    while [[ -n "$1" ]] ; do
-        echo -n "$(echo $1 | sed 's/\(.*\),.*/\1 /')"
-        ssh $1 -C \
-            "curl -s http://169.254.169.254/latest/meta-data/instance-id" \
-            2>/dev/null
-        echo
-        shift
-    done
-}
-aws_ec2() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME instance-id [aws-region] [profile]" && return 1
-    i=$1
-    r=${2:-ap-northeast-1}
-    p=${3:-default}
-    aws --profile ${p} ec2 describe-instances --instance-ids $i --region $r | jq -r '.Reservations[]|.Instances[]|[.NetworkInterfaces[].PrivateIpAddresses[], .Tags[]]'
-}
-aws_eb_list-instances() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
-    ebenv=$1
-    r=${2:-ap-northeast-1}
-    p=${3:-default}
-    aws --profile ${p} elasticbeanstalk describe-instances-health --environment-name ${ebenv} --region $r --attribute-names All | jq -r .
-}
-aws_eb_check-health() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
-    ebenv=$1
-    r=${2:-ap-northeast-1}
-    p=${3:-default}
-    aws --profile ${p} elasticbeanstalk describe-environment-health --environment-name ${ebenv} --region $r --attribute-names All | jq -r .
-}
-chef_remote() {
-	[[ $# -lt 2 ]] && echo "$FUNCNAME stack commands [apne1|apse1|euc1| usw1]" && return 1
-	stack=$1
-	cmd="${2}"
-	r=${3:-apne1}
-	for s in $(chef_nodes $stack | awk '{print $1}') ; do echo $s ; ssh -t $s,$r -C "${cmd}" 2>/dev/null ; echo ; done
 }
 from_utc() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME \"YYYY-mm-DD HH:MM:SS\"" && return 1
@@ -253,19 +111,76 @@ to_utc() {
         date +"%Y-%m-%d %H:%M:%S %z" -u
      fi
 }
-aws_get_eips() {
-    [[ "$1" == "--help" || "$1" == "-h" ]] && echo "$FUNCNAME [aws-region] [profile]" && return 1
-    r=${1:-ap-northeast-1}
-    p=${2:-default}
-    echo "Elastic IP addresses in ${r} (profile: ${p})"
-    aws ec2 describe-addresses --public-ips --output text --region ${r} --profile ${p} | awk '{print $NF}' | sort -u
+
+### SSH
+alias nossh='LC_ALL=en_US.UTF-8 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+alias ssh-agent-key='eval $(ssh-agent) && ssh-add && ssh-add -l'
+alias showtunnel="ps -ef | grep '[s]sh -f'"
+sshtunnel() {
+    if [[ $# -lt 3 ]] ; then
+        echo "$FUNCNAME jumphost host port" && return 1
+    else
+        ssh -f ${1} -L ${3}:${2}:${3} -N 2>/dev/null
+        echo "SSH tunnel started:"
+        showtunnel
+    fi
 }
-aws_eb_restart() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
-    ebenv=$1
-    r=${2:-ap-northeast-1}
-    p=${3:-default}
-    aws --profile ${p} elasticbeanstalk restart-app-server --environment-name ${ebenv} --region $r
+killtunnel() {
+    if showtunnel ; then
+        pid=$(ps -ef | awk '/[s]sh -f/ {print $2}')
+        kill -9 ${pid}
+        [[ $? -eq 0 ]] && echo "Killed SSH tunnel session: ${pid}."
+    else
+        echo "No SSH tunnel session found." && return 1
+    fi
+}
+
+### NETWORKING
+alias chmac='openssl rand -hex 6 | sed "s/\(..\)/\1:/g; s/.$//" | xargs sudo ifconfig en0 ether'
+dnstests() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME domain [...]" && return 1
+    while [[ -n "${1}" ]] ; do
+        echo ${1}
+        echo "dig: " $(dig +short SOA ${1})
+        echo "whois: "
+        whois ${1}
+        echo "curl: " $(curl -sI ${1} | grep Location 2>/dev/null)
+        echo '---'
+        shift
+    done
+}
+geoip() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME ip.address [...]" && return 1
+    while [[ -n "${1}" ]] ; do
+        curl -s ipinfo.io/${1} | jq -r '[.ip,.country] | @csv'
+        shift
+    done
+}
+myip() {
+    printf "%-10s: %-20s\n" "Google" $(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | sed 's/"//g')
+    printf "%-10s: %-20s\n" "OpenDNS" $(dig +short myip.opendns.com @resolver1.opendns.com)
+    printf "%-10s: %-20s\n" "icanhazip" $(curl -s4 icanhazip.com)
+}
+
+### SECURITY
+genrand() {
+    strings /dev/urandom | grep -Eo '[[:alnum:]]' | head -n ${1:-16} | tr -d '\n'
+    echo
+}
+genurand() {
+    export LC_ALL=C
+    echo $(</dev/urandom tr -dc 'a-zA-Z0-9~!@#$%^&*()_+{}|[]\:;<>?,./' | head -c ${1:-16})
+}
+gpgrep() {
+    if [[ $# -lt 1 ]] ; then
+        echo "$FUNCNAME expression" && return 1
+    else
+        if [[ -e ~/.crypto/.crypt.gpg ]] ; then
+            gpg -d ~/.crypto/.crypt.gpg 2>/dev/null | grep -iE "$@" | grep -vE 'MOVED|DEPRECATED'
+        else
+            echo "Crypt file does not exist" && return 1
+        fi
+    fi
 }
 spass() {
     [[ $# -lt 1 ]] && pass --help && return 1
@@ -288,31 +203,121 @@ END
         clear
     fi
 }
-alias today='~/projects/compareglobal/gcal/bin/gcalcli --detail_all --detail_url short agenda today "eod today"'
-invalidate_cf() {
-    ~/projects/compareglobal/boto3/bin/python ~/projects/compareglobal/infrastructure/tools/scripts/invalidate_cf.py $@
-}
+
+### CGG
 alias cggchat='irssi --config=~/Dropbox/Documents/CompareGlobal/devops/irssi_config'
-aws_listq() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME country-code [aws-region] [profile]" && return 1
-    c=$1
-    r=${2:-eu-central-1}
-    p=${3:-cgg}
-    aws sqs list-queues --region ${r} --profile ${p} | jq -r ".QueueUrls[]|select(contains(\"${c}-${c}\"))"
+alias slackirc='irssi --config=~/Dropbox/Documents/CompareGlobal/devops/slack_irc_config'
+alias gam='python ~/bin/gam/src/gam.py'
+alias today='~/projects/compareglobal/gcal/bin/gcalcli --detail_all --detail_url short agenda today "eod today"'
+clearhkcache() {
+    api_url1="http://www.ap-northeast-1.api-hk-v1.compareglobal.co.uk/redis/clear/HK"
+    api_url2="http://www.ap-northeast-1.api-hk-v1.compareglobal.co.uk/redis/clear/DK"
+    cache_url="http://www.ap-northeast-1.hk-lib-v1.compareglobal.co.uk/Ab5NJ4T8mxQck36pYj"
+    curl -sXDELETE "${api_url1}"| grep count
+    curl -sXDELETE "${api_url2}"| grep count
+    curl -XGET "${cache_url}"
 }
-aws_list_keys() {
-    p=${1:-default}
-    for u in $(aws iam list-users --query 'Users[*].UserName' --output text --profile ${p}) ; do aws iam list-access-keys --user-name $u --output text --profile ${p} ; done
+
+### CHEF
+chef_del() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME node [...]" && return 1
+    while [[ -n "${1}" ]] ; do
+        knife node delete -y ${1}
+        knife client delete -y ${1}
+        hname=$(echo ${1} | cut -d. -f1-2)
+        dname=$(echo ${1} | cut -d. -f3-)
+        echo -e "Remove DNS record manually:\ncli53 rrdelete ${dname} ${hname} A"
+        shift
+    done
+}
+chef_nodes() {
+    if [[ $# -lt 1 ]] ; then
+        echo "$FUNCNAME role" && return 1
+    else
+        /usr/local/bin/knife search -aipaddress role:${1} 2>/dev/null | /usr/local/bin/gsed -r 's/\s+//g;s/ipaddress//;s/://g;/^$/d' | paste -d' ' - - | sort -u
+    fi
+}
+chef_remote() {
+	[[ $# -lt 2 ]] && echo "$FUNCNAME stack commands [apne1|apse1|euc1| usw1]" && return 1
+	stack=${1}
+	cmd="${2}"
+	r=${3:-apne1}
+	for s in $(chef_nodes ${stack} | awk '{print $1}') ; do echo ${s} ; ssh -t ${s},${r} -C "${cmd}" 2>/dev/null ; echo ; done
+}
+
+### AWS
+alias invalidate_cf='~/projects/compareglobal/boto3/bin/python ~/projects/compareglobal/infrastructure/tools/scripts/invalidate_cf.py'
+alias toggle_nr='NR_API_KEY=$(pass work/cgg/monitoring/newrelic/iandexter | tail -1) ~/projects/compareglobal/infrastructure/tools/scripts/jenkins/toggle_newrelic_monitors.py'
+aws_ec2() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME instance-id [aws-region] [profile]" && return 1
+    i=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    aws --profile ${p} ec2 describe-instances --instance-ids ${i} --region ${r} | jq -r '.Reservations[]|.Instances[]|[.NetworkInterfaces[].PrivateIpAddresses[],.Tags[]]'
+}
+aws_ec2id() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME host [...]" && return 1
+    while [[ -n "${1}" ]] ; do
+        echo -n "$(echo ${1} | sed 's/\(.*\),.*/\1 /')"
+        ssh ${1} -C "curl -s http://169.254.169.254/latest/meta-data/instance-id" 2>/dev/null
+        echo
+        shift
+    done
+}
+aws_eb_check-health() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
+    ebenv=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    aws --profile ${p} elasticbeanstalk describe-environment-health --environment-name ${ebenv} --region ${r} --attribute-names All | jq -r .
+}
+aws_eb_list-instances() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" \
+        && return 1
+    ebenv=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    instances=$(aws --profile ${p} elasticbeanstalk describe-environment-resources --environment-name ${ebenv} --region ${r} --query 'EnvironmentResources.Instances[*].Id' --output text)
+    aws --profile ${p} ec2 describe-instances --instance-ids ${instances} --region ${r} --query 'Reservations[*].Instances[*].{"InstanceId":InstanceId,"PublicDnsName":PublicDnsName,"PrivateIpAddress":PrivateIpAddress}' --output text
+}
+aws_eb_restart() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
+    ebenv=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    aws --profile ${p} elasticbeanstalk restart-app-server --environment-name ${ebenv} --region ${r}
 }
 aws_eb_weblogs() {
     [[ $# -lt 2 ]] && echo "$FUNCNAME environment-name [4|5] [aws-region] [profile]" && return 1
-    ebenv=$1
-    e=$2
+    ebenv=${1}
+    e=${2}
     r=${3:-ap-northeast-1}
     p=${4:-default}
     l=awseb-${ebenv}-webrequests
     f='[..., status='${e}'*, size, referer, agent]'
     for s in $(aws logs describe-log-streams --profile ${p} --region ${r} --log-group-name ${l} | jq -r '.logStreams[]|.logStreamName') ; do
-        aws logs filter-log-events --profile ${p} --region ${r} --log-group-name ${l} --filter-pattern "${f}" --log-stream-names $s ;
+        aws logs filter-log-events --profile ${p} --region ${r} --log-group-name ${l} --filter-pattern "${f}" --log-stream-names ${s} ;
     done
+}
+aws_get_eips() {
+    [[ "${1}" == "--help" || "${1}" == "-h" ]] && echo "$FUNCNAME [aws-region] [profile]" && return 1
+    r=${1:-ap-northeast-1}
+    p=${2:-default}
+    echo "Elastic IP addresses in ${r} (profile: ${p})"
+    aws ec2 describe-addresses --public-ips --output text --region ${r} --profile ${p} | awk '{print $NF}' | sort -u
+}
+aws_list_keys() {
+    p=${1:-default}
+    for u in $(aws iam list-users --query 'Users[*].UserName' --output text --profile ${p}) ; do aws iam list-access-keys --user-name $u --output text --profile ${p} ; done
+}
+aws_listq() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME country-code [aws-region] [profile]" && return 1
+    c=${1}
+    r=${2:-eu-central-1}
+    p=${3:-cgg}
+    aws sqs list-queues --region ${r} --profile ${p} | jq -r ".QueueUrls[]|select(contains(\"${c}-${c}\"))"
+}
+aws_ssh() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME jumphost key user ipaddress" && return 1
+    LC_ALL=en_US.UTF-8 ssh -t ${1} ssh -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile=/dev/null" -i /home/iandexter/.ssh/${2}.pem ${3}@${4}
 }
