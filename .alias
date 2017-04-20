@@ -272,13 +272,21 @@ aws_eb_check-health() {
     aws --profile ${p} elasticbeanstalk describe-environment-health --environment-name ${ebenv} --region ${r} --attribute-names All | jq -r .
 }
 aws_eb_list-instances() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" \
-        && return 1
+    [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
     ebenv=${1}
     r=${2:-ap-northeast-1}
     p=${3:-default}
     instances=$(aws --profile ${p} elasticbeanstalk describe-environment-resources --environment-name ${ebenv} --region ${r} --query 'EnvironmentResources.Instances[*].Id' --output text)
     aws --profile ${p} ec2 describe-instances --instance-ids ${instances} --region ${r} --query 'Reservations[*].Instances[*].{"InstanceId":InstanceId,"PublicDnsName":PublicDnsName,"PrivateIpAddress":PrivateIpAddress}' --output text
+}
+aws_eb_mem() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    r=${2}
+    j=${3}
+    for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
+        echo "${s} " $(ssh -t ${j}/$(echo $s | awk '{print $NF}') -C "ps -Ao comm,rss" 2>/dev/null | awk '/[h]ttpd/ {sum += $NF} END {print sum}') ;
+    done
 }
 aws_eb_restart() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
@@ -286,6 +294,16 @@ aws_eb_restart() {
     r=${2:-ap-northeast-1}
     p=${3:-default}
     aws --profile ${p} elasticbeanstalk restart-app-server --environment-name ${ebenv} --region ${r}
+}
+aws_eb_restart_httpd() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    r=${2}
+    j=${3}
+    for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
+        echo "${s}"
+        ssh -t ${j}/$(echo $s | awk '{print $NF}') -C "sudo /sbin/service httpd restart" 2>/dev/null
+    done
 }
 aws_eb_weblogs() {
     [[ $# -lt 2 ]] && echo "$FUNCNAME environment-name [4|5] [aws-region] [profile]" && return 1
