@@ -38,8 +38,6 @@ if [[ $(uname) = 'Darwin' ]] ; then
     fi
     ### if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
     export PATH=$PATH:/Library/TeX/texbin:$HOME/projects/compareglobal/awsebcli/bin:$HOME/bin/platform-tools
-    ### export SDKMAN_DIR="/Users/iandexter/.sdkman"
-    ### [[ -s "/Users/iandexter/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/iandexter/.sdkman/bin/sdkman-init.sh"
 fi
 # Password manager
 if [[ $(which pass) && -d $HOME/.crypto/.passwords ]] ; then
