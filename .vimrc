@@ -8,10 +8,12 @@ set ttimeoutlen=100
 " set autoindent
 set smartindent
 set tabstop=4
-set shiftwidth=4
+set softtabstop=4
+" set shiftwidth=4
 set expandtab
 set backspace=2
-set textwidth=80
+set textwidth=79
+set fileformat=unix
 
 " Display
 syntax on
