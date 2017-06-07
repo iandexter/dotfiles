@@ -3,6 +3,7 @@ alias mv='mv -i'
 alias l='ls -l'
 alias la='ls -lartF'
 alias ll='ls -lrt'
+alias pbcopy='xargs echo -n | pbcopy'
 alias strings='strings -a'
 alias ssh='LC_ALL=en_US.UTF-8 ssh'
 wiki() {
@@ -275,21 +276,12 @@ chef_remote() {
 ### AWS
 alias invalidate_cf='~/projects/compareglobal/boto3/bin/python ~/projects/compareglobal/infrastructure/tools/scripts/invalidate_cf.py'
 alias toggle_nr='NR_API_KEY=$(pass work/cgg/monitoring/newrelic/iandexter | tail -1) ~/projects/compareglobal/infrastructure/tools/scripts/jenkins/toggle_newrelic_monitors.py'
-aws_ec2() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME instance-id [aws-region] [profile]" && return 1
-    i=${1}
+aws_asg() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME stack [aws-region] [profile]" && return 1
+    c=${1}
     r=${2:-ap-northeast-1}
     p=${3:-default}
-    aws --profile ${p} ec2 describe-instances --instance-ids ${i} --region ${r} | jq -r '.Reservations[]|.Instances[]|[.NetworkInterfaces[].PrivateIpAddresses[],.Tags[]]'
-}
-aws_ec2id() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME host [...]" && return 1
-    while [[ -n "${1}" ]] ; do
-        echo -n "$(echo ${1} | sed 's/\(.*\),.*/\1 /')"
-        ssh ${1} -C "curl -s http://169.254.169.254/latest/meta-data/instance-id" 2>/dev/null
-        echo
-        shift
-    done
+    aws autoscaling describe-auto-scaling-groups --region ${r} --profile ${p} | jq --arg country "${c}" -r '.AutoScalingGroups[]|{"AutoScalingGroupName":.AutoScalingGroupName,"Name":.Tags[]|select(.Key == "Name")|.Value} | select( .Name | contains($country) )'
 }
 aws_eb_check-health() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
@@ -304,7 +296,7 @@ aws_eb_list-instances() {
     r=${2:-ap-northeast-1}
     p=${3:-default}
     instances=$(aws --profile ${p} elasticbeanstalk describe-environment-resources --environment-name ${ebenv} --region ${r} --query 'EnvironmentResources.Instances[*].Id' --output text)
-    aws --profile ${p} ec2 describe-instances --instance-ids ${instances} --region ${r} --query 'Reservations[*].Instances[*].{"InstanceId":InstanceId,"PublicDnsName":PublicDnsName,"PrivateIpAddress":PrivateIpAddress}' --output text
+    aws --profile ${p} ec2 describe-instances --instance-ids ${instances} --region ${r} --query 'Reservations[*].Instances[*].{"InstanceId":InstanceId,"PublicDnsName":PublicDnsName,"PrivateIpAddress":PrivateIpAddress}' --output text | tr '\t' ' '
 }
 aws_eb_mem() {
     [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
@@ -332,6 +324,18 @@ aws_eb_restart_httpd() {
         ssh -t ${j}/$(echo $s | awk '{print $NF}') -C "sudo /sbin/service httpd restart" 2>/dev/null
     done
 }
+aws_eb_restart_tomcat() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    r=${2}
+    j=${3}
+    for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
+        echo "${s}"
+        ssh -t ${j}/$(echo $s | awk '{print $NF}') -C "sudo /sbin/service tomcat8 restart" 2>/dev/null
+        echo "Pausing between restarts..."
+        sleep 900
+    done
+}
 aws_eb_weblogs() {
     [[ $# -lt 2 ]] && echo "$FUNCNAME environment-name [4|5] [aws-region] [profile]" && return 1
     ebenv=${1}
@@ -342,6 +346,31 @@ aws_eb_weblogs() {
     f='[..., status='${e}'*, size, referer, agent]'
     for s in $(aws logs describe-log-streams --profile ${p} --region ${r} --log-group-name ${l} | jq -r '.logStreams[]|.logStreamName') ; do
         aws logs filter-log-events --profile ${p} --region ${r} --log-group-name ${l} --filter-pattern "${f}" --log-stream-names ${s} ;
+    done
+}
+aws_ec2() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME instance-id [aws-region] [profile]" && return 1
+    i=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    aws --profile ${p} ec2 describe-instances --instance-ids ${i} --region ${r} | jq -r '.Reservations[]|.Instances[]|[.NetworkInterfaces[].PrivateIpAddresses[],.Tags[]]'
+}
+aws_ec2id() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME host [...]" && return 1
+    while [[ -n "${1}" ]] ; do
+        echo -n "$(echo ${1} | sed 's/\(.*\),.*/\1 /')"
+        ssh ${1} -C "curl -s http://169.254.169.254/latest/meta-data/instance-id" 2>/dev/null
+        echo
+        shift
+    done
+}
+aws_elb() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME stack [aws-region] [profile]" && return 1
+    c=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    for elb in $(aws elb describe-load-balancers --region ${r} --profile ${p} --query 'LoadBalancerDescriptions[*].LoadBalancerName' --output text) ; do
+        aws elb describe-tags --region ${r} --profile ${p} --load-balancer-names $elb | jq --arg stack "${c}" -r '.TagDescriptions[]|{"LoadBalancerName":.LoadBalancerName,"Name":.Tags[]|select(.Key == "Name")|.Value} | select( .Name | contains($stack) )'
     done
 }
 aws_get_eips() {
