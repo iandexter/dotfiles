@@ -37,6 +37,10 @@ if [[ $(uname) = 'Darwin' ]] ; then
         if which kubectl > /dev/null ; then . <(kubectl completion bash) ; fi
     fi
     ### if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
+    ### https://github.com/riobard/bash-powerline
+    if [[ -f $HOME/.bash-powerline.sh ]] ; then
+        source $HOME/.bash-powerline.sh
+    fi
     export PATH=$PATH:/Library/TeX/texbin:$HOME/projects/compareglobal/awsebcli/bin:$HOME/bin/platform-tools
 fi
 # Password manager
