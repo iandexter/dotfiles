@@ -296,15 +296,17 @@ aws_eb_list-instances() {
     r=${2:-ap-northeast-1}
     p=${3:-default}
     instances=$(aws --profile ${p} elasticbeanstalk describe-environment-resources --environment-name ${ebenv} --region ${r} --query 'EnvironmentResources.Instances[*].Id' --output text)
-    aws --profile ${p} ec2 describe-instances --instance-ids ${instances} --region ${r} --query 'Reservations[*].Instances[*].{"InstanceId":InstanceId,"PublicDnsName":PublicDnsName,"PrivateIpAddress":PrivateIpAddress}' --output text | tr '\t' ','
+    aws --profile ${p} ec2 describe-instances --instance-ids ${instances} --region ${r} --query 'Reservations[*].Instances[*].{"InstanceId":InstanceId,"PublicDnsName":PublicDnsName,"PrivateIpAddress":PrivateIpAddress}' --output text | tr '\t' ':' | sed 's/:$//'
 }
-aws_eb_mem() {
+aws_eb_mem_httpd() {
     [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
     ebenv=${1}
     r=${2}
     j=${3}
     for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
-        echo "${s} " $(ssh -t ${j}/$(echo $s | awk '{print $NF}') -C "ps -Ao comm,rss" 2>/dev/null | awk '/[h]ttpd/ {sum += $NF} END {print sum}') ;
+        echo -n "${s}" | cut -d: -f1
+        echo -n " "
+        ssh -t ${j}/$(echo ${s} | cut -d: -f2) -C "ps -Ao comm,rss" 2>/dev/null | awk '/[h]ttpd/ {sum += $NF} END {print sum}' ;
     done
 }
 aws_eb_restart() {
@@ -320,8 +322,8 @@ aws_eb_restart_httpd() {
     r=${2}
     j=${3}
     for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
-        echo "${s}" | cut -d, -f1
-        ssh -t ${j}/$(echo ${s} | cut -d, -f2) -C "sudo /sbin/service httpd restart" 2>/dev/null
+        echo "${s}" | cut -d: -f1
+        ssh -t ${j}/$(echo ${s} | cut -d: -f2) -C "sudo /sbin/service httpd restart" 2>/dev/null
     done
 }
 aws_eb_restart_tomcat() {
@@ -330,8 +332,8 @@ aws_eb_restart_tomcat() {
     r=${2}
     j=${3}
     for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
-        echo "${s}" | cut -d, -f1
-        ssh -t ${j}/$(echo ${s} | cut -d, -f2) -C "sudo /sbin/service tomcat8 restart" 2>/dev/null
+        echo "${s}" | cut -d: -f1
+        ssh -t ${j}/$(echo ${s} | cut -d: -f2) -C "sudo /sbin/service tomcat8 restart" 2>/dev/null
         echo "Pausing between restarts..."
         sleep 900
     done
