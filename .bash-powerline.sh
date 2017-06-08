@@ -48,6 +48,10 @@ __powerline() {
         readonly BG_BLUE="\[$(tput setab 33)\]"
         readonly BG_CYAN="\[$(tput setab 37)\]"
         readonly BG_GREEN="\[$(tput setab 64)\]"
+
+        ### Custom colors
+        readonly CUSTOM_USER="\[$(tput setaf 0)\]\[$(tput setab 230)\]"
+        readonly CUSTOM_PATH="\[$(tput setaf 230)\]\[$(tput setab 166)\]"
      else
         readonly FG_BASE03="\[$(tput setaf 8)\]"
         readonly FG_BASE02="\[$(tput setaf 0)\]"
@@ -137,7 +141,7 @@ __powerline() {
             local BG_EXIT="$BG_RED"
         fi
 
-        PS1="$BG_BASE1$FG_BASE3 \u@\H $BG_ORANGE \w $RESET"
+        PS1="$CUSTOM_USER \u@\H $CUSTOM_PATH \w $RESET"
         # Bash by default expands the content of PS1 unless promptvars is disabled.
         # We must use another layer of reference to prevent expanding any user
         # provided strings, which would cause security issues.
@@ -150,7 +154,7 @@ __powerline() {
             # promptvars is disabled. Avoid creating unnecessary env var.
             PS1+="$BG_BLUE$FG_BASE3$(__git_info)$RESET"
         fi
-        PS1+="$BG_EXIT$FG_BASE3\n $PS_SYMBOL $RESET "
+        PS1+="\n$BG_EXIT$FG_BASE3 $PS_SYMBOL $RESET "
     }
 
     PROMPT_COMMAND=ps1
