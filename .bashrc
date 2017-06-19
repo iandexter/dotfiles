@@ -1,3 +1,4 @@
+export PATH=$PATH:$HOME/bin
 # Aliases
 test -s ~/.alias && . ~/.alias || true
 # Prompt
