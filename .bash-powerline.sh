@@ -52,6 +52,7 @@ __powerline() {
         ### Custom colors
         readonly CUSTOM_USER="\[$(tput setaf 0)\]\[$(tput setab 230)\]"
         readonly CUSTOM_PATH="\[$(tput setaf 230)\]\[$(tput setab 166)\]"
+        readonly CUSTOM_PYTHON="\[$(tput setaf 0)\]\[$(tput setab 225)\]"
      else
         readonly FG_BASE03="\[$(tput setaf 8)\]"
         readonly FG_BASE02="\[$(tput setaf 0)\]"
@@ -132,6 +133,15 @@ __powerline() {
         printf " $GIT_BRANCH_SYMBOL$branch$marks "
     }
 
+    __python_venv() {
+        if [[ -n "$VIRTUAL_ENV" ]] ; then
+            virtualenv="[$(basename $VIRTUAL_ENV)]"
+        else
+            return
+        fi
+        printf " $virtualenv "
+    }
+
     ps1() {
         # Check the exit code of the previous command and display different
         # colors in the prompt accordingly.
@@ -149,10 +159,11 @@ __powerline() {
         # Related fix in git-bash: https://github.com/git/git/blob/9d77b0405ce6b471cb5ce3a904368fc25e55643d/contrib/completion/git-prompt.sh#L324
         if shopt -q promptvars; then
             __powerline_git_info="$(__git_info)"
-            PS1+="$BG_BLUE$FG_BASE3\${__powerline_git_info}$RESET"
+            __powerline_python_venv="$(__python_venv)"
+            PS1+="$BG_BLUE$FG_BASE3\${__powerline_git_info}$CUSTOM_PYTHON\${__powerline_python_venv}$RESET"
         else
             # promptvars is disabled. Avoid creating unnecessary env var.
-            PS1+="$BG_BLUE$FG_BASE3$(__git_info)$RESET"
+            PS1+="$BG_BLUE$FG_BASE3$(__git_info)$CUSTOM_PYTHON$(__python_venv)$RESET"
         fi
         PS1+="\n$BG_EXIT$FG_BASE3 $PS_SYMBOL $RESET "
     }
