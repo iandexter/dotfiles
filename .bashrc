@@ -42,7 +42,7 @@ if [[ $(uname) = 'Darwin' ]] ; then
     if [[ -f $HOME/.bash-powerline.sh ]] ; then
         source $HOME/.bash-powerline.sh
     fi
-    export PATH=$PATH:/Library/TeX/texbin:$HOME/projects/compareglobal/awsebcli/bin:$HOME/bin/platform-tools
+    export PATH=$PATH:/Library/TeX/texbin:$HOME/projects/compareglobal/awsebcli/bin:$HOME/bin/platform-tools:$HOME/.gem/ruby/2.0.0/bin
 fi
 # Password manager
 if [[ $(which pass) && -d $HOME/.crypto/.passwords ]] ; then
