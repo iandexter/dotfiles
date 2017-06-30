@@ -1,0 +1,17 @@
+[projects/compareglobal/infrastructure]
+checkout = git clone 'git@github.com:compareasiagroup/infrastructure.git' 'infrastructure'
+
+[projects/compareglobal/terraform]
+checkout = git clone 'git@github.com:compareasiagroup/terraform.git' 'terraform'
+
+[projects/compareglobal/ciab-config-repo]
+checkout = git clone 'git@github.com:compareasiagroup/ciab-config-repo.git' 'ciab-config-repo'
+
+[projects/compareglobal/ciab-base]
+checkout = git clone 'git@github.com:compareasiagroup/ciab-base.git' 'ciab-base'
+
+[projects/iandexter.github.com]
+checkout = git clone 'git@github.com:iandexter/iandexter.github.com.git' 'iandexter.github.com'
+
+[projects/iandexter.github.com]
+checkout = git clone 'git@github.com:iandexter/iandexter.github.com.git' 'iandexter.github.com'
