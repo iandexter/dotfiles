@@ -112,6 +112,16 @@ to_utc() {
         date +"%Y-%m-%d %H:%M:%S %z" -u
      fi
 }
+mdless() {
+    if [[ $(uname) = 'Darwin' ]] ; then
+        pandoc -s -f markdown -t man ${1:-README.md} | groff -T utf8 -man | less
+    fi
+}
+bcurl() {
+    if [[ $(uname) = 'Darwin' ]] ; then
+        /usr/local/opt/curl/bin/curl $@
+    fi
+}
 
 ### SSH
 alias nossh='LC_ALL=en_US.UTF-8 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
