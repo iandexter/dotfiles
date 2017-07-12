@@ -1,0 +1,65 @@
+Host js-*
+    Port 443
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+Host *,*
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+Host js-apne1
+    HostName jumpserver.compareglobal.co.uk
+Host js-apse1
+    HostName access.ap-southeast-1.compareglobal.co.uk
+Host js-euc1
+    HostName access.eu-central-1.compareglobal.co.uk
+Host js-usw1
+    HostName access.us-west-1.compareglobal.co.uk
+Host *,apne1
+    ProxyCommand >&1; h="%h"; exec ssh -q js-apne1 nc ${h%%,*} %p
+Host *,apse1
+    ProxyCommand >&1; h="%h"; exec ssh -q js-apse1 nc ${h%%,*} %p
+Host *,euc1
+    ProxyCommand >&1; h="%h"; exec ssh -q js-euc1 nc ${h%%,*} %p
+Host *,usw1
+    ProxyCommand >&1; h="%h"; exec ssh -q js-usw1 nc ${h%%,*} %p
+Host chef,apne1
+    HostName 10.0.10.111
+Host jenkins,apne1
+    HostName 10.0.20.109
+Host alfresco,apne1
+    User ubuntu
+    Hostname 10.0.110.85
+Host jenkins-ciab
+    Hostname 52.69.198.26
+    User ubuntu
+Host bitbucket.org
+    IdentityFile ~/.ssh/id_rsa
+Host docker
+    HostName ec2-52-91-103-148.compute-1.amazonaws.com
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+Host corpsite
+    HostName ec2-54-64-78-83.ap-northeast-1.compute.amazonaws.com
+    User ubuntu
+    IdentityFile ~/.crypto/build.pem
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+Host bh-* client-*
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+    User ec2-user
+    IdentityFile ~/.crypto/devops-prod.pem
+Host bh-euc1
+    HostName 10.2.1.222
+Host bh-apse1
+    HostName 10.0.1.108
+Host bh-apne1
+    HostName 10.1.1.243
+Host client-euc1
+    HostName 10.2.100.128
+    ProxyCommand ssh bh-euc1 nc -w 120 %h %p
+Host client-apse1
+    HostName 10.0.100.95
+    ProxyCommand ssh bh-apse1 nc -w 120 %h %p
+Host client-apne1
+    HostName 10.1.100.234
+    ProxyCommand ssh bh-apne1 nc -w 120 %h %p
