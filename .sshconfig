@@ -1,10 +1,12 @@
+Host *
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+Host bitbucket.org
+    IdentityFile ~/.ssh/id_rsa
+
+### [nova]
 Host js-*
     Port 443
-    StrictHostKeyChecking no
-    UserKnownHostsFile /dev/null
-Host *,*
-    StrictHostKeyChecking no
-    UserKnownHostsFile /dev/null
 Host js-apne1
     HostName jumpserver.compareglobal.co.uk
 Host js-apse1
@@ -13,14 +15,8 @@ Host js-euc1
     HostName access.eu-central-1.compareglobal.co.uk
 Host js-usw1
     HostName access.us-west-1.compareglobal.co.uk
-Host *,apne1
-    ProxyCommand >&1; h="%h"; exec ssh -q js-apne1 nc ${h%%,*} %p
-Host *,apse1
-    ProxyCommand >&1; h="%h"; exec ssh -q js-apse1 nc ${h%%,*} %p
-Host *,euc1
-    ProxyCommand >&1; h="%h"; exec ssh -q js-euc1 nc ${h%%,*} %p
-Host *,usw1
-    ProxyCommand >&1; h="%h"; exec ssh -q js-usw1 nc ${h%%,*} %p
+Host *,*
+    ProxyCommand >&1; h="%h"; exec ssh -q js-$(echo ${h} | cut -d, -f2) nc ${h%%,*} %p
 Host chef,apne1
     HostName 10.0.10.111
 Host jenkins,apne1
@@ -31,35 +27,70 @@ Host alfresco,apne1
 Host jenkins-ciab
     Hostname 52.69.198.26
     User ubuntu
-Host bitbucket.org
-    IdentityFile ~/.ssh/id_rsa
 Host docker
     HostName ec2-52-91-103-148.compute-1.amazonaws.com
-    StrictHostKeyChecking no
-    UserKnownHostsFile /dev/null
-Host corpsite
+
+### [ corp_servers]
+Host corpsite-cgg
     HostName ec2-54-64-78-83.ap-northeast-1.compute.amazonaws.com
     User ubuntu
     IdentityFile ~/.crypto/build.pem
-    StrictHostKeyChecking no
-    UserKnownHostsFile /dev/null
-Host bh-* client-*
-    StrictHostKeyChecking no
-    UserKnownHostsFile /dev/null
+Host corpsite-nova
     User ec2-user
+    IdentityFile ~/.crypto/devops.pem
+    ProxyCommand ssh js-apne1 nc 10.0.10.66 %p
+
+### stdio forwarding
+Host */*
+    ProxyCommand ssh $(dirname %h) -W $(basename %h):%p
+
+### Backdoor
+Host vpn-* bh-* client-*
     IdentityFile ~/.crypto/devops-prod.pem
-Host bh-euc1
-    HostName 10.2.1.222
-Host bh-apse1
-    HostName 10.0.1.108
+Host vpn-*
+    User openvpnas
+Host bh-* client-*
+    User ec2-user
+
+### [secured_vpn]
+Host vpn-apne1
+    HostName 52.198.179.2
+Host vpn-apse1
+    HostName 52.220.36.59
+Host vpn-euc1
+    HostName 52.58.69.42
+Host vpn-usw1
+    HostName 52.52.174.43
+
+### [secured_bastion]
 Host bh-apne1
     HostName 10.1.1.243
-Host client-euc1
-    HostName 10.2.100.128
-    ProxyCommand ssh bh-euc1 nc -w 120 %h %p
-Host client-apse1
-    HostName 10.0.100.95
-    ProxyCommand ssh bh-apse1 nc -w 120 %h %p
+    ProxyCommand ssh -W %h:%p vpn-apne1
+Host bh-apse1
+    HostName 10.0.1.108
+    ProxyCommand ssh -W %h:%p vpn-apse1
+Host bh-euc1
+    Hostname 10.2.1.222
+    ProxyCommand ssh -W %h:%p vpn-euc1
+Host bh-usw1
+    HostName 10.3.1.74
+    ProxyCommand ssh -W %h:%p vpn-usw1
+
+### [secured_client]
 Host client-apne1
     HostName 10.1.100.234
-    ProxyCommand ssh bh-apne1 nc -w 120 %h %p
+    ProxyCommand ssh -W %h:%p bh-apne1
+Host client-apse1
+    HostName 10.0.100.95
+    ProxyCommand ssh -W %h:%p bh-apse1
+Host client-euc1
+    HostName 10.2.100.128
+    ProxyCommand ssh -W %h:%p bh-euc1
+Host client-usw1
+    HostName 10.3.100.41
+    ProxyCommand ssh -W %h:%p bh-usw1
+
+### Algo
+Host algo
+    HostName 13.59.254.244
+	IdentityFile ~/.ssh/algo.pem
