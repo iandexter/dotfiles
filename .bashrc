@@ -24,6 +24,7 @@ if [[ -e "${HOME}/.gpg-agent-info" ]] ; then
     export SSH_AGENT_PID
 fi
 export GPG_TTY=$(tty)
+export SSH_AUTH_SOCK=$HOME/.gnupg/$.gpg-agent.ssh
 # Mac optimizations
 if [[ $(uname) = 'Darwin' ]] ; then
     export LC_ALL=en_GB.UTF-8
@@ -31,7 +32,9 @@ if [[ $(uname) = 'Darwin' ]] ; then
     if ps -ef | grep -q [g]pg-agent ; then
         echo "gpg-agent is already running"
     else
-        eval $(gpg-agent --daemon --allow-preset-passphrase --default-cache-ttl 6000)
+        eval $(gpg-agent --daemon ---enable-ssh-support \
+             -default-cache-ttl 6000 --max-cache-ttl 999999 \
+            --log-file $HOME/.gnupg/gpg-agent.log)
     fi
     if [[ -f $(brew --prefix)/etc/bash_completion ]] ; then
         . $(brew --prefix)/etc/bash_completion
