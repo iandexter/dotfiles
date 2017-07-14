@@ -24,21 +24,25 @@ if [[ -e "${HOME}/.gpg-agent-info" ]] ; then
     export SSH_AGENT_PID
 fi
 export GPG_TTY=$(tty)
-export SSH_AUTH_SOCK=$HOME/.gnupg/$.gpg-agent.ssh
+export SSH_AUTH_SOCK=$HOME/.gnupg/S.gpg-agent.ssh
+if ps -ef | grep -q [g]pg-agent ; then
+    echo "gpg-agent is already running"
+else
+    if [[ ! -e $HOME/.gnupg/gpg-agent.conf ]] ; then
+        eval $(gpg-agent --daemon --quiet --default-cache-ttl 6000 \
+            --ignore-cache-for-signing --no-allow-external-cache \
+            --enable-ssh-support)
+    else
+        eval $(gpg-agent --options $HOME/.gnupg/gpg-agent.conf)
+    fi
+fi
 # Mac optimizations
 if [[ $(uname) = 'Darwin' ]] ; then
     export LC_ALL=en_GB.UTF-8
     export LANG=en_GB.UTF-8
-    if ps -ef | grep -q [g]pg-agent ; then
-        echo "gpg-agent is already running"
-    else
-        eval $(gpg-agent --daemon ---enable-ssh-support \
-             -default-cache-ttl 6000 --max-cache-ttl 999999 \
-            --log-file $HOME/.gnupg/gpg-agent.log)
-    fi
     if [[ -f $(brew --prefix)/etc/bash_completion ]] ; then
         . $(brew --prefix)/etc/bash_completion
-        if which kubectl > /dev/null ; then . <(kubectl completion bash) ; fi
+        ### if which kubectl > /dev/null ; then . <(kubectl completion bash) ; fi
     fi
     ### if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
     ### https://github.com/riobard/bash-powerline
@@ -48,7 +52,7 @@ if [[ $(uname) = 'Darwin' ]] ; then
     export PATH=$PATH:/Library/TeX/texbin:$HOME/projects/compareglobal/awsebcli/bin:$HOME/bin/platform-tools:$HOME/.gem/ruby/2.0.0/bin
 fi
 # Password manager
-if [[ $(which pass) && -d $HOME/.crypto/.passwords ]] ; then
+if [[ -e $(which pass) && -d $HOME/.crypto/.passwords ]] ; then
     export PASSWORD_STORE_DIR=$HOME/.crypto/.passwords
     export PASSWORD_STORE_GIT=$HOME/.crypto/.passwords
 fi
