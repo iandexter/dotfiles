@@ -6,6 +6,7 @@ alias ll='ls -lrt'
 alias pbcopy='xargs echo -n | pbcopy'
 alias strings='strings -a'
 alias ssh='LC_ALL=en_US.UTF-8 ssh'
+alias grep='LANG=C grep'
 wiki() {
 	dig +short txt ${1}.wp.dg.cx
 }
