@@ -11,7 +11,7 @@
     bd = branch --delete --force
     ca = config --get-regexp '^alias\\.'
     cb = checkout -b
-    ci = commit
+    ci = commit -sS
     co = checkout
     fp = fetch --prune origin
     fr = "!git fetch origin master && git rebase origin/master"
@@ -45,3 +45,5 @@
     autosetupmerge = true
 [merge]
     stat = true
+[pull]
+    rebase = true
