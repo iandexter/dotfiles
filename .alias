@@ -339,6 +339,16 @@ aws_eb_check-health() {
     p=${3:-default}
     aws --profile ${p} elasticbeanstalk describe-environment-health --environment-name ${ebenv} --region ${r} --attribute-names All | jq -r .
 }
+aws_eb_clearcache() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    r=${2}
+    j=${3}
+    for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
+        echo -n "${s%%:*} "
+        ssh -t ${j}/${s##*:} -C "sudo -u apache touch /var/cache/mod_pagespeed/cache.flush ; ls -l /var/cache/mod_pagespeed/cache.flush" 2>/dev/null
+    done
+}
 aws_eb_get-prod() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region]" && return 1
     country=${1}
@@ -364,6 +374,16 @@ aws_eb_mem_httpd() {
         ssh -t ${j}/$(echo ${s} | cut -d: -f2) -C "ps -Ao comm,rss" 2>/dev/null | awk '/[h]ttpd/ {sum += $NF} END {print sum}' ;
     done
 }
+aws_eb_refresh() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    r=${2}
+    j=${3}
+    for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
+        echo -n "${s%%:*} "
+        ssh -t ${j}/${s##*:} -C "curl -sw '\n' localhost/refresh" 2>/dev/null
+    done
+}
 aws_eb_restart() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
     ebenv=${1}
@@ -377,8 +397,8 @@ aws_eb_restart_httpd() {
     r=${2}
     j=${3}
     for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
-        echo "${s}" | cut -d: -f1
-        ssh -t ${j}/$(echo ${s} | cut -d: -f2) -C "sudo /sbin/service httpd restart" 2>/dev/null
+        echo "${s%%:*}"
+        ssh -t ${j}/${s##*:} -C "sudo /sbin/service httpd restart" 2>/dev/null
     done
 }
 aws_eb_restart_tomcat() {
@@ -387,10 +407,20 @@ aws_eb_restart_tomcat() {
     r=${2}
     j=${3}
     for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
-        echo "${s}" | cut -d: -f1
-        ssh -t ${j}/$(echo ${s} | cut -d: -f2) -C "sudo /sbin/service tomcat8 restart" 2>/dev/null
+        echo "${s%%:*}"
+        ssh -t ${j}/${s##*:} -C "sudo /sbin/service tomcat8 restart" 2>/dev/null
         echo "Pausing between restarts..."
         sleep 900
+    done
+}
+aws_eb_status() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    r=${2}
+    j=${3}
+    for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
+        echo "${s%%:*} "
+        ssh -t ${j}/${s##*:} -C "curl -s localhost/status | python -mjson.tool" 2>/dev/null
     done
 }
 aws_eb_weblogs() {
