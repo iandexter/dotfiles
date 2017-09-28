@@ -47,3 +47,7 @@
     stat = true
 [pull]
     rebase = true
+[gpg]
+    program = gpg
+[commit]
+    gpgsign = true
