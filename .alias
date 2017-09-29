@@ -254,11 +254,14 @@ alias gam='python ~/bin/gam/src/gam.py'
 alias today='~/projects/compareglobal/gcal/bin/gcalcli --detail_all --detail_url short agenda today "eod today"'
 cggvault() {
     if [[ $# -lt 1 ]] ; then
-        echo "$FUNCNAME filename" && return 1
+        echo "$FUNCNAME filename [...]" && return 1
     else
-        gpg -u iandexter@compareglobalgroup.com -o ${1}.asc -r devops -ase ${1}
-        echo "Encrypted to ${1}.asc"
-        aws s3 cp ${1}.asc s3://cgg-vault/$(basename $(pwd))/${1}.asc --profile cgg
+        while [[ -n "${1}" ]] ; do
+            gpg -u iandexter@compareglobalgroup.com -o ${1}.asc -r devops -ase ${1}
+            echo "Encrypted to ${1}.asc"
+            aws s3 cp ${1}.asc s3://cgg-vault/$(basename $(pwd))/${1}.asc --profile cgg
+            shift
+        done
     fi
 }
 clearhkcache() {
@@ -344,10 +347,8 @@ aws_eb_clearcache() {
     ebenv=${1}
     r=${2}
     j=${3}
-    for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
-        echo -n "${s%%:*} "
-        ssh -t ${j}/${s##*:} -C "sudo -u apache touch /var/cache/mod_pagespeed/cache.flush ; ls -l /var/cache/mod_pagespeed/cache.flush" 2>/dev/null
-    done
+    cmd="sudo -u apache touch /var/cache/mod_pagespeed/cache.flush ; ls -l /var/cache/mod_pagespeed/cache.flush"
+    aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
 }
 aws_eb_get-prod() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region]" && return 1
@@ -379,9 +380,18 @@ aws_eb_refresh() {
     ebenv=${1}
     r=${2}
     j=${3}
+    cmd="curl -sw '\n' localhost/refresh"
+    aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
+}
+aws_eb_remote() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name command [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    cmd="${2}"
+    r=${3}
+    j=${4}
     for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
-        echo -n "${s%%:*} "
-        ssh -t ${j}/${s##*:} -C "curl -sw '\n' localhost/refresh" 2>/dev/null
+        echo "${s}"
+        ssh -t ${j}/${s##*:} -C "${2}" 2>/dev/null
     done
 }
 aws_eb_restart() {
@@ -396,10 +406,8 @@ aws_eb_restart_httpd() {
     ebenv=${1}
     r=${2}
     j=${3}
-    for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
-        echo "${s%%:*}"
-        ssh -t ${j}/${s##*:} -C "sudo /sbin/service httpd restart" 2>/dev/null
-    done
+    cmd="sudo /sbin/service httpd restart"
+    aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
 }
 aws_eb_restart_tomcat() {
     [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
@@ -418,10 +426,8 @@ aws_eb_status() {
     ebenv=${1}
     r=${2}
     j=${3}
-    for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
-        echo "${s%%:*} "
-        ssh -t ${j}/${s##*:} -C "curl -s localhost/status | python -mjson.tool" 2>/dev/null
-    done
+    cmd="curl -s localhost/status | python -mjson.tool"
+    aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
 }
 aws_eb_weblogs() {
     [[ $# -lt 2 ]] && echo "$FUNCNAME environment-name [4|5] [aws-region] [profile]" && return 1
