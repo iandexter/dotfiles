@@ -17,7 +17,7 @@ set fileformat=unix
 
 " Display
 syntax on
-color delek
+colorscheme delek
 set number
 set ruler
 set showmatch
