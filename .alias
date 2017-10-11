@@ -350,11 +350,24 @@ aws_eb_clearcache() {
     cmd="sudo -u apache touch /var/cache/mod_pagespeed/cache.flush ; ls -l /var/cache/mod_pagespeed/cache.flush"
     aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
 }
+aws_eb_cnames() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region]" && return 1
+    country=${1}
+    r=${2:-ap-northeast-1}
+    aws --profile cgg elasticbeanstalk describe-environments --application-name ${country} --region ${r} | jq -r '.Environments[]|{"EnvironmentName":.EnvironmentName,"CNAME":.CNAME}'
+}
 aws_eb_get-prod() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region]" && return 1
     country=${1}
     r=${2:-ap-northeast-1}
     aws --profile cgg elasticbeanstalk describe-environments --application-name ${country} --region ${r} | jq -r '.Environments[]|{"EnvironmentName":.EnvironmentName,"CNAME":.CNAME} | select(.CNAME | contains("-production.")).EnvironmentName'
+}
+aws_eb_get-prod-instances() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region]" && return 1
+    country=${1}
+    r=${2:-ap-northeast-1}
+    ebenv=$(aws_eb_get-prod ${country} ${r})
+    aws_eb_list-instances ${ebenv} ${r} cgg-prod
 }
 aws_eb_list-instances() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
