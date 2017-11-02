@@ -3,7 +3,6 @@ alias mv='mv -i'
 alias l='ls -l'
 alias la='ls -lartF'
 alias ll='ls -lrt'
-alias pbcopy='xargs echo -n | pbcopy'
 alias strings='strings -a'
 alias ssh='/usr/local/bin/gpg-connect-agent -q updatestartuptty /bye &>/dev/null ; LC_ALL=en_US.UTF-8 ssh'
 alias grep='LANG=C grep'
@@ -273,15 +272,22 @@ clearhkcache() {
     curl -XGET "${cache_url}"
 }
 setvault() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME prod|dev" && return 1
+    [[ $# -lt 1 ]] && echo "$FUNCNAME dev|prod [apse1|euc1|usw1]" && return 1
     this_env=$(echo $1 | tr 'A-Z' 'a-z')
     if [[ "${this_env}" == "prod" ]] ; then
-        export VAULT_ADDR=http://vault.compareglobal.co.uk:8200
-        vault auth $(awk '/Token/ {print $NF}' ~/.crypto/cgg-vault/hashicorp-vault/vault-keys-prod.txt)
+        if [[ -n "${2}" ]] ; then
+            region="-${2}"
+        else
+            region=''
+        fi
+        vault_addr=http://vault${region}.compareglobal.co.uk:8200
+        vault_tokn=$(awk '/Token/ {print $NF}' ~/.crypto/cgg-vault/hashicorp-vault/vault-keys-prod.txt)
     else
-        export VAULT_ADDR=http://vault-dev.compareglobal.co.uk:8200
-        vault auth $(cat ~/.crypto/cgg-vault/hashicorp-vault/vault-keys-dev.txt)
+        vault_addr=http://vault-dev.compareglobal.co.uk:8200
+        vault_tokn=$(cat ~/.crypto/cgg-vault/hashicorp-vault/vault-keys-dev.txt)
     fi
+    export VAULT_ADDR=${vault_addr}
+    vault auth ${vault_tokn}
 }
 
 ### CHEF
@@ -312,6 +318,7 @@ chef_remote() {
 }
 
 ### AWS
+alias aws3='~/projects/compareglobal/awscli/bin/python3 ~/projects/compareglobal/awscli/bin/aws'
 alias invalidate_cf='~/projects/compareglobal/boto3/bin/python ~/projects/compareglobal/infrastructure/tools/scripts/jenkins/invalidate_cf.py'
 alias toggle_nr='NR_API_KEY=$(pass work/cgg/monitoring/newrelic/iandexter | tail -1) ~/projects/compareglobal/infrastructure/tools/scripts/jenkins/toggle_newrelic_monitors.py'
 aws_asg() {
@@ -348,19 +355,21 @@ aws_eb_clearcache() {
     r=${2}
     j=${3}
     cmd="sudo -u apache touch /var/cache/mod_pagespeed/cache.flush ; ls -l /var/cache/mod_pagespeed/cache.flush"
+    ### cmd="curl -w '\n' -XPURGE 'localhost/*'"
+    ### cmd="curl -w '\n' 'localhost/pagespeed_admin/cache?purge=*'"
     aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
 }
 aws_eb_cnames() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region]" && return 1
     country=${1}
     r=${2:-ap-northeast-1}
-    aws --profile cgg elasticbeanstalk describe-environments --application-name ${country} --region ${r} | jq -r '.Environments[]|{"EnvironmentName":.EnvironmentName,"CNAME":.CNAME}'
+    aws --profile cgg elasticbeanstalk describe-environments --application-name ${country} --region ${r} | jq -r '.Environments[]|select(.Status|contains("Ready"))|{"EnvironmentName":.EnvironmentName,"CNAME":.CNAME}'
 }
 aws_eb_get-prod() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region]" && return 1
     country=${1}
     r=${2:-ap-northeast-1}
-    aws --profile cgg elasticbeanstalk describe-environments --application-name ${country} --region ${r} | jq -r '.Environments[]|{"EnvironmentName":.EnvironmentName,"CNAME":.CNAME} | select(.CNAME | contains("-production.")).EnvironmentName'
+    aws --profile cgg elasticbeanstalk describe-environments --application-name ${country} --region ${r} | jq -r '.Environments[] | select ( .Status | contains ( "Ready" ) ) | { "EnvironmentName":.EnvironmentName,"CNAME":.CNAME} | select ( .CNAME | contains("-production.") ).EnvironmentName'
 }
 aws_eb_get-prod-instances() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region]" && return 1
