@@ -3,9 +3,9 @@ alias mv='mv -i'
 alias l='ls -l'
 alias la='ls -lartF'
 alias ll='ls -lrt'
-alias pbcopy='xargs echo -n | pbcopy'
 alias strings='strings -a'
-alias ssh='LC_ALL=en_US.UTF-8 ssh'
+alias ssh='/usr/local/bin/gpg-connect-agent -q updatestartuptty /bye &>/dev/null ; LC_ALL=en_US.UTF-8 ssh'
+alias grep='LANG=C grep'
 wiki() {
 	dig +short txt ${1}.wp.dg.cx
 }
@@ -195,9 +195,13 @@ geoip() {
     done
 }
 myip() {
-    printf "%-10s: %-20s\n" "Google" $(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | sed 's/"//g')
-    printf "%-10s: %-20s\n" "OpenDNS" $(dig +short myip.opendns.com @resolver1.opendns.com)
-    printf "%-10s: %-20s\n" "icanhazip" $(curl -s4 icanhazip.com)
+    printip() {
+        printf "%-10s: %-20s\n" "${1}" ${2}
+    }
+    printip "Google" $(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | sed 's/"//g')
+    printip "OpenDNS" $(dig +short myip.opendns.com @resolver1.opendns.com)
+    printip "icanhazip" $(curl -s4 icanhazip.com)
+    printip "AWS" $(curl -s checkip.amazonaws.com)
 }
 
 ### SECURITY
@@ -247,6 +251,18 @@ alias cggchat='irssi --config=~/Dropbox/Documents/CompareGlobal/devops/irssi_con
 alias slackirc='irssi --config=~/Dropbox/Documents/CompareGlobal/devops/slack_irc_config'
 alias gam='python ~/bin/gam/src/gam.py'
 alias today='~/projects/compareglobal/gcal/bin/gcalcli --detail_all --detail_url short agenda today "eod today"'
+cggvault() {
+    if [[ $# -lt 1 ]] ; then
+        echo "$FUNCNAME filename [...]" && return 1
+    else
+        while [[ -n "${1}" ]] ; do
+            gpg -u iandexter@compareglobalgroup.com -o ${1}.asc -r devops -ase ${1}
+            echo "Encrypted to ${1}.asc"
+            aws s3 cp ${1}.asc s3://cgg-vault/$(basename $(pwd))/${1}.asc --profile cgg
+            shift
+        done
+    fi
+}
 clearhkcache() {
     api_url1="http://www.ap-northeast-1.api-hk-v1.compareglobal.co.uk/redis/clear/HK"
     api_url2="http://www.ap-northeast-1.api-hk-v1.compareglobal.co.uk/redis/clear/DK"
@@ -254,6 +270,24 @@ clearhkcache() {
     curl -sXDELETE "${api_url1}"| grep count
     curl -sXDELETE "${api_url2}"| grep count
     curl -XGET "${cache_url}"
+}
+setvault() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME dev|prod [apse1|euc1|usw1]" && return 1
+    this_env=$(echo $1 | tr 'A-Z' 'a-z')
+    if [[ "${this_env}" == "prod" ]] ; then
+        if [[ -n "${2}" ]] ; then
+            region="-${2}"
+        else
+            region=''
+        fi
+        vault_addr=http://vault${region}.compareglobal.co.uk:8200
+        vault_tokn=$(awk '/Token/ {print $NF}' ~/.crypto/cgg-vault/hashicorp-vault/vault-keys-prod.txt)
+    else
+        vault_addr=http://vault-dev.compareglobal.co.uk:8200
+        vault_tokn=$(cat ~/.crypto/cgg-vault/hashicorp-vault/vault-keys-dev.txt)
+    fi
+    export VAULT_ADDR=${vault_addr}
+    vault auth ${vault_tokn}
 }
 
 ### CHEF
@@ -284,7 +318,8 @@ chef_remote() {
 }
 
 ### AWS
-alias invalidate_cf='~/projects/compareglobal/boto3/bin/python ~/projects/compareglobal/infrastructure/tools/scripts/invalidate_cf.py'
+alias aws3='~/projects/compareglobal/awscli/bin/python3 ~/projects/compareglobal/awscli/bin/aws'
+alias invalidate_cf='~/projects/compareglobal/boto3/bin/python ~/projects/compareglobal/infrastructure/tools/scripts/jenkins/invalidate_cf.py'
 alias toggle_nr='NR_API_KEY=$(pass work/cgg/monitoring/newrelic/iandexter | tail -1) ~/projects/compareglobal/infrastructure/tools/scripts/jenkins/toggle_newrelic_monitors.py'
 aws_asg() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME stack [aws-region] [profile]" && return 1
@@ -293,12 +328,55 @@ aws_asg() {
     p=${3:-default}
     aws autoscaling describe-auto-scaling-groups --region ${r} --profile ${p} | jq --arg country "${c}" -r '.AutoScalingGroups[]|{"AutoScalingGroupName":.AutoScalingGroupName,"Name":.Tags[]|select(.Key == "Name")|.Value} | select( .Name | contains($country) )'
 }
+aws_cluster_info() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME cluster-name [aws-region] [profile]" && return 1
+    c=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    container_arns=$(aws ecs list-container-instances --cluster ${c} --region ${r} --profile ${p} | jq -r '.containerInstanceArns[]')
+    container_ids=$(basename ${container_arns})
+    ec2_ids=$(aws ecs describe-container-instances --cluster ${c} --container-instances ${container_ids} --region ${r} --profile ${p} | jq -r '.containerInstances[]|.ec2InstanceId')
+    echo "Profile      :" ${p}
+    echo "Region       :" ${r}
+    echo "Cluster      :" ${c}
+    echo "Container ID :" ${container_ids}
+    echo "EC2 ID       :" ${ec2_ids}
+}
 aws_eb_check-health() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
     ebenv=${1}
     r=${2:-ap-northeast-1}
     p=${3:-default}
     aws --profile ${p} elasticbeanstalk describe-environment-health --environment-name ${ebenv} --region ${r} --attribute-names All | jq -r .
+}
+aws_eb_clearcache() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    r=${2}
+    j=${3}
+    cmd="sudo -u apache touch /var/cache/mod_pagespeed/cache.flush ; ls -l /var/cache/mod_pagespeed/cache.flush"
+    ### cmd="curl -w '\n' -XPURGE 'localhost/*'"
+    ### cmd="curl -w '\n' 'localhost/pagespeed_admin/cache?purge=*'"
+    aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
+}
+aws_eb_cnames() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region]" && return 1
+    country=${1}
+    r=${2:-ap-northeast-1}
+    aws --profile cgg elasticbeanstalk describe-environments --application-name ${country} --region ${r} | jq -r '.Environments[]|select(.Status|contains("Ready"))|{"EnvironmentName":.EnvironmentName,"CNAME":.CNAME}'
+}
+aws_eb_get-prod() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region]" && return 1
+    country=${1}
+    r=${2:-ap-northeast-1}
+    aws --profile cgg elasticbeanstalk describe-environments --application-name ${country} --region ${r} | jq -r '.Environments[] | select ( .Status | contains ( "Ready" ) ) | { "EnvironmentName":.EnvironmentName,"CNAME":.CNAME} | select ( .CNAME | contains("-production.") ).EnvironmentName'
+}
+aws_eb_get-prod-instances() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region]" && return 1
+    country=${1}
+    r=${2:-ap-northeast-1}
+    ebenv=$(aws_eb_get-prod ${country} ${r})
+    aws_eb_list-instances ${ebenv} ${r} cgg-prod
 }
 aws_eb_list-instances() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
@@ -319,6 +397,25 @@ aws_eb_mem_httpd() {
         ssh -t ${j}/$(echo ${s} | cut -d: -f2) -C "ps -Ao comm,rss" 2>/dev/null | awk '/[h]ttpd/ {sum += $NF} END {print sum}' ;
     done
 }
+aws_eb_refresh() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    r=${2}
+    j=${3}
+    cmd="curl -sw '\n' localhost/refresh"
+    aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
+}
+aws_eb_remote() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name command [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    cmd="${2}"
+    r=${3}
+    j=${4}
+    for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
+        echo "${s}"
+        ssh -t ${j}/${s##*:} -C "${2}" 2>/dev/null
+    done
+}
 aws_eb_restart() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
     ebenv=${1}
@@ -331,10 +428,8 @@ aws_eb_restart_httpd() {
     ebenv=${1}
     r=${2}
     j=${3}
-    for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
-        echo "${s}" | cut -d: -f1
-        ssh -t ${j}/$(echo ${s} | cut -d: -f2) -C "sudo /sbin/service httpd restart" 2>/dev/null
-    done
+    cmd="sudo /sbin/service httpd restart"
+    aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
 }
 aws_eb_restart_tomcat() {
     [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
@@ -342,11 +437,19 @@ aws_eb_restart_tomcat() {
     r=${2}
     j=${3}
     for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
-        echo "${s}" | cut -d: -f1
-        ssh -t ${j}/$(echo ${s} | cut -d: -f2) -C "sudo /sbin/service tomcat8 restart" 2>/dev/null
+        echo "${s%%:*}"
+        ssh -t ${j}/${s##*:} -C "sudo /sbin/service tomcat8 restart" 2>/dev/null
         echo "Pausing between restarts..."
         sleep 900
     done
+}
+aws_eb_status() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    r=${2}
+    j=${3}
+    cmd="curl -s localhost/status | python -mjson.tool"
+    aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
 }
 aws_eb_weblogs() {
     [[ $# -lt 2 ]] && echo "$FUNCNAME environment-name [4|5] [aws-region] [profile]" && return 1

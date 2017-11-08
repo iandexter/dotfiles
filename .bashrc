@@ -52,7 +52,7 @@ if [[ $(uname) = 'Darwin' ]] ; then
     export PATH=$PATH:/Library/TeX/texbin:$HOME/projects/compareglobal/awsebcli/bin:$HOME/bin/platform-tools:$HOME/.gem/ruby/2.0.0/bin
 fi
 # Password manager
-if [[ -e $(which pass) && -d $HOME/.crypto/.passwords ]] ; then
-    export PASSWORD_STORE_DIR=$HOME/.crypto/.passwords
-    export PASSWORD_STORE_GIT=$HOME/.crypto/.passwords
+if [[ -e $(which pass) && -d $HOME/.passwords ]] ; then
+    export PASSWORD_STORE_DIR=$HOME/.passwords
+    export PASSWORD_STORE_GIT=$HOME/.passwords
 fi

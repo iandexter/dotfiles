@@ -2,7 +2,7 @@
     name = Ian Dexter D Marquez
     email = iandexter@users.noreply.github.com
     logallrefupdates = true
-    signingkey = 28435237CD6D36E8
+    signingkey = F94C2016C861BC0F
 [core]
     excludesfile = /Users/iandexter/.gitignore
     editor = vim
@@ -11,7 +11,7 @@
     bd = branch --delete --force
     ca = config --get-regexp '^alias\\.'
     cb = checkout -b
-    ci = commit
+    ci = commit -sS
     co = checkout
     fp = fetch --prune origin
     fr = "!git fetch origin master && git rebase origin/master"
@@ -45,3 +45,9 @@
     autosetupmerge = true
 [merge]
     stat = true
+[pull]
+    rebase = true
+[gpg]
+    program = gpg
+[commit]
+    gpgsign = true
