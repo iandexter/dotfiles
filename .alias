@@ -355,8 +355,8 @@ aws_eb_clearcache() {
     r=${2}
     j=${3}
     cmd="sudo -u apache touch /var/cache/mod_pagespeed/cache.flush ; ls -l /var/cache/mod_pagespeed/cache.flush"
-    ### cmd="curl -w '\n' -XPURGE 'localhost/*'"
-    ### cmd="curl -w '\n' 'localhost/pagespeed_admin/cache?purge=*'"
+    cmd="${cmd}; curl -sw '\n' -XPURGE 'localhost/*'"
+    cmd="${cmd}; curl -sw '\n' 'localhost/pagespeed_admin/cache?purge=*'"
     aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
 }
 aws_eb_cnames() {
