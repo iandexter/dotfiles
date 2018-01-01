@@ -249,7 +249,7 @@ END
 ### CGG
 alias cggchat='irssi --config=~/Dropbox/Documents/CompareGlobal/devops/irssi_config'
 alias slackirc='irssi --config=~/Dropbox/Documents/CompareGlobal/devops/slack_irc_config'
-alias gam='python ~/bin/gam/src/gam.py'
+alias gam='~/bin/gam-4.32/gam'
 alias today='~/projects/compareglobal/gcal/bin/gcalcli --detail_all --detail_url short agenda today "eod today"'
 cggvault() {
     if [[ $# -lt 1 ]] ; then
@@ -319,6 +319,7 @@ chef_remote() {
 
 ### AWS
 alias aws3='~/projects/compareglobal/awscli/bin/python3 ~/projects/compareglobal/awscli/bin/aws'
+alias awslogs='~/projects/compareglobal/awscli/bin/awslogs'
 alias invalidate_cf='~/projects/compareglobal/boto3/bin/python ~/projects/compareglobal/infrastructure/tools/scripts/jenkins/invalidate_cf.py'
 alias toggle_nr='NR_API_KEY=$(pass work/cgg/monitoring/newrelic/iandexter | tail -1) ~/projects/compareglobal/infrastructure/tools/scripts/jenkins/toggle_newrelic_monitors.py'
 aws_asg() {
