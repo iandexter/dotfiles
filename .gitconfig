@@ -2,7 +2,7 @@
     name = Ian Dexter D Marquez
     email = iandexter@users.noreply.github.com
     logallrefupdates = true
-    signingkey = F94C2016C861BC0F
+    signingkey = 126A3EDFFB6E402E
 [core]
     excludesfile = /Users/iandexter/.gitignore
     editor = vim
