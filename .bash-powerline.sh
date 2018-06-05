@@ -53,6 +53,7 @@ __powerline() {
         readonly CUSTOM_USER="\[$(tput setaf 0)\]\[$(tput setab 230)\]"
         readonly CUSTOM_PATH="\[$(tput setaf 230)\]\[$(tput setab 166)\]"
         readonly CUSTOM_PYTHON="\[$(tput setaf 0)\]\[$(tput setab 225)\]"
+        readonly CUSTOM_VAULT="\[$(tput setaf 0)\]\[$(tput setab 64)\]"
      else
         readonly FG_BASE03="\[$(tput setaf 8)\]"
         readonly FG_BASE02="\[$(tput setaf 0)\]"
@@ -142,6 +143,15 @@ __powerline() {
         printf " $virtualenv "
     }
 
+    __vault() {
+        if [[ -n "$VAULT_ADDR" ]] ; then
+           vault_addr=$(echo ${VAULT_ADDR#http://*} | cut -d. -f1)
+        else
+           return
+        fi
+        printf " [ $vault_addr ] "
+    }
+
     ps1() {
         # Check the exit code of the previous command and display different
         # colors in the prompt accordingly.
@@ -160,10 +170,11 @@ __powerline() {
         if shopt -q promptvars; then
             __powerline_git_info="$(__git_info)"
             __powerline_python_venv="$(__python_venv)"
-            PS1+="$BG_BLUE$FG_BASE3\${__powerline_git_info}$CUSTOM_PYTHON\${__powerline_python_venv}$RESET"
+            __powerline_vault="$(__vault)"
+            PS1+="$BG_BLUE$FG_BASE3\${__powerline_git_info}$CUSTOM_PYTHON\${__powerline_python_venv}$CUSTOM_VAULT\${__powerline_vault}$RESET"
         else
             # promptvars is disabled. Avoid creating unnecessary env var.
-            PS1+="$BG_BLUE$FG_BASE3$(__git_info)$CUSTOM_PYTHON$(__python_venv)$RESET"
+            PS1+="$BG_BLUE$FG_BASE3$(__git_info)$CUSTOM_PYTHON$(__python_venv)$CUSTOM_VAULT${__powerline_vault}$RESET"
         fi
         PS1+="\n$BG_EXIT$FG_BASE3 $PS_SYMBOL $RESET "
     }
