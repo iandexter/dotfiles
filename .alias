@@ -302,6 +302,10 @@ usevault() {
     vault login ${vault_tokn}
     export VAULT_FORMAT=json
 }
+exitvault() {
+    unset VAULT_ADDR
+    unset VAULT_FORMAT
+}
 getvault() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME path/to/secret" && return 1
     export VAULT_FORMAT=json
