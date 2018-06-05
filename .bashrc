@@ -36,7 +36,7 @@ else
         eval $(gpg-agent --options $HOME/.gnupg/gpg-agent.conf)
     fi
 fi
-GPG_KEY=0x126A3EDFFB6E402E
+export GPG_KEY=0x126A3EDFFB6E402E
 # Mac optimizations
 if [[ $(uname) = 'Darwin' ]] ; then
     export LC_ALL=en_GB.UTF-8
