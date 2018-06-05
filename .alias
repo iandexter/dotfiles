@@ -256,10 +256,15 @@ cggvault() {
         echo "$FUNCNAME filename [...]" && return 1
     else
         while [[ -n "${1}" ]] ; do
-            gpg -u iandexter@compareglobalgroup.com -o ${1}.asc -r devops -ase ${1}
-            echo "Encrypted to ${1}.asc"
-            aws s3 cp ${1}.asc s3://cgg-vault/$(basename $(pwd))/${1}.asc --profile cgg
-            shift
+            if [[ -n ${GPG_KEY} ]] ; then
+                gpg --default-key ${GPG_KEY} -o ${1}.asc -r devops -ase ${1}
+                echo "Encrypted to ${1}.asc"
+                aws s3 cp ${1}.asc s3://cgg-vault/$(basename $(pwd))/${1}.asc --profile cgg
+                shift
+            else
+                echo "Missing GPG key"
+                return 1
+            fi
         done
     fi
 }
@@ -271,8 +276,8 @@ clearhkcache() {
     curl -sXDELETE "${api_url2}"| grep count
     curl -XGET "${cache_url}"
 }
-setvault() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME dev|prod [apse1|euc1|usw1]" && return 1
+usevault() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME dev|[prod [apse1|euc1|usw1]]|ceg-[dev|prod]" && return 1
     this_env=$(echo $1 | tr 'A-Z' 'a-z')
     if [[ "${this_env}" == "prod" ]] ; then
         if [[ -n "${2}" ]] ; then
@@ -282,12 +287,29 @@ setvault() {
         fi
         vault_addr=http://vault${region}.compareglobal.co.uk:8200
         vault_tokn=$(awk '/Token/ {print $NF}' ~/.crypto/cgg-vault/hashicorp-vault/vault-keys-prod.txt)
-    else
+    elif [[ "${this_env}" == "dev" ]] ; then
         vault_addr=http://vault-dev.compareglobal.co.uk:8200
-        vault_tokn=$(cat ~/.crypto/cgg-vault/hashicorp-vault/vault-keys-dev.txt)
+        vault_tokn=$(awk '/Token/ {print $NF}' ~/.crypto/cgg-vault/hashicorp-vault/vault-keys-dev.txt)
+    elif [[ "${this_env}" == "ceg-dev" ]] ; then
+        vault_addr=https://vault-dev.compareeuropegroup.com:8200
+        vault_tokn=$(awk '/Token/ {print $NF}' ~/.crypto/cgg-vault/ceg/vault-keys-dev.txt)
+    elif [[ "${this_env}" == "ceg-prod" ]] ; then
+        vault_addr=https://vault.compareeuropegroup.com:8200
+        vault_tokn=$(awk '/Token/ {print $NF}' ~/.crypto/cgg-vault/ceg/vault-keys-prod.txt)
     fi
     export VAULT_ADDR=${vault_addr}
-    vault auth ${vault_tokn}
+    echo "Using ${VAULT_ADDR}"
+    vault login ${vault_tokn}
+    export VAULT_FORMAT=json
+}
+getvault() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME path/to/secret" && return 1
+    export VAULT_FORMAT=json
+    vault read ${1} | jq -r .data
+}
+setvault() {
+    [[ $# -lt 2 ]] && echo "$FUNCNAME path/to/secret path/to/file" && return 1
+    vault write ${1} @${2}
 }
 
 ### CHEF
@@ -429,7 +451,7 @@ aws_eb_restart_httpd() {
     ebenv=${1}
     r=${2}
     j=${3}
-    cmd="sudo /sbin/service httpd restart"
+    cmd="sudo /sbin/service httpd restart && sleep 5"
     aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
 }
 aws_eb_restart_tomcat() {
