@@ -196,7 +196,7 @@ geoip() {
 }
 myip() {
     printip() {
-        printf "%-10s: %-20s\n" "${1}" ${2}
+        printf "%-10s: %-14s %3s\n" "${1}" ${2} $(geoip ${2} | awk -F, '{print $NF}' | sed 's/\"//g')
     }
     printip "Google" $(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | sed 's/"//g')
     printip "OpenDNS" $(dig +short myip.opendns.com @resolver1.opendns.com)
@@ -205,6 +205,7 @@ myip() {
 }
 
 ### SECURITY
+alias killgpg='killall -9 scdaemon ;  killall -9 gpg-agent'
 genrand() {
     strings /dev/urandom | grep -Eo '[[:alnum:]]' | head -n ${1:-16} | tr -d '\n'
     echo
@@ -251,23 +252,6 @@ alias cggchat='irssi --config=~/Dropbox/Documents/CompareGlobal/devops/irssi_con
 alias slackirc='irssi --config=~/Dropbox/Documents/CompareGlobal/devops/slack_irc_config'
 alias gam='~/bin/gam/gam'
 alias today='~/projects/compareglobal/gcal/bin/gcalcli --detail_all --detail_url short agenda today "eod today"'
-cggvault() {
-    if [[ $# -lt 1 ]] ; then
-        echo "$FUNCNAME filename [...]" && return 1
-    else
-        while [[ -n "${1}" ]] ; do
-            if [[ -n ${GPG_KEY} ]] ; then
-                gpg --default-key ${GPG_KEY} -o ${1}.asc -r devops -ase ${1}
-                echo "Encrypted to ${1}.asc"
-                aws s3 cp ${1}.asc s3://cgg-vault/$(basename $(pwd))/${1}.asc --profile cgg
-                shift
-            else
-                echo "Missing GPG key"
-                return 1
-            fi
-        done
-    fi
-}
 clearhkcache() {
     api_url1="http://www.ap-northeast-1.api-hk-v1.compareglobal.co.uk/redis/clear/HK"
     api_url2="http://www.ap-northeast-1.api-hk-v1.compareglobal.co.uk/redis/clear/DK"
@@ -275,6 +259,25 @@ clearhkcache() {
     curl -sXDELETE "${api_url1}"| grep count
     curl -sXDELETE "${api_url2}"| grep count
     curl -XGET "${cache_url}"
+}
+s3vault() {
+    if [[ $# -lt 2 ]] ; then
+        echo "$FUNCNAME cgg|ceg filename [...]" && return 1
+    else
+        p=${1}
+        shift
+        if [[ -n ${GPG_KEY} ]] ; then
+            while [[ -n "${1}" ]] ; do
+                gpg --default-key ${GPG_KEY} -o ${1}.asc -r devops -ase ${1}
+                echo "Encrypted to ${1}.asc"
+                aws s3 cp ${1}.asc s3://${p}-vault/$(basename $(pwd))/${1}.asc --profile ${p}-prod
+                shift
+            done
+        else
+            echo "Missing GPG key"
+            return 1
+        fi
+    fi
 }
 usevault() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME dev|[prod [apse1|euc1|usw1]]|ceg-[dev|prod]" && return 1
@@ -387,23 +390,26 @@ aws_eb_clearcache() {
     aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
 }
 aws_eb_cnames() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region]" && return 1
+    [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region] [aws-profile]" && return 1
     country=${1}
     r=${2:-ap-northeast-1}
-    aws --profile cgg elasticbeanstalk describe-environments --application-name ${country} --region ${r} | jq -r '.Environments[]|select(.Status|contains("Ready"))|{"EnvironmentName":.EnvironmentName,"CNAME":.CNAME}'
+    p=${3:-cgg}
+    aws --profile ${p} elasticbeanstalk describe-environments --application-name ${country} --region ${r} | jq -r '.Environments[]|select(.Status|contains("Ready"))|{"EnvironmentName":.EnvironmentName,"CNAME":.CNAME}'
 }
 aws_eb_get-prod() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region]" && return 1
+    [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region] [aws-profile]" && return 1
     country=${1}
     r=${2:-ap-northeast-1}
-    aws --profile cgg elasticbeanstalk describe-environments --application-name ${country} --region ${r} | jq -r '.Environments[] | select ( .Status | contains ( "Ready" ) ) | { "EnvironmentName":.EnvironmentName,"CNAME":.CNAME} | select ( .CNAME | contains("-production.") ).EnvironmentName'
+    p=${3:-cgg}
+    aws --profile ${p} elasticbeanstalk describe-environments --application-name ${country} --region ${r} | jq -r '.Environments[] | select ( .Status | contains ( "Ready" ) ) | { "EnvironmentName":.EnvironmentName,"CNAME":.CNAME} | select ( .CNAME | contains("-production.") ).EnvironmentName'
 }
 aws_eb_get-prod-instances() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region]" && return 1
+    [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region] [aws-profile]" && return 1
     country=${1}
     r=${2:-ap-northeast-1}
-    ebenv=$(aws_eb_get-prod ${country} ${r})
-    aws_eb_list-instances ${ebenv} ${r} cgg-prod
+    p=${3:-cgg}
+    ebenv=$(aws_eb_get-prod ${country} ${r} ${p})
+    aws_eb_list-instances ${ebenv} ${r} ${p}
 }
 aws_eb_list-instances() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
@@ -532,6 +538,9 @@ aws_listq() {
     r=${2:-eu-central-1}
     p=${3:-cgg}
     aws sqs list-queues --region ${r} --profile ${p} | jq -r ".QueueUrls[]|select(contains(\"${c}-${c}\"))"
+}
+aws_prof() {
+  export AWS_PROFILE=${1}
 }
 aws_ssh() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME jumphost key user ipaddress" && return 1
