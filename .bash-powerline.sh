@@ -54,6 +54,7 @@ __powerline() {
         readonly CUSTOM_PATH="\[$(tput setaf 230)\]\[$(tput setab 166)\]"
         readonly CUSTOM_PYTHON="\[$(tput setaf 0)\]\[$(tput setab 225)\]"
         readonly CUSTOM_VAULT="\[$(tput setaf 0)\]\[$(tput setab 64)\]"
+        readonly CUSTOM_AWS="\[$(tput setaf 0)\]\[$(tput setab 61)\]"
      else
         readonly FG_BASE03="\[$(tput setaf 8)\]"
         readonly FG_BASE02="\[$(tput setaf 0)\]"
@@ -152,6 +153,15 @@ __powerline() {
         printf " [ $vault_addr ] "
     }
 
+    __aws() {
+        if [[ -n "$AWS_PROFILE" ]] ; then
+          aws_profile="[ $AWS_PROFILE ]"
+        else
+          return
+        fi
+        printf " $aws_profile "
+    }
+
     ps1() {
         # Check the exit code of the previous command and display different
         # colors in the prompt accordingly.
@@ -171,10 +181,11 @@ __powerline() {
             __powerline_git_info="$(__git_info)"
             __powerline_python_venv="$(__python_venv)"
             __powerline_vault="$(__vault)"
-            PS1+="$BG_BLUE$FG_BASE3\${__powerline_git_info}$CUSTOM_PYTHON\${__powerline_python_venv}$CUSTOM_VAULT\${__powerline_vault}$RESET"
+            __powerline_aws="$(__aws)"
+            PS1+="$BG_BLUE$FG_BASE3\${__powerline_git_info}$CUSTOM_PYTHON\${__powerline_python_venv}$CUSTOM_VAULT\${__powerline_vault}$CUSTOM_AWS\${__powerline_aws}$RESET"
         else
             # promptvars is disabled. Avoid creating unnecessary env var.
-            PS1+="$BG_BLUE$FG_BASE3$(__git_info)$CUSTOM_PYTHON$(__python_venv)$CUSTOM_VAULT${__powerline_vault}$RESET"
+            PS1+="$BG_BLUE$FG_BASE3$(__git_info)$CUSTOM_PYTHON$(__python_venv)$CUSTOM_VAULT${__powerline_vault}$CUSTOM_AWS${__powerline_aws}$RESET"
         fi
         PS1+="\n$BG_EXIT$FG_BASE3 $PS_SYMBOL $RESET "
     }
