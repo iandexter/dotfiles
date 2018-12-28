@@ -540,7 +540,7 @@ aws_listq() {
     aws sqs list-queues --region ${r} --profile ${p} | jq -r ".QueueUrls[]|select(contains(\"${c}-${c}\"))"
 }
 aws_prof() {
-  export AWS_PROFILE=${1}
+  [[ -n "${1}" ]] && export AWS_PROFILE=${1} || unset AWS_PROFILE
 }
 aws_ssh() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME jumphost key user ipaddress" && return 1
