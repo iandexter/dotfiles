@@ -1,5 +1,3 @@
-### See https://github.com/Homebrew/homebrew-bundle
-### brew bundle dump --describe
 tap "homebrew/apache"
 tap "homebrew/bundle"
 tap "homebrew/cask"
@@ -73,6 +71,8 @@ brew "libusb-compat"
 brew "libvo-aacenc"
 # GNOME XML library
 brew "libxml2"
+# Simple tool to make locally trusted development certificates
+brew "mkcert"
 # Multiple Repository management tool
 brew "mr"
 # Lightweight database library
@@ -85,6 +85,8 @@ brew "mysql"
 brew "nmap"
 # Platform built on V8 to build network applications
 brew "node"
+# Libraries for security-enabled client and server applications
+brew "nss"
 # Swiss-army knife of markup format conversion
 brew "pandoc"
 # Extract just secret information out of OpenPGP secret keys
