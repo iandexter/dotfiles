@@ -9,7 +9,7 @@ set envelope_from
 set reverse_name
 
 # Credentials
-source "gpg -d ~/.mutt/.crypto.gpg |"
+source "gpg -d $HOME/.mutt/.crypto.gpg |"
 ### set smtp_url = "smtp://iandexter@compareglobalgroup.com@smtp.gmail.com:587/"
 ### set imap_user = "iandexter@compareglobalgroup.com"
 
@@ -90,5 +90,5 @@ auto_view text/html
 source $HOME/.mutt/mutt-colors-solarized/mutt-colors-solarized-dark-256.muttrc
 set charset = utf-8
 set ascii_chars
-set signature = ~/.mutt/sig
+set signature = $HOME/.mutt/sig
 set attribution = "On %[ %a, %d %b %Y %H:%m:%S %z ], %n <%a> wrote:"
