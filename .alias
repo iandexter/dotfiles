@@ -214,6 +214,23 @@ genurand() {
     export LC_ALL=C
     echo $(</dev/urandom tr -dc 'a-zA-Z0-9~!@#$%^&*()_+{}|[]\:;<>?,./' | head -c ${1:-16})
 }
+getc() {
+    [[ $# -lt 2 ]] && echo "$FUNCNAME string order [...]" && return 1
+
+    s=${1}
+    shift
+
+    get_nth() {
+        order=${1}
+        [[ ${order} -lt 1 || ${order} -gt ${#s} ]] && nth="Invalid index" || nth=${s:$((order-1)):1}
+        echo "[${order}] ${nth}"
+    }
+
+    while [[ -n "${1}" ]] ; do
+        get_nth ${1}
+        shift
+    done
+}
 gpgrep() {
     if [[ $# -lt 1 ]] ; then
         echo "$FUNCNAME expression" && return 1

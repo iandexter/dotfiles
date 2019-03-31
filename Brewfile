@@ -1,3 +1,4 @@
+### brew bundle dump --describe --force
 tap "homebrew/apache"
 tap "homebrew/bundle"
 tap "homebrew/cask"
@@ -7,24 +8,28 @@ tap "homebrew/versions"
 brew "autoconf"
 # Programmable completion for Bash 3.2
 brew "bash-completion"
+# GNU internationalization (i18n) and localization (l10n) library
+brew "gettext"
+# Portable Foreign Function Interface library
+brew "libffi"
+# Core application library for C
+brew "glib"
 # Command-line tool for Amazon Route 53
 brew "cli53"
 # Statistics utility to count lines of code
 brew "cloc"
 # GNU File, Shell, and Text utilities
 brew "coreutils"
-# Asynchronous event library
-brew "libevent"
-# GNU internationalization (i18n) and localization (l10n) library
-brew "gettext"
 # Get a file from an HTTP, HTTPS or FTP server
-brew "curl", args: ["with-nghttp2"]
+brew "curl"
 # X.509 and CMS library
 brew "libksba"
 # GNU Portable THreads
 brew "pth"
 # Server for managing certificate revocation lists
 brew "dirmngr"
+# Asynchronous event library
+brew "libevent"
 # High quality MPEG Audio Layer III (MP3) encoder
 brew "lame"
 # High-performance, high-quality MPEG-4 video library
@@ -37,10 +42,6 @@ brew "git-extras"
 brew "git-secrets"
 # OpenGL Extension Wrangler Library
 brew "glew"
-# Portable Foreign Function Interface library
-brew "libffi"
-# Core application library for C
-brew "glib"
 # Command-line option parsing library
 brew "gnu-getopt"
 # GNU implementation of the famous stream editor
@@ -107,6 +108,8 @@ brew "pwgen"
 brew "pyenv"
 # Persistent key-value database, with built-in net interface
 brew "redis"
+# Perl-powered file rename script with many helpful built-ins
+brew "rename"
 # Command-line tool for the Amazon S3 service
 brew "s3cmd"
 # Command-line interface for https://speedtest.net bandwidth tests
@@ -121,4 +124,3 @@ brew "watch"
 brew "wget"
 # Tool for managing your YubiKey configuration
 brew "ykman"
-cask "aws-vault"
