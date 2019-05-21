@@ -152,20 +152,20 @@ connect_vpn() {
     if [[ $(uname) = 'Darwin' ]] ; then
         osascript <<END
 tell application "Tunnelblick"
-    get state of first configuration where name = "cgg"
+    get state of first configuration where name = "bright"
     if (result = "EXITING") then
-        connect "cgg"
-        get state of first configuration where name = "cgg"
+        connect "bright"
+        get state of first configuration where name = "bright"
         repeat until result = "CONNECTED"
             delay 1
-            get state of first configuration where name = "cgg"
+            get state of first configuration where name = "bright"
         end repeat
     else if (result = "CONNECTED") then
-        disconnect "cgg"
-        get state of first configuration where name = "cgg"
+        disconnect "bright"
+        get state of first configuration where name = "bright"
         repeat until result = "EXITING"
             delay 1
-            get state of first configuration where name = "cgg"
+            get state of first configuration where name = "bright"
         end repeat
         quit application "Tunnelblick"
     end if
