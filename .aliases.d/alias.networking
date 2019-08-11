@@ -1,0 +1,57 @@
+### NETWORKING
+alias chmac='openssl rand -hex 6 | sed "s/\(..\)/\1:/g; s/.$//" | xargs sudo ifconfig en0 ether'
+connect_vpn() {
+    if [[ $(uname) = 'Darwin' ]] ; then
+        osascript <<END
+tell application "Tunnelblick"
+    get state of first configuration where name = "bright"
+    if (result = "EXITING") then
+        connect "bright"
+        get state of first configuration where name = "bright"
+        repeat until result = "CONNECTED"
+            delay 1
+            get state of first configuration where name = "bright"
+        end repeat
+    else if (result = "CONNECTED") then
+        disconnect "bright"
+        get state of first configuration where name = "bright"
+        repeat until result = "EXITING"
+            delay 1
+            get state of first configuration where name = "bright"
+        end repeat
+        quit application "Tunnelblick"
+    end if
+end tell
+END
+    else
+        echo "Only available for MacOS" && return 1
+    fi
+}
+dnstests() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME domain [...]" && return 1
+    while [[ -n "${1}" ]] ; do
+        echo ${1}
+        echo "dig: " $(dig +short SOA ${1})
+        echo "whois: "
+        whois ${1}
+        echo "curl: " $(curl -sI ${1} | grep Location 2>/dev/null)
+        echo '---'
+        shift
+    done
+}
+geoip() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME ip.address [...]" && return 1
+    while [[ -n "${1}" ]] ; do
+        curl -s ipinfo.io/${1} | jq -r '[.ip,.country] | @csv'
+        shift
+    done
+}
+myip() {
+    printip() {
+        printf "%-10s: %-14s %3s\n" "${1}" ${2} $(geoip ${2} | awk -F, '{print $NF}' | sed 's/\"//g')
+    }
+    printip "Google" $(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | sed 's/"//g')
+    printip "OpenDNS" $(dig +short myip.opendns.com @resolver1.opendns.com)
+    printip "icanhazip" $(curl -s4 icanhazip.com)
+    printip "AWS" $(curl -s checkip.amazonaws.com)
+}

@@ -1,0 +1,26 @@
+### CHEF
+chef_del() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME node [...]" && return 1
+    while [[ -n "${1}" ]] ; do
+        knife node delete -y ${1}
+        knife client delete -y ${1}
+        hname=$(echo ${1} | cut -d. -f1-2)
+        dname=$(echo ${1} | cut -d. -f3-)
+        echo -e "Remove DNS record manually:\ncli53 rrdelete ${dname} ${hname} A"
+        shift
+    done
+}
+chef_nodes() {
+    if [[ $# -lt 1 ]] ; then
+        echo "$FUNCNAME role" && return 1
+    else
+        /usr/local/bin/knife search -aipaddress role:${1} 2>/dev/null | /usr/local/bin/gsed -r 's/\s+//g;s/ipaddress//;s/://g;/^$/d' | paste -d' ' - - | sort -u
+    fi
+}
+chef_remote() {
+	[[ $# -lt 2 ]] && echo "$FUNCNAME stack commands [apne1|apse1|euc1| usw1]" && return 1
+	stack=${1}
+	cmd="${2}"
+	r=${3:-apne1}
+	for s in $(chef_nodes ${stack} | awk '{print $1}') ; do echo ${s} ; ssh -t ${s},${r} -C "${cmd}" 2>/dev/null ; echo ; done
+}

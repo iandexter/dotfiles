@@ -1,0 +1,62 @@
+### SECURITY
+alias killgpg='killall -9 scdaemon ;  killall -9 gpg-agent'
+genrand() {
+    strings /dev/urandom | grep -Eo '[[:alnum:]]' | head -n ${1:-16} | tr -d '\n'
+    echo
+}
+genurand() {
+    export LC_ALL=C
+    echo $(</dev/urandom tr -dc 'a-zA-Z0-9~!@#$%^&*()_+{}|[]\:;<>?,./' | head -c ${1:-16})
+}
+getc() {
+    [[ $# -lt 2 ]] && echo "$FUNCNAME string order [...]" && return 1
+
+    s=${1}
+    shift
+
+    get_nth() {
+        order=${1}
+        [[ ${order} -lt 1 || ${order} -gt ${#s} ]] && nth="Invalid index" || nth=${s:$((order-1)):1}
+        [[ ${order} == 'l' ]] && nth=${s: -1}
+        printf "[ %03d ] %s\n" ${order} ${nth}
+    }
+
+    echo "${s}" | fold -w 1 | awk '{printf("[ %03d ] %s\n", NR, $0)}'
+    echo "---"
+    while [[ -n "${1}" ]] ; do
+        get_nth ${1}
+        shift
+    done
+}
+gpgrep() {
+    if [[ $# -lt 1 ]] ; then
+        echo "$FUNCNAME expression" && return 1
+    else
+        if [[ -e ~/.crypto/.crypt.gpg ]] ; then
+            gpg -d ~/.crypto/.crypt.gpg 2>/dev/null | grep -iE "$@" | grep -vE 'MOVED|DEPRECATED'
+        else
+            echo "Crypt file does not exist" && return 1
+        fi
+    fi
+}
+spass() {
+    [[ $# -lt 1 ]] && pass --help && return 1
+    if [[ $(uname) = 'Darwin' ]] ; then
+    foo=$@
+    osascript <<END
+tell application "iTerm2"
+    set newWindow to (create window with default profile)
+    tell current session of newWindow
+        set columns to 80
+        write text "pass ${foo}"
+        delay 15
+        close
+    end tell
+end tell
+END
+    else
+        pass $@
+        sleep 15
+        clear
+    fi
+}

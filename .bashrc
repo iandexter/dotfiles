@@ -1,6 +1,7 @@
 export PATH=$PATH:$HOME/bin
 # Aliases
-test -s ~/.alias && . ~/.alias || true
+test -e ~/.aliases && . ~/.aliases || true
+test -e ~/.aliases.d && . ~/.aliases.d/* || true
 # Prompt
 export PS1='\[\033[1;32m\]$USER@\[\033[1;31m\]$HOSTNAME\[\033[1;32m\]:\[\033[0;32m\]$PWD [\!:$?]
 \$\[\033[m\] '
@@ -46,14 +47,14 @@ if [[ $(uname) = 'Darwin' ]] ; then
         ### if which kubectl > /dev/null ; then . <(kubectl completion bash) ; fi
     fi
     ### if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
-    ### https://github.com/riobard/bash-powerline
-    if [[ -f $HOME/.bash-powerline.sh ]] ; then
-        source $HOME/.bash-powerline.sh
-    fi
-    export PATH=$PATH:/Library/TeX/texbin:$HOME/projects/compareglobal/awsebcli/bin:$HOME/bin/platform-tools:$HOME/.gem/ruby/2.0.0/bin
+    export PATH=$PATH:/Library/TeX/texbin:$HOME/bin/platform-tools:$HOME/.gem/ruby/2.0.0/bin
+fi
+# https://github.com/riobard/bash-powerline
+if [[ -f $HOME/.bash_powerline ]] ; then
+    source $HOME/.bash_powerline
 fi
 # Password manager
-if [[ -e $(which pass) && -d $HOME/.passwords ]] ; then
+if [[ -x $(which pass 2>/dev/null) && -d $HOME/.passwords ]] ; then
     export PASSWORD_STORE_DIR=$HOME/.passwords
     export PASSWORD_STORE_GIT=$HOME/.passwords
 fi
