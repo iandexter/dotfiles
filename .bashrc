@@ -1,7 +1,11 @@
 export PATH=$PATH:$HOME/bin
 # Aliases
 test -e ~/.aliases && . ~/.aliases || true
-test -e ~/.aliases.d && . ~/.aliases.d/* || true
+if [[ -e ~/.aliases.d ]] ; then
+    for a in ~/.aliases.d/* ; do
+        source $a
+    done
+fi
 # Prompt
 export PS1='\[\033[1;32m\]$USER@\[\033[1;31m\]$HOSTNAME\[\033[1;32m\]:\[\033[0;32m\]$PWD [\!:$?]
 \$\[\033[m\] '
