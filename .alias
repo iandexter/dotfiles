@@ -223,9 +223,12 @@ getc() {
     get_nth() {
         order=${1}
         [[ ${order} -lt 1 || ${order} -gt ${#s} ]] && nth="Invalid index" || nth=${s:$((order-1)):1}
-        echo "[${order}] ${nth}"
+        [[ ${order} == 'l' ]] && nth=${s: -1}
+        printf "[ %03d ] %s\n" ${order} ${nth}
     }
 
+    echo "${s}" | fold -w 1 | awk '{printf("[ %03d ] %s\n", NR, $0)}'
+    echo "---"
     while [[ -n "${1}" ]] ; do
         get_nth ${1}
         shift
