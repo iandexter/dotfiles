@@ -1,0 +1,72 @@
+### CGG
+alias cggchat='irssi --config=~/Dropbox/Documents/CompareGlobal/devops/irssi_config'
+alias slackirc='irssi --config=~/Dropbox/Documents/CompareGlobal/devops/slack_irc_config'
+alias gam='~/bin/gam/gam'
+alias today='~/projects/compareglobal/gcal/bin/gcalcli --detail_all --detail_url short agenda today "eod today"'
+alias toggle_nr='NR_API_KEY=$(pass work/cgg/monitoring/newrelic/iandexter | tail -1) ~/projects/compareglobal/infrastructure/tools/scripts/jenkins/toggle_newrelic_monitors.py'
+clearhkcache() {
+    api_url1="http://www.ap-northeast-1.api-hk-v1.compareglobal.co.uk/redis/clear/HK"
+    api_url2="http://www.ap-northeast-1.api-hk-v1.compareglobal.co.uk/redis/clear/DK"
+    cache_url="http://www.ap-northeast-1.hk-lib-v1.compareglobal.co.uk/Ab5NJ4T8mxQck36pYj"
+    curl -sXDELETE "${api_url1}"| grep count
+    curl -sXDELETE "${api_url2}"| grep count
+    curl -XGET "${cache_url}"
+}
+s3vault() {
+    if [[ $# -lt 2 ]] ; then
+        echo "$FUNCNAME cgg|ceg filename [...]" && return 1
+    else
+        p=${1}
+        shift
+        if [[ -n ${GPG_KEY} ]] ; then
+            while [[ -n "${1}" ]] ; do
+                gpg --default-key ${GPG_KEY} -o ${1}.asc -r devops -ase ${1}
+                echo "Encrypted to ${1}.asc"
+                aws s3 cp ${1}.asc s3://${p}-vault/$(basename $(pwd))/${1}.asc --profile ${p}-prod
+                shift
+            done
+        else
+            echo "Missing GPG key"
+            return 1
+        fi
+    fi
+}
+usevault() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME dev|[prod [apse1|euc1|usw1]]|ceg-[dev|prod]" && return 1
+    this_env=$(echo $1 | tr 'A-Z' 'a-z')
+    if [[ "${this_env}" == "prod" ]] ; then
+        if [[ -n "${2}" ]] ; then
+            region="-${2}"
+        else
+            region=''
+        fi
+        vault_addr=http://vault${region}.compareglobal.co.uk:8200
+        vault_tokn=$(awk '/Token/ {print $NF}' ~/.crypto/cgg-vault/hashicorp-vault/vault-keys-prod.txt)
+    elif [[ "${this_env}" == "dev" ]] ; then
+        vault_addr=http://vault-dev.compareglobal.co.uk:8200
+        vault_tokn=$(awk '/Token/ {print $NF}' ~/.crypto/cgg-vault/hashicorp-vault/vault-keys-dev.txt)
+    elif [[ "${this_env}" == "ceg-dev" ]] ; then
+        vault_addr=https://vault-dev.compareeuropegroup.com:8200
+        vault_tokn=$(awk '/Token/ {print $NF}' ~/.crypto/cgg-vault/ceg/vault-keys-dev.txt)
+    elif [[ "${this_env}" == "ceg-prod" ]] ; then
+        vault_addr=https://vault.compareeuropegroup.com:8200
+        vault_tokn=$(awk '/Token/ {print $NF}' ~/.crypto/cgg-vault/ceg/vault-keys-prod.txt)
+    fi
+    export VAULT_ADDR=${vault_addr}
+    echo "Using ${VAULT_ADDR}"
+    vault login ${vault_tokn}
+    export VAULT_FORMAT=json
+}
+exitvault() {
+    unset VAULT_ADDR
+    unset VAULT_FORMAT
+}
+getvault() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME path/to/secret" && return 1
+    export VAULT_FORMAT=json
+    vault read ${1} | jq -r .data
+}
+setvault() {
+    [[ $# -lt 2 ]] && echo "$FUNCNAME path/to/secret path/to/file" && return 1
+    vault write ${1} @${2}
+}

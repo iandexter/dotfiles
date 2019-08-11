@@ -14,6 +14,7 @@ set expandtab
 set backspace=2
 set textwidth=79
 set fileformat=unix
+set encoding=utf-8
 
 " Display
 syntax on

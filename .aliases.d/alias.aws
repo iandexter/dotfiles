@@ -1,0 +1,199 @@
+### AWS
+alias aws3='~/projects/compareglobal/awscli/bin/python3 ~/projects/compareglobal/awscli/bin/aws'
+alias awslogs='~/projects/compareglobal/awscli/bin/awslogs'
+alias invalidate_cf='~/projects/compareglobal/boto3/bin/python ~/projects/compareglobal/infrastructure/tools/jenkins/slaves/scripts/invalidate_cf.py'
+aws_asg() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME stack [aws-region] [profile]" && return 1
+    c=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    aws autoscaling describe-auto-scaling-groups --region ${r} --profile ${p} | jq --arg country "${c}" -r '.AutoScalingGroups[]|{"AutoScalingGroupName":.AutoScalingGroupName,"Name":.Tags[]|select(.Key == "Name")|.Value} | select( .Name | contains($country) )'
+}
+aws_cluster_info() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME cluster-name [aws-region] [profile]" && return 1
+    c=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    container_arns=$(aws ecs list-container-instances --cluster ${c} --region ${r} --profile ${p} | jq -r '.containerInstanceArns[]')
+    container_ids=$(basename ${container_arns})
+    ec2_ids=$(aws ecs describe-container-instances --cluster ${c} --container-instances ${container_ids} --region ${r} --profile ${p} | jq -r '.containerInstances[]|.ec2InstanceId')
+    echo "Profile      :" ${p}
+    echo "Region       :" ${r}
+    echo "Cluster      :" ${c}
+    echo "Container ID :" ${container_ids}
+    echo "EC2 ID       :" ${ec2_ids}
+}
+aws_eb_check-health() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
+    ebenv=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    aws --profile ${p} elasticbeanstalk describe-environment-health --environment-name ${ebenv} --region ${r} --attribute-names All | jq -r .
+}
+aws_eb_clearcache() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    r=${2}
+    j=${3}
+    cmd="sudo -u apache touch /var/cache/mod_pagespeed/cache.flush ; ls -l /var/cache/mod_pagespeed/cache.flush"
+    cmd="${cmd}; curl -sw '\n' -XPURGE 'localhost/*'"
+    cmd="${cmd}; curl -sw '\n' 'localhost/pagespeed_admin/cache?purge=*'"
+    aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
+}
+aws_eb_cnames() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region] [aws-profile]" && return 1
+    country=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-cgg}
+    aws --profile ${p} elasticbeanstalk describe-environments --application-name ${country} --region ${r} | jq -r '.Environments[]|select(.Status|contains("Ready"))|{"EnvironmentName":.EnvironmentName,"CNAME":.CNAME}'
+}
+aws_eb_get-prod() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region] [aws-profile]" && return 1
+    country=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-cgg}
+    aws --profile ${p} elasticbeanstalk describe-environments --application-name ${country} --region ${r} | jq -r '.Environments[] | select ( .Status | contains ( "Ready" ) ) | { "EnvironmentName":.EnvironmentName,"CNAME":.CNAME} | select ( .CNAME | contains("-production.") ).EnvironmentName'
+}
+aws_eb_get-prod-instances() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME country [aws-region] [aws-profile]" && return 1
+    country=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-cgg}
+    ebenv=$(aws_eb_get-prod ${country} ${r} ${p})
+    aws_eb_list-instances ${ebenv} ${r} ${p}
+}
+aws_eb_list-instances() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
+    ebenv=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    instances=$(aws --profile ${p} elasticbeanstalk describe-environment-resources --environment-name ${ebenv} --region ${r} --query 'EnvironmentResources.Instances[*].Id' --output text)
+    aws --profile ${p} ec2 describe-instances --instance-ids ${instances} --region ${r} --query 'Reservations[*].Instances[*].{"InstanceId":InstanceId,"PublicDnsName":PublicDnsName,"PrivateIpAddress":PrivateIpAddress}' --output text | tr '\t' ':' | sed 's/:$//'
+}
+aws_eb_mem_httpd() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    r=${2}
+    j=${3}
+    for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
+        echo -n "${s}" | cut -d: -f1
+        echo -n " "
+        ssh -t ${j}/$(echo ${s} | cut -d: -f2) -C "ps -Ao comm,rss" 2>/dev/null | awk '/[h]ttpd/ {sum += $NF} END {print sum}' ;
+    done
+}
+aws_eb_refresh() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    r=${2}
+    j=${3}
+    cmd="curl -sw '\n' localhost/refresh"
+    aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
+}
+aws_eb_remote() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name command [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    cmd="${2}"
+    r=${3}
+    j=${4}
+    for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
+        echo "${s}"
+        ssh -t ${j}/${s##*:} -C "${2}" 2>/dev/null
+    done
+}
+aws_eb_restart() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME environment-name [aws-region] [profile]" && return 1
+    ebenv=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    aws --profile ${p} elasticbeanstalk restart-app-server --environment-name ${ebenv} --region ${r}
+}
+aws_eb_restart_httpd() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    r=${2}
+    j=${3}
+    cmd="sudo /sbin/service httpd restart && sleep 5"
+    aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
+}
+aws_eb_restart_tomcat() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    r=${2}
+    j=${3}
+    for s in $(aws_eb_list-instances ${ebenv} ${r} cgg) ; do
+        echo "${s%%:*}"
+        ssh -t ${j}/${s##*:} -C "sudo /sbin/service tomcat8 restart" 2>/dev/null
+        echo "Pausing between restarts..."
+        sleep 900
+    done
+}
+aws_eb_status() {
+    [[ $# -lt 3 ]] && echo "$FUNCNAME environment-name [aws-region] [jumphost]" && return 1
+    ebenv=${1}
+    r=${2}
+    j=${3}
+    cmd="curl -s localhost/status | python -mjson.tool"
+    aws_eb_remote ${ebenv} "${cmd}" ${r} ${j}
+}
+aws_eb_weblogs() {
+    [[ $# -lt 2 ]] && echo "$FUNCNAME environment-name [4|5] [aws-region] [profile]" && return 1
+    ebenv=${1}
+    e=${2}
+    r=${3:-ap-northeast-1}
+    p=${4:-default}
+    l=awseb-${ebenv}-webrequests
+    f='[..., status='${e}'*, size, referer, agent]'
+    for s in $(aws logs describe-log-streams --profile ${p} --region ${r} --log-group-name ${l} | jq -r '.logStreams[]|.logStreamName') ; do
+        aws logs filter-log-events --profile ${p} --region ${r} --log-group-name ${l} --filter-pattern "${f}" --log-stream-names ${s} ;
+    done
+}
+aws_ec2() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME instance-id [aws-region] [profile]" && return 1
+    i=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    aws --profile ${p} ec2 describe-instances --instance-ids ${i} --region ${r} | jq -r '.Reservations[]|.Instances[]|[.NetworkInterfaces[].PrivateIpAddresses[],.Tags[]]'
+}
+aws_ec2id() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME host [...]" && return 1
+    while [[ -n "${1}" ]] ; do
+        echo -n "$(echo ${1} | sed 's/\(.*\),.*/\1 /')"
+        ssh ${1} -C "curl -s http://169.254.169.254/latest/meta-data/instance-id" 2>/dev/null
+        echo
+        shift
+    done
+}
+aws_elb() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME stack [aws-region] [profile]" && return 1
+    c=${1}
+    r=${2:-ap-northeast-1}
+    p=${3:-default}
+    for elb in $(aws elb describe-load-balancers --region ${r} --profile ${p} --query 'LoadBalancerDescriptions[*].LoadBalancerName' --output text) ; do
+        aws elb describe-tags --region ${r} --profile ${p} --load-balancer-names $elb | jq --arg stack "${c}" -r '.TagDescriptions[]|{"LoadBalancerName":.LoadBalancerName,"Name":.Tags[]|select(.Key == "Name")|.Value} | select( .Name | contains($stack) )'
+    done
+}
+aws_get_eips() {
+    [[ "${1}" == "--help" || "${1}" == "-h" ]] && echo "$FUNCNAME [aws-region] [profile]" && return 1
+    r=${1:-ap-northeast-1}
+    p=${2:-default}
+    echo "Elastic IP addresses in ${r} (profile: ${p})"
+    aws ec2 describe-addresses --public-ips --output text --region ${r} --profile ${p} | awk '{print $NF}' | sort -u
+}
+aws_list_keys() {
+    p=${1:-default}
+    for u in $(aws iam list-users --query 'Users[*].UserName' --output text --profile ${p}) ; do aws iam list-access-keys --user-name $u --output text --profile ${p} ; done
+}
+aws_listq() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME country-code [aws-region] [profile]" && return 1
+    c=${1}
+    r=${2:-eu-central-1}
+    p=${3:-cgg}
+    aws sqs list-queues --region ${r} --profile ${p} | jq -r ".QueueUrls[]|select(contains(\"${c}-${c}\"))"
+}
+aws_prof() {
+  [[ -n "${1}" ]] && export AWS_PROFILE=${1} || unset AWS_PROFILE
+}
+aws_ssh() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME jumphost key user ipaddress" && return 1
+    LC_ALL=en_US.UTF-8 ssh -t ${1} ssh -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile=/dev/null" -i /home/iandexter/.ssh/${2}.pem ${3}@${4}
+}
