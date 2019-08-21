@@ -271,20 +271,28 @@ function virtual_env_module {
 function battery_module {
     local bg_color="$1"
     local fg_color="$2"
-    local batt_dir
+    local cap
+    local status
     local content
-    local batt_dir="/sys/class/power_supply/BAT"
-    if [ -d $batt_dir"0" ]; then
-        batt_dir=$batt_dir"0"
-    elif [ -d $batt_dir"1" ]; then
-        batt_dir=$batt_dir"1"
-    else
-        return 1
-    fi
-    local cap="$(<"$batt_dir/capacity")"
-    local status="$(<"$batt_dir/status")"
-
-    if [ "$status" == "Discharging" ]; then
+    case $(uname) in
+        Darwin )
+            cap=$(/usr/bin/pmset -g batt | awk -F\; '/InternalBattery/ {print $1}' | awk '{print $NF}' | sed 's/\%//')
+            status=$(/usr/bin/pmset -g batt | awk -F\; '/InternalBattery/ {print $2}' | sed 's/\ //')
+            ;;
+        Linux | * )
+            local batt_dir="/sys/class/power_supply/BAT"
+            if [ -d $batt_dir"0" ]; then
+                batt_dir=$batt_dir"0"
+            elif [ -d $batt_dir"1" ]; then
+                batt_dir=$batt_dir"1"
+            else
+                return 1
+            fi
+            cap="$(<"$batt_dir/capacity")"
+            status="$(<"$batt_dir/status")"
+            ;;
+    esac
+    if [ "${status,,}" == "discharging" ]; then
         content="${PL_SYMBOLS[battery_discharging]} "
     else
         content="${PL_SYMBOLS[battery_charging]}"
