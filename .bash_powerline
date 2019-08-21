@@ -56,10 +56,11 @@ function prompt_char {
 function time_module {
     local bg_color="$1"
     local fg_color="$2"
+    local content="${PL_SYMBOLS[time]} "
     if [ "$PL_TIME_SHOW_SECONDS" = true ]; then
-        local content="\t"
+        content+="\t"
     else
-        local content="\A"
+        content+="\A"
     fi
     PS1+="$(section_end $fg_color $bg_color)"
     PS1+="$(section_content $fg_color $bg_color " $content ")"
@@ -76,7 +77,7 @@ function time_module {
 function user_module {
     local bg_color="$1"
     local fg_color="$2"
-    local content="\u"
+    local content="${PL_SYMBOLS[user]} \u"
     # Show host if true or when user is remote/root
     if [ "$PL_USER_SHOW_HOST" = true ]; then
         if [ "$PL_USER_USE_IP" = true ]; then
@@ -124,7 +125,7 @@ function ssh_module {
 function path_module {
     local bg_color="$1"
     local fg_color="$2"
-    local content="\w"
+    local content="${PL_SYMBOLS[path]} \w"
     if [ "$PL_PATH_TRIM" -eq 1 ]; then
         local content="\W"
     elif [ "$PL_PATH_TRIM" -gt 1 ]; then
@@ -429,7 +430,7 @@ declare -A PL_COLORS=(
 # define modules
 declare -a PL_MODULES=(
     # Module                Background  Foreground
-    ### 'time_module            MyLightGrey Black'
+    'time_module            MyLightGrey Black'
     'battery_module         MyBlue      Black'
     'ssh_module             MyYellow    Black'
     'user_module            MyLime      Black'
@@ -504,10 +505,14 @@ declare -A PL_SYMBOLS=(
 [read_only]=""
 [return_code]="⚑"
 [background_jobs]="⏎"
-[python]="π"
+[python]=""
 
 [battery_charging]="⚡"
 [battery_discharging]="▮"
+
+[user]=""
+[path]="פּ"
+[time]=""
 )
 
 # check if an argument has been given for a config file
