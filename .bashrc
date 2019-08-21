@@ -53,7 +53,7 @@ if [[ $(uname) = 'Darwin' ]] ; then
     ### if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
     export PATH=$PATH:/Library/TeX/texbin:$HOME/bin/platform-tools:$HOME/.gem/ruby/2.0.0/bin
 fi
-# https://github.com/riobard/bash-powerline
+# https://github.com/chris-marsh/pureline
 if [[ -f $HOME/.bash_powerline ]] ; then
     source $HOME/.bash_powerline
 fi
