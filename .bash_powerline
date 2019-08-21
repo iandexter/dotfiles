@@ -1,197 +1,538 @@
-#!/usr/bin/env bash
+#!/bin/env bash
 
-__powerline() {
+# PureLine - A Pure Bash Powerline PS1 Command Prompt
 
-    # Unicode symbols
-    readonly PS_SYMBOL_DARWIN=''
-    readonly PS_SYMBOL_LINUX=''
-    readonly PS_SYMBOL_OTHER='%'
-    readonly GIT_BRANCH_SYMBOL='⑂ '
-    readonly GIT_BRANCH_CHANGED_SYMBOL='+'
-    readonly GIT_NEED_PUSH_SYMBOL='⇡'
-    readonly GIT_NEED_PULL_SYMBOL='⇣'
-
-    # Solarized colorscheme
-    if [[ $(tput colors) -ge 256 ]] 2>/dev/null; then
-        readonly FG_BASE03="\[$(tput setaf 234)\]"
-        readonly FG_BASE02="\[$(tput setaf 235)\]"
-        readonly FG_BASE01="\[$(tput setaf 240)\]"
-        readonly FG_BASE00="\[$(tput setaf 241)\]"
-        readonly FG_BASE0="\[$(tput setaf 244)\]"
-        readonly FG_BASE1="\[$(tput setaf 245)\]"
-        readonly FG_BASE2="\[$(tput setaf 254)\]"
-        readonly FG_BASE3="\[$(tput setaf 230)\]"
-
-        readonly BG_BASE03="\[$(tput setab 234)\]"
-        readonly BG_BASE02="\[$(tput setab 235)\]"
-        readonly BG_BASE01="\[$(tput setab 240)\]"
-        readonly BG_BASE00="\[$(tput setab 241)\]"
-        readonly BG_BASE0="\[$(tput setab 244)\]"
-        readonly BG_BASE1="\[$(tput setab 245)\]"
-        readonly BG_BASE2="\[$(tput setab 254)\]"
-        readonly BG_BASE3="\[$(tput setab 230)\]"
-
-        readonly FG_YELLOW="\[$(tput setaf 136)\]"
-        readonly FG_ORANGE="\[$(tput setaf 166)\]"
-        readonly FG_RED="\[$(tput setaf 160)\]"
-        readonly FG_MAGENTA="\[$(tput setaf 125)\]"
-        readonly FG_VIOLET="\[$(tput setaf 61)\]"
-        readonly FG_BLUE="\[$(tput setaf 33)\]"
-        readonly FG_CYAN="\[$(tput setaf 37)\]"
-        readonly FG_GREEN="\[$(tput setaf 64)\]"
-
-        readonly BG_YELLOW="\[$(tput setab 136)\]"
-        readonly BG_ORANGE="\[$(tput setab 166)\]"
-        readonly BG_RED="\[$(tput setab 160)\]"
-        readonly BG_MAGENTA="\[$(tput setab 125)\]"
-        readonly BG_VIOLET="\[$(tput setab 61)\]"
-        readonly BG_BLUE="\[$(tput setab 33)\]"
-        readonly BG_CYAN="\[$(tput setab 37)\]"
-        readonly BG_GREEN="\[$(tput setab 64)\]"
-
-        ### Custom colors
-        readonly CUSTOM_USER="\[$(tput setaf 0)\]\[$(tput setab 230)\]"
-        readonly CUSTOM_PATH="\[$(tput setaf 230)\]\[$(tput setab 166)\]"
-        readonly CUSTOM_PYTHON="\[$(tput setaf 0)\]\[$(tput setab 225)\]"
-        readonly CUSTOM_VAULT="\[$(tput setaf 0)\]\[$(tput setab 64)\]"
-        readonly CUSTOM_AWS="\[$(tput setaf 0)\]\[$(tput setab 61)\]"
-     else
-        readonly FG_BASE03="\[$(tput setaf 8)\]"
-        readonly FG_BASE02="\[$(tput setaf 0)\]"
-        readonly FG_BASE01="\[$(tput setaf 10)\]"
-        readonly FG_BASE00="\[$(tput setaf 11)\]"
-        readonly FG_BASE0="\[$(tput setaf 12)\]"
-        readonly FG_BASE1="\[$(tput setaf 14)\]"
-        readonly FG_BASE2="\[$(tput setaf 7)\]"
-        readonly FG_BASE3="\[$(tput setaf 15)\]"
-
-        readonly BG_BASE03="\[$(tput setab 8)\]"
-        readonly BG_BASE02="\[$(tput setab 0)\]"
-        readonly BG_BASE01="\[$(tput setab 10)\]"
-        readonly BG_BASE00="\[$(tput setab 11)\]"
-        readonly BG_BASE0="\[$(tput setab 12)\]"
-        readonly BG_BASE1="\[$(tput setab 14)\]"
-        readonly BG_BASE2="\[$(tput setab 7)\]"
-        readonly BG_BASE3="\[$(tput setab 15)\]"
-
-        readonly FG_YELLOW="\[$(tput setaf 3)\]"
-        readonly FG_ORANGE="\[$(tput setaf 9)\]"
-        readonly FG_RED="\[$(tput setaf 1)\]"
-        readonly FG_MAGENTA="\[$(tput setaf 5)\]"
-        readonly FG_VIOLET="\[$(tput setaf 13)\]"
-        readonly FG_BLUE="\[$(tput setaf 4)\]"
-        readonly FG_CYAN="\[$(tput setaf 6)\]"
-        readonly FG_GREEN="\[$(tput setaf 2)\]"
-
-        readonly BG_YELLOW="\[$(tput setab 3)\]"
-        readonly BG_ORANGE="\[$(tput setab 9)\]"
-        readonly BG_RED="\[$(tput setab 1)\]"
-        readonly BG_MAGENTA="\[$(tput setab 5)\]"
-        readonly BG_VIOLET="\[$(tput setab 13)\]"
-        readonly BG_BLUE="\[$(tput setab 4)\]"
-        readonly BG_CYAN="\[$(tput setab 6)\]"
-        readonly BG_GREEN="\[$(tput setab 2)\]"
+# -----------------------------------------------------------------------------
+# returns a string with the powerline symbol for a section end
+# arg: $1 is foreground color of the next section
+# arg: $2 is background color of the next section
+function section_end {
+    if [ "$__last_color" == "$2" ]; then
+        # Section colors are the same, use a foreground separator
+        local end_char="${PL_SYMBOLS[soft_separator]}"
+        local fg="$1"
+    else
+        # section colors are different, use a background separator
+        local end_char="${PL_SYMBOLS[hard_separator]}"
+        local fg="$__last_color"
     fi
-
-    readonly DIM="\[$(tput dim)\]"
-    readonly REVERSE="\[$(tput rev)\]"
-    readonly RESET="\[$(tput sgr0)\]"
-    readonly BOLD="\[$(tput bold)\]"
-
-    if [[ -z "$PS_SYMBOL" ]]; then
-      case "$(uname)" in
-          Darwin)
-              PS_SYMBOL=$PS_SYMBOL_DARWIN
-              ;;
-          Linux)
-              PS_SYMBOL=$PS_SYMBOL_LINUX
-              ;;
-          *)
-              PS_SYMBOL=$PS_SYMBOL_OTHER
-      esac
+    if [ -n "$__last_color" ]; then
+        echo "${PL_COLORS[$fg]}${PL_COLORS[On_$2]}$end_char"
     fi
-
-    __git_info() {
-        [ -x "$(which git)" ] || return    # git not found
-
-        local git_eng="env LANG=C git"   # force git output in English to make our work easier
-        # get current branch name or short SHA1 hash for detached head
-        local branch="$($git_eng symbolic-ref --short HEAD 2>/dev/null || $git_eng describe --tags --always 2>/dev/null)"
-        [ -n "$branch" ] || return  # git branch not found
-
-        local marks
-
-        # branch is modified?
-        [ -n "$($git_eng status --porcelain)" ] && marks+=" $GIT_BRANCH_CHANGED_SYMBOL"
-
-        # how many commits local branch is ahead/behind of remote?
-        local stat="$($git_eng status --porcelain --branch | grep '^##' | grep -o '\[.\+\]$')"
-        local aheadN="$(echo $stat | grep -o 'ahead [[:digit:]]\+' | grep -o '[[:digit:]]\+')"
-        local behindN="$(echo $stat | grep -o 'behind [[:digit:]]\+' | grep -o '[[:digit:]]\+')"
-        [ -n "$aheadN" ] && marks+=" $GIT_NEED_PUSH_SYMBOL$aheadN"
-        [ -n "$behindN" ] && marks+=" $GIT_NEED_PULL_SYMBOL$behindN"
-
-        # print the git branch segment without a trailing newline
-        printf " $GIT_BRANCH_SYMBOL$branch$marks "
-    }
-
-    __python_venv() {
-        if [[ -n "$VIRTUAL_ENV" ]] ; then
-            virtualenv="[$(basename $VIRTUAL_ENV)]"
-        else
-            return
-        fi
-        printf " $virtualenv "
-    }
-
-    __vault() {
-        if [[ -n "$VAULT_ADDR" ]] ; then
-           vault_addr=$(echo ${VAULT_ADDR#http://*} | cut -d. -f1)
-        else
-           return
-        fi
-        printf " [ $vault_addr ] "
-    }
-
-    __aws() {
-        if [[ -n "$AWS_PROFILE" ]] ; then
-          aws_profile="[ $AWS_PROFILE ]"
-        else
-          return
-        fi
-        printf " $aws_profile "
-    }
-
-    ps1() {
-        # Check the exit code of the previous command and display different
-        # colors in the prompt accordingly.
-        if [ $? -eq 0 ]; then
-            local BG_EXIT="$BG_GREEN"
-        else
-            local BG_EXIT="$BG_RED"
-        fi
-
-        PS1="$CUSTOM_USER \u@\H $CUSTOM_PATH \w $RESET"
-        # Bash by default expands the content of PS1 unless promptvars is disabled.
-        # We must use another layer of reference to prevent expanding any user
-        # provided strings, which would cause security issues.
-        # POC: https://github.com/njhartwell/pw3nage
-        # Related fix in git-bash: https://github.com/git/git/blob/9d77b0405ce6b471cb5ce3a904368fc25e55643d/contrib/completion/git-prompt.sh#L324
-        if shopt -q promptvars; then
-            __powerline_git_info="$(__git_info)"
-            __powerline_python_venv="$(__python_venv)"
-            __powerline_vault="$(__vault)"
-            __powerline_aws="$(__aws)"
-            PS1+="$BG_BLUE$FG_BASE3\${__powerline_git_info}$CUSTOM_PYTHON\${__powerline_python_venv}$CUSTOM_VAULT\${__powerline_vault}$CUSTOM_AWS\${__powerline_aws}$RESET"
-        else
-            # promptvars is disabled. Avoid creating unnecessary env var.
-            PS1+="$BG_BLUE$FG_BASE3$(__git_info)$CUSTOM_PYTHON$(__python_venv)$CUSTOM_VAULT${__powerline_vault}$CUSTOM_AWS${__powerline_aws}$RESET"
-        fi
-        PS1+="\n$BG_EXIT$FG_BASE3 $PS_SYMBOL $RESET "
-    }
-
-    PROMPT_COMMAND=ps1
 }
 
-__powerline
-unset __powerline
+# -----------------------------------------------------------------------------
+# returns a string with background and foreground colours set
+# arg: $1 foreground color
+# arg: $2 background color
+# arg: $3 content
+function section_content {
+    echo "${PL_COLORS[$1]}${PL_COLORS[On_$2]}$3"
+}
+
+#------------------------------------------------------------------------------
+# Helper function for User & ssh modules
+function ip_address {
+    echo "$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
+}
+
+#------------------------------------------------------------------------------
+# Helper function to return normal or super user prompt character
+function prompt_char {
+    case "$(uname)" in
+        Darwin) echo ${PL_SYMBOLS[prompt_darwin]} ;;
+        Linux)  echo ${PL_SYMBOLS[prompt_linux]} ;;
+        *)      echo ${PL_SYMBOLS[prompt_other]} ;;
+    esac
+    ### [[ ${EUID} -eq 0 ]] && echo "$content #" || echo "$content $"
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: current time
+# arg: $1 foreground color
+# arg: $2 background color
+# optional variables;
+#   PL_TIME_SHOW_SECONDS: true/false for hh:mm:ss / hh:mm
+function time_module {
+    local bg_color="$1"
+    local fg_color="$2"
+    if [ "$PL_TIME_SHOW_SECONDS" = true ]; then
+        local content="\t"
+    else
+        local content="\A"
+    fi
+    PS1+="$(section_end $fg_color $bg_color)"
+    PS1+="$(section_content $fg_color $bg_color " $content ")"
+    __last_color="$bg_color"
+}
+
+#------------------------------------------------------------------------------
+# append to prompt: user@host or user or root@host
+# arg: $1 foreground color
+# arg: $2 background color
+# option variables;
+#   PL_USER_SHOW_HOST: true/false to show host name/ip
+#   PL_USER_USE_IP: true/false to show IP instead of hostname
+function user_module {
+    local bg_color="$1"
+    local fg_color="$2"
+    local content="\u"
+    # Show host if true or when user is remote/root
+    if [ "$PL_USER_SHOW_HOST" = true ]; then
+        if [ "$PL_USER_USE_IP" = true ]; then
+            content+="@$(ip_address)"
+        else
+            content+="@\h"
+        fi
+    fi
+    PS1+="$(section_end $fg_color $bg_color)"
+    PS1+="$(section_content $fg_color $bg_color " $content ")"
+    __last_color="$bg_color"
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: indicate if SSH session
+# arg: $1 foreground color
+# arg: $2 background color
+# option variables;
+#   PL_SSH_SHOW_HOST: true/false to show host name/ip
+#   PL_SSH_USE_IP: true/false to show IP instead of hostname
+function ssh_module {
+    if [[ "${SSH_CLIENT}" || "${SSH_TTY}" ]]; then
+        local bg_color="$1"
+        local fg_color="$2"
+        local content="${PL_SYMBOLS[ssh]}"
+        if [ "$PL_SSH_SHOW_HOST" = true ]; then
+            if [ "$PL_SSH_USE_IP" = true ]; then
+                content+=" $(ip_address)"
+            else
+                content+=" \h"
+            fi
+        fi
+        PS1+="$(section_end $fg_color $bg_color)"
+        PS1+="$(section_content $fg_color $bg_color " $content ")"
+        __last_color="$bg_color"
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: current directory
+# arg: $1 foreground color
+# arg; $2 background color
+# option variables;
+#   PL_PATH_TRIM: 0—fullpath, 1—current dir, [x]—trim to x number of dir
+function path_module {
+    local bg_color="$1"
+    local fg_color="$2"
+    local content="\w"
+    if [ "$PL_PATH_TRIM" -eq 1 ]; then
+        local content="\W"
+    elif [ "$PL_PATH_TRIM" -gt 1 ]; then
+        PROMPT_DIRTRIM="$PL_PATH_TRIM"
+    fi
+    PS1+="$(section_end $fg_color $bg_color)"
+    PS1+="$(section_content $fg_color $bg_color " $content ")"
+    __last_color="$bg_color"
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: the number of background jobs running
+# arg: $1 foreground color
+# arg; $2 background color
+function background_jobs_module {
+    local bg_color="$1"
+    local fg_color="$2"
+    local number_jobs=$(jobs -p | wc -l)
+    if [ ! "$number_jobs" -eq 0 ]; then
+        PS1+="$(section_end $fg_color $bg_color)"
+        PS1+="$(section_content $fg_color $bg_color " ${PL_SYMBOLS[background_jobs]} $number_jobs ")"
+        __last_color="$bg_color"
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: indicator is the current directory is ready-only
+# arg: $1 foreground color
+# arg; $2 background color
+function read_only_module {
+    local bg_color="$1"
+    local fg_color="$2"
+    if [ ! -w "$PWD" ]; then
+        PS1+="$(section_end $fg_color $bg_color)"
+        PS1+="$(section_content $fg_color $bg_color " ${PL_SYMBOLS[read_only]} ")"
+        __last_color="$bg_color"
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: git branch with indictors for;
+#     number of; modified files, staged files and conflicts
+# arg: $1 foreground color
+# arg; $2 background color
+# option variables;
+#   PL_GIT_STASH: true/false
+#   PL_GIT_AHEAD: true/false
+#   PL_GIT_STAGED: true/false
+#   PL_GIT_CONFLICTS: true/false
+#   PL_GIT_MODIFIED: true/false
+#   PL_GIT_UNTRACKED: true/false
+function git_module {
+    local git_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
+    if [ -n "$git_branch" ]; then
+        local bg_color="$1"
+        local fg_color="$2"
+        local content="${PL_SYMBOLS[git_branch]} $git_branch"
+
+        if [ "$PL_GIT_STASH" = true ]; then
+            local number_stash="$(git stash list 2>/dev/null | wc -l)"
+            if [ ! "$number_stash" -eq 0 ]; then
+                content+="${PL_SYMBOLS[git_stash]}$number_stash"
+            fi
+        fi
+
+        if [ "$PL_GIT_AHEAD" = true ]; then
+            local number_behind_ahead="$(git rev-list --count --left-right '@{upstream}...HEAD' 2>/dev/null)"
+            local number_ahead="${number_behind_ahead#*	}"
+            local number_behind="${number_behind_ahead%	*}"
+            if [ ! "0$number_ahead" -eq 0 -o ! "0$number_behind" -eq 0 ]; then
+                if [ ! "$number_ahead" -eq 0 ]; then
+                    content+="${PL_SYMBOLS[git_ahead]}$number_ahead"
+                fi
+                if [ ! "$number_behind" -eq 0 ]; then
+                    content+="${PL_SYMBOLS[git_behind]}$number_behind"
+                fi
+            fi
+        fi
+
+        if [ "$PL_GIT_STAGED" = true ]; then
+            local number_staged="$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l)"
+            if [ ! "$number_staged" -eq "0" ]; then
+                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_staged]}$number_staged"
+            fi
+        fi
+
+        if [ "$PL_GIT_CONFLICTS" = true ]; then
+            local number_conflicts="$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l)"
+            if [ ! "$number_conflicts" -eq "0" ]; then
+                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_conflicts]}$number_conflicts"
+            fi
+        fi
+
+        if [ "$PL_GIT_MODIFIED" = true ]; then
+            local number_modified="$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l )"
+            if [ ! "$number_modified" -eq "0" ]; then
+                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_modified]}$number_modified"
+            fi
+        fi
+
+        if [ "$PL_GIT_UNTRACKED" = true ]; then
+            local number_untracked="$(git ls-files --other --exclude-standard | wc -l)"
+            if [ ! "$number_untracked" -eq "0" ]; then
+                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_untracked]}$number_untracked"
+            fi
+        fi
+
+        if [ -n "$(git status --porcelain)" ]; then
+            if [ -n "$PL_GIT_DIRTY_FG" ]; then
+                fg_color="$PL_GIT_DIRTY_FG"
+            fi
+            if [ -n "$PL_GIT_DIRTY_BG" ]; then
+                bg_color="$PL_GIT_DIRTY_BG"
+            fi
+        fi
+
+        PS1+="$(section_end $fg_color $bg_color)"
+        PS1+="$(section_content $fg_color $bg_color " $content ")"
+        __last_color="$bg_color"
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: python virtual environment name
+# arg: $1 foreground color
+# arg; $2 background color
+function virtual_env_module {
+    if [ -n "$VIRTUAL_ENV" ]; then
+        local venv="${VIRTUAL_ENV##*/}"
+        local bg_color="$1"
+        local fg_color="$2"
+        local content=" ${PL_SYMBOLS[python]} $venv"
+        PS1+="$(section_end $fg_color $bg_color)"
+        PS1+="$(section_content $fg_color $bg_color "$content ")"
+        __last_color="$bg_color"
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: indicator for battery level
+# arg: $1 foreground color
+# arg; $2 background color
+function battery_module {
+    local bg_color="$1"
+    local fg_color="$2"
+    local batt_dir
+    local content
+    local batt_dir="/sys/class/power_supply/BAT"
+    if [ -d $batt_dir"0" ]; then
+        batt_dir=$batt_dir"0"
+    elif [ -d $batt_dir"1" ]; then
+        batt_dir=$batt_dir"1"
+    else
+        return 1
+    fi
+    local cap="$(<"$batt_dir/capacity")"
+    local status="$(<"$batt_dir/status")"
+
+    if [ "$status" == "Discharging" ]; then
+        content="${PL_SYMBOLS[battery_discharging]} "
+    else
+        content="${PL_SYMBOLS[battery_charging]}"
+    fi
+    content="$content$cap%"
+
+    PS1+="$(section_end $fg_color $bg_color)"
+    PS1+="$(section_content $fg_color $bg_color " $content ")"
+    __last_color="$bg_color"
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: append a '$' prompt with optional return code for previous command
+# arg: $1 foreground color
+# arg; $2 background color
+function prompt_module {
+    local bg_color="$1"
+    local fg_color="$2"
+    local content=" $(prompt_char) "
+    PS1+="$(section_end $fg_color $bg_color)"
+    PS1+="$(section_content $fg_color $bg_color "$content")"
+    __last_color="$bg_color"
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: append a '$' prompt with optional return code for previous command
+# arg: $1 foreground color
+# arg; $2 background color
+function return_code_module {
+    if [ ! "$__return_code" -eq 0 ]; then
+        local bg_color="$1"
+        local fg_color="$2"
+        local content=" ${PL_SYMBOLS[return_code]} $__return_code "
+        PS1+="$(section_end $fg_color $bg_color)"
+        PS1+="$(section_content $fg_color $bg_color "$content")"
+        __last_color="$bg_color"
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: end the current promptline and start a newline
+function newline_module {
+    if [ -n "$__last_color" ]; then
+        PS1+="$(section_end $__last_color 'Default')"
+    fi
+    PS1+="\n"
+    unset __last_color
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: default kubernetes context/namespace from $KUBECONFIG
+# arg: $1 foreground color
+# arg; $2 background color
+function kubernetes_module {
+    local bg_color=$1                  # Set the background color
+    local fg_color=$2                  # Set the foregropund color
+    local kubesymbol=$'\xE2\x8E\x88'
+    local context ns
+
+    context=$(kubectl config current-context)
+    ns=$( kubectl config view -o jsonpath="{.contexts[?(@.name == \"${context}\")].context.namespace}" )
+
+    local content="${kubesymbol} ${context}:${ns}"
+    PS1+=$(section_end $bg_color)
+    PS1+=$(section_content $fg_color $bg_color " $content ")
+    __last_color=$bg_color
+}
+
+# -----------------------------------------------------------------------------
+function pureline_ps1 {
+    __return_code=$?    # save the return code
+    PS1=""              # reset the command prompt
+
+    # load the modules
+    for module in "${!PL_MODULES[@]}"; do
+        ${PL_MODULES[$module]}
+    done
+
+    # final end point
+    if [ -n "$__last_color" ]; then
+        PS1+="$(section_end $__last_color 'Default')"
+    else
+        # No modules loaded, set a basic prompt
+        PS1="PL | No Modules Loaded: $(prompt_char)"
+    fi
+
+    # cleanup
+    PS1+="${PL_COLORS[Color_Off]}"
+    if [ "$PL_ERASE_TO_EOL" = true ]; then
+        PS1+="\[\e[K\]"
+    fi
+    PS1+=" "
+    unset __last_color
+    unset __return_code
+}
+
+# -----------------------------------------------------------------------------
+
+# define the basic color set
+declare -A PL_COLORS=(
+[Color_Off]='\[\e[0m\]'       # Text Reset
+# Foreground
+[Default]='\[\e[0;39m\]'      # Default
+[Black]='\[\e[0;30m\]'        # Black
+[Red]='\[\e[0;31m\]'          # Red
+[Green]='\[\e[0;32m\]'        # Green
+[Yellow]='\[\e[0;33m\]'       # Yellow
+[Blue]='\[\e[0;34m\]'         # Blue
+[Purple]='\[\e[0;35m\]'       # Purple
+[Cyan]='\[\e[0;36m\]'         # Cyan
+[White]='\[\e[0;37m\]'        # White
+# Background
+[On_Default]='\[\e[49m\]'     # Default
+[On_Black]='\[\e[40m\]'       # Black
+[On_Red]='\[\e[41m\]'         # Red
+[On_Green]='\[\e[42m\]'       # Green
+[On_Yellow]='\[\e[43m\]'      # Yellow
+[On_Blue]='\[\e[44m\]'        # Blue
+[On_Purple]='\[\e[45m\]'      # Purple
+[On_Cyan]='\[\e[46m\]'        # Cyan
+[On_White]='\[\e[47m\]'       # White
+# Custom
+[MyOrange]='\[\e[38;5;208m\]'
+[On_MyOrange]='\[\e[48;5;208m\]'
+[MyLime]='\[\e[38;5;119m\]'
+[On_MyLime]='\[\e[48;5;119m\]'
+[MyYellow]='\[\e[38;5;227m\]'
+[On_MyYellow]='\[\e[48;5;227m\]'
+[MyLightGrey]='\[\e[38;5;250m\]'
+[On_MyLightGrey]='\[\e[48;5;250m\]'
+[MyBlue]='\[\e[38;5;69m\]'
+[On_MyBlue]='\[\e[48;5;69m\]'
+[MyRed]='\[\e[38;5;196m\]'
+[On_MyRed]='\[\e[48;5;196m\]'
+[MyDarkGrey]='\[\e[38;5;240m\]'
+[On_MyDarkGrey]='\[\e[48;5;240m\]'
+[MyPurple]='\[\e[38;5;89m\]'
+[On_MyPurple]='\[\e[48;5;89m\]'
+[MyGreen]='\[\e[38;5;83m\]'
+[On_MyGreen]='\[\e[48;5;83m\]'
+)
+
+# define modules
+declare -a PL_MODULES=(
+    # Module                Background  Foreground
+    ### 'time_module            MyLightGrey Black'
+    'battery_module         MyBlue      Black'
+    'ssh_module             MyYellow    Black'
+    'user_module            MyLime      Black'
+    'virtual_env_module     MyBlue      Black'
+    'path_module            MyBlue      Black'
+    'read_only_module       MyRed       White'
+    'background_jobs_module MyPurple    White'
+    'git_module             MyGreen     Black'
+    'return_code_module     MyRed       White'
+    'newline_module'
+    'prompt_module          MyDarkGrey  White'
+)
+# Module Options
+PL_PATH_TRIM=0             # 0 Full path, 1, Current, 2+ trim level
+PL_TIME_SHOW_SECONDS=true
+PL_USER_SHOW_HOST=true
+PL_USER_USE_IP=false
+PL_SSH_SHOW_HOST=true
+PL_SSH_USE_IP=true
+PL_GIT_DIRTY_FG=Black
+PL_GIT_DIRTY_BG=MyOrange
+PL_GIT_AHEAD=true
+PL_GIT_MODIFIED=true
+PL_GIT_STAGED=true
+PL_GIT_CONFLICTS=true
+PL_GIT_UNTRACKED=true
+PL_GIT_STASH=true
+
+# default symbols are intended for 'out-ofthe-box' compatibility.
+# symbols from code page 437: character set of the original IBM PC
+declare -A PL_SYMBOLS=(
+[prompt_darwin]=""
+[prompt_linux]=""
+[prompt_other]=""
+
+[hard_separator]="▶"
+[soft_separator]="│"
+
+[git_branch]="╬"
+[git_untracked]="?"
+[git_stash]="§"
+[git_ahead]="↑"
+[git_behind]="↓"
+[git_modified]="+"
+[git_staged]="•"
+[git_conflicts]="*"
+
+[ssh]="╤"
+[read_only]="Θ"
+[return_code]="x"
+[background_jobs]="↨"
+[background_jobs]="↔"
+[python]="π"
+
+[battery_charging]="■ "
+[battery_discharging]="▬ "
+
+# Custom
+[hard_separator]=""
+[soft_separator]=""
+
+[git_branch]=""
+[git_untracked]="↔"
+[git_stash]="§"
+[git_ahead]="↑"
+[git_behind]="↓"
+[git_modified]="✚ "
+[git_staged]="✔ "
+[git_conflicts]="✘ "
+
+[ssh]=" "
+[read_only]=""
+[return_code]="⚑"
+[background_jobs]="⏎"
+[python]="π"
+
+[battery_charging]="⚡"
+[battery_discharging]="▮"
+)
+
+# check if an argument has been given for a config file
+### if [ -f "$1" ]; then
+###     source "$1"
+### fi
+# ensure some modules have been defined
+if [ -z "$PL_MODULES" ]; then
+    # define default modules to load
+    declare -a PL_MODULES=(
+    'user_module        Yellow      Black'
+    'path_module        Blue        Black'
+    'read_only_module   Red         White'
+    )
+    PL_USER_SHOW_HOST=true
+    PL_PATH_TRIM=1
+    PL_ERASE_TO_EOL=true
+fi
+
+# grab a snapshot of the systems PROMPT_COMMAND. this can then be
+# appended to pureline when sourced without continually appending
+# pureline to itself.
+if [ -z "$__PROMPT_COMMAND" ]; then
+    __PROMPT_COMMAND="$PROMPT_COMMAND"
+fi
+
+# dynamically set the  PS1
+[[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1;' ]] &&  PROMPT_COMMAND="pureline_ps1; $PROMPT_COMMAND" || true
