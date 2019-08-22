@@ -44,7 +44,6 @@ function prompt_char {
         Linux)  echo ${PL_SYMBOLS[prompt_linux]} ;;
         *)      echo ${PL_SYMBOLS[prompt_other]} ;;
     esac
-    ### [[ ${EUID} -eq 0 ]] && echo "$content #" || echo "$content $"
 }
 
 # -----------------------------------------------------------------------------
