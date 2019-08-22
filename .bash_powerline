@@ -361,6 +361,24 @@ function kubernetes_module {
 }
 
 # -----------------------------------------------------------------------------
+# append to prompt: weather from wttr.in
+# arg: $1 foreground color
+# arg; $2 background color
+function weather_module {
+    local bg_color=$1                  # Set the background color
+    local fg_color=$2                  # Set the foregropund color
+
+    local url='wttr.in/~angeles?m&format=%c+%t+%w+%p+%h'
+    local content=$( curl -s -m 1 ${url} || true )
+    if echo ${wttr} | grep -q 'Internal Server Error' ; then
+        content=''
+    fi
+    PS1+=$(section_end $bg_color)
+    PS1+=$(section_content $fg_color $bg_color " $content ")
+    __last_color=$bg_color
+}
+
+# -----------------------------------------------------------------------------
 function pureline_ps1 {
     __return_code=$?    # save the return code
     PS1=""              # reset the command prompt
@@ -437,6 +455,7 @@ declare -A PL_COLORS=(
 # define modules
 declare -a PL_MODULES=(
     # Module                Background  Foreground
+    # 'weather_module         MyGreen     Black'
     'time_module            MyLightGrey Black'
     'battery_module         MyBlue      Black'
     'ssh_module             MyYellow    Black'
