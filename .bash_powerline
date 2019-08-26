@@ -76,13 +76,22 @@ function time_module {
 function user_module {
     local bg_color="$1"
     local fg_color="$2"
-    local content="${PL_SYMBOLS[user]} \u"
+    local content="${PL_SYMBOLS[user]} "
+    if [[ "$PL_SHORT" = true ]] ; then
+        content+=${LOGNAME:0:1}
+    else
+        content+="\u"
+    fi
     # Show host if true or when user is remote/root
     if [ "$PL_USER_SHOW_HOST" = true ]; then
         if [ "$PL_USER_USE_IP" = true ]; then
             content+="@$(ip_address)"
         else
-            content+="@\h"
+            if [[ "$PL_SHORT" = true ]] ; then
+                content+="@${HOSTNAME:0:1}"
+            else
+                content+="@\h"
+            fi
         fi
     fi
     PS1+="$(section_end $fg_color $bg_color)"
@@ -102,11 +111,13 @@ function ssh_module {
         local bg_color="$1"
         local fg_color="$2"
         local content="${PL_SYMBOLS[ssh]}"
-        if [ "$PL_SSH_SHOW_HOST" = true ]; then
-            if [ "$PL_SSH_USE_IP" = true ]; then
-                content+=" $(ip_address)"
-            else
-                content+=" \h"
+        if [[ "$PL_SHORT" = false ]] ; then
+            if [ "$PL_SSH_SHOW_HOST" = true ]; then
+                if [ "$PL_SSH_USE_IP" = true ]; then
+                    content+=" $(ip_address)"
+                else
+                    content+=" \h"
+                fi
             fi
         fi
         PS1+="$(section_end $fg_color $bg_color)"
@@ -293,10 +304,11 @@ function battery_module {
     esac
     if [ "${status,,}" == "discharging" ]; then
         content="${PL_SYMBOLS[battery_discharging]} "
+        content+="$cap%"
     else
         content="${PL_SYMBOLS[battery_charging]}"
+        [[ "$PL_SHORT" = false ]] && content+="$cap%"
     fi
-    content="$content$cap%"
 
     PS1+="$(section_end $fg_color $bg_color)"
     PS1+="$(section_content $fg_color $bg_color " $content ")"
@@ -484,6 +496,7 @@ PL_GIT_STAGED=true
 PL_GIT_CONFLICTS=true
 PL_GIT_UNTRACKED=true
 PL_GIT_STASH=true
+PL_SHORT=true              # Show symbols or shortcuts only
 
 # default symbols are intended for 'out-ofthe-box' compatibility.
 # symbols from code page 437: character set of the original IBM PC
