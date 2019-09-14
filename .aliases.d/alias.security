@@ -17,7 +17,7 @@ getc() {
     get_nth() {
         order=${1}
         [[ ${order} -lt 1 || ${order} -gt ${#s} ]] && nth="Invalid index" || nth=${s:$((order-1)):1}
-        [[ ${order} == 'l' ]] && nth=${s: -1}
+        [[ ${order} == 'l' ]] && nth=${s: -1} && order=${#s}
         printf "[ %03d ] %s\n" ${order} ${nth}
     }
 

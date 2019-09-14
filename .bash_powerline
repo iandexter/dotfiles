@@ -472,7 +472,7 @@ declare -a PL_MODULES=(
     'battery_module         MyBlue      Black'
     'ssh_module             MyYellow    Black'
     'user_module            MyLime      Black'
-    'virtual_env_module     MyBlue      Black'
+    'virtual_env_module     MyOrange    Black'
     'path_module            MyBlue      Black'
     'read_only_module       MyRed       White'
     'background_jobs_module MyPurple    White'
