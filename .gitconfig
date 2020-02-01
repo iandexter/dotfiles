@@ -52,7 +52,7 @@
 [commit]
     gpgsign = true
 [init]
-	templateDir = ~/projects/compareglobal/git-template
+    ### templateDir = ~/projects/compareglobal/git-template
 [secrets]
     providers = git secrets --aws-provider
     patterns = [A-Z0-9]{20}
