@@ -61,6 +61,9 @@ fi
 if [[ -x $(which pass 2>/dev/null) && -d $HOME/.passwords ]] ; then
     export PASSWORD_STORE_DIR=$HOME/.passwords
     export PASSWORD_STORE_GIT=$HOME/.passwords
+    if [[ -e $(brew --prefix)/etc/bash_completion.d/pass ]] ; then
+        source $(brew --prefix)/etc/bash_completion.d/pass
+    fi
 fi
 # Colors
 export CLICOLOR=1

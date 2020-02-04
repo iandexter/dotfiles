@@ -5,4 +5,5 @@
 .#*
 *.o
 .DS_Store
-.local
+*.local
+dbxcli
