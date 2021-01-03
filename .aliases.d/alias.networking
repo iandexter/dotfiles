@@ -1,4 +1,11 @@
 ### NETWORKING
+airport() {
+    if [[ $(uname) = 'Darwin' && -e /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport ]] ; then
+        /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport $@
+    else
+        echo '`airport` utility not found'
+    fi
+}
 alias chmac='openssl rand -hex 6 | sed "s/\(..\)/\1:/g; s/.$//" | xargs sudo ifconfig en0 ether'
 connect_vpn() {
     if [[ $(uname) = 'Darwin' ]] ; then
