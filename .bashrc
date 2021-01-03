@@ -50,8 +50,12 @@ if [[ $(uname) = 'Darwin' ]] ; then
         . $(brew --prefix)/etc/bash_completion
         ### if which kubectl > /dev/null ; then . <(kubectl completion bash) ; fi
     fi
-    ### if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
-    export PATH=$PATH:/Library/TeX/texbin:$HOME/bin/platform-tools:$HOME/.gem/ruby/2.0.0/bin
+    if which pyenv > /dev/null ; then
+        eval "$(pyenv init -)" ;
+        eval "$(pyenv virtualenv-init -)" ;
+        export PYENV_VIRTUALENV_DISABLE_PROMPT=1
+    fi
+    export PATH=$PATH:/Library/TeX/texbin:$HOME/bin/platform-tools:$HOME/.gem/ruby/2.0.0/bin:/usr/local/sbin
 fi
 # https://github.com/chris-marsh/pureline
 if [[ -f $HOME/.bash_powerline ]] ; then

@@ -74,7 +74,7 @@ urlopen() {
         if [[ $# -lt 1 ]] ; then
             echo "$FUNCNAME url" && return 1
         else
-            /usr/bin/open -a "Google Chrome Canary" ${1} --args --incognito
+            /usr/bin/open -a "Google Chrome" ${1} --args --incognito
         fi
     else
         echo "Only available for MacOS" && return 1
@@ -113,5 +113,10 @@ mdless() {
 bcurl() {
     if [[ $(uname) = 'Darwin' ]] ; then
         /usr/local/opt/curl/bin/curl $@
+    fi
+}
+gtr() {
+    if which gawk &>/dev/null; then
+        gawk -f <(curl -Ls git.io/translate) -- -shell
     fi
 }

@@ -60,3 +60,18 @@ END
         clear
     fi
 }
+genrandw() {
+    _genrandw() {
+        randw="$(shuf -n3 <(cat /usr/share/dict/*) | tr '\n' '-' | \
+            gsed 's/\ //g' | tr '[A-Z]' '[a-z]')$((RANDOM))" ;
+        echo "${randw^}"
+    }
+    re='^[0-9]+$'
+    if [[ ${1} =~ ${re} ]] ; then
+        for i in $(seq 1 ${1}) ; do
+            _genrandw
+        done
+    else
+        _genrandw
+    fi
+}
