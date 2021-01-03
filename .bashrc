@@ -47,7 +47,6 @@ export GPG_KEY=0x126A3EDFFB6E402E
 if [[ $(uname) = 'Darwin' ]] ; then
     export LC_ALL=en_GB.UTF-8
     export LANG=en_GB.UTF-8
-<<<<<<< Updated upstream
     if [[ -f $(brew --prefix)/etc/bash_completion ]] ; then
         . $(brew --prefix)/etc/bash_completion
         ### if which kubectl > /dev/null ; then . <(kubectl completion bash) ; fi
