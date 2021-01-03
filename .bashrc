@@ -1,4 +1,5 @@
 export PATH=$PATH:$HOME/bin
+[[ -d $HOME/.local/bin ]] && export PATH=$PATH:$HOME/.local/bin
 # Aliases
 test -e ~/.aliases && . ~/.aliases || true
 if [[ -e ~/.aliases.d ]] ; then
@@ -46,6 +47,7 @@ export GPG_KEY=0x126A3EDFFB6E402E
 if [[ $(uname) = 'Darwin' ]] ; then
     export LC_ALL=en_GB.UTF-8
     export LANG=en_GB.UTF-8
+<<<<<<< Updated upstream
     if [[ -f $(brew --prefix)/etc/bash_completion ]] ; then
         . $(brew --prefix)/etc/bash_completion
         ### if which kubectl > /dev/null ; then . <(kubectl completion bash) ; fi
@@ -55,7 +57,11 @@ if [[ $(uname) = 'Darwin' ]] ; then
         eval "$(pyenv virtualenv-init -)" ;
         export PYENV_VIRTUALENV_DISABLE_PROMPT=1
     fi
-    export PATH=$PATH:/Library/TeX/texbin:$HOME/bin/platform-tools:$HOME/.gem/ruby/2.0.0/bin:/usr/local/sbin
+	[[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && .  "/usr/local/etc/profile.d/bash_completion.sh"
+    [[ -d /Library/TeX/texbin ]] && export PATH=$PATH:/Library/TeX/texbin
+    [[ -d $HOME/bin/platform-tools ]] && export PATH=$PATH:$HOME/bin/platform-tools
+    [[ -d $HOME/.gem/ruby/2.0.0/bin ]] && export PATH=$PATH:$HOME/.gem/ruby/2.0.0/bin
+    [[ -d /usr/local/opt/curl/bin ]] && export PATH=/usr/local/opt/curl/bin:$PATH
 fi
 # https://github.com/chris-marsh/pureline
 if [[ -f $HOME/.bash_powerline ]] ; then
@@ -65,9 +71,6 @@ fi
 if [[ -x $(which pass 2>/dev/null) && -d $HOME/.passwords ]] ; then
     export PASSWORD_STORE_DIR=$HOME/.passwords
     export PASSWORD_STORE_GIT=$HOME/.passwords
-    if [[ -e $(brew --prefix)/etc/bash_completion.d/pass ]] ; then
-        source $(brew --prefix)/etc/bash_completion.d/pass
-    fi
 fi
 # Colors
 export CLICOLOR=1
