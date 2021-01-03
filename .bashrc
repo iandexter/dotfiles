@@ -56,7 +56,7 @@ if [[ $(uname) = 'Darwin' ]] ; then
         eval "$(pyenv virtualenv-init -)" ;
         export PYENV_VIRTUALENV_DISABLE_PROMPT=1
     fi
-	[[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && .  "/usr/local/etc/profile.d/bash_completion.sh"
+    [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && .  "/usr/local/etc/profile.d/bash_completion.sh"
     [[ -d /Library/TeX/texbin ]] && export PATH=$PATH:/Library/TeX/texbin
     [[ -d $HOME/bin/platform-tools ]] && export PATH=$PATH:$HOME/bin/platform-tools
     [[ -d $HOME/.gem/ruby/2.0.0/bin ]] && export PATH=$PATH:$HOME/.gem/ruby/2.0.0/bin
@@ -70,6 +70,9 @@ fi
 if [[ -x $(which pass 2>/dev/null) && -d $HOME/.passwords ]] ; then
     export PASSWORD_STORE_DIR=$HOME/.passwords
     export PASSWORD_STORE_GIT=$HOME/.passwords
+	if [[ -e $(brew --prefix)/etc/bash_completion.d/pass ]] ; then
+    	source $(brew --prefix)/etc/bash_completion.d/pass
+    fi
 fi
 # Colors
 export CLICOLOR=1
