@@ -1,0 +1,35 @@
+### Databricks
+convert_logs() {
+    if [[ $# -lt 1 ]] ; then
+        echo "$FUNCNAME csv_file [..]" && return 1
+    else
+        while [[ -n "${1}" ]] ; do
+            c=${1}
+            if [[ -e ${c} && ${c: -4} == ".csv" ]] ; then
+                l=$(basename ${c} .csv).log
+                cat ${c} | cut -d, -f2- | gsed 's/^\"//;s/\"$//;s/\"\"/\"/g' > ${l}
+                gsed -i '1d;/^$/d' ${l}
+                echo "Converted to ${l}"
+            else
+                echo "${c} must exist and be a CSV file" && return 1
+            fi
+            shift
+        done
+    fi
+}
+gen_trace() {
+    echo "00-$(uuidgen | tr -d '-')-$(uuidgen | tr -d '-' | cut -c1-16)-01" | tr '[A-Z]' '[a-z]'
+}
+get_workspace_urls() {
+    [[ $# -ne 1 ]] && echo "$FUNCNAME workspace_id [..]" && return 1
+    while [[ -n "${1}" ]] ; do
+        o=${1}
+        new="adb-${o}.$(( ${o} % 20 )).azuredatabricks.net"
+        c=$(host ${new} | tail -1 | awk '{print $1}')
+        echo "Workspace ID: ${o}"
+        echo "New URL: https://${new}"
+        echo "Old URL: https://${c}/?o=${o}"
+        echo "Version: $(curl -s https://${new}/version | grep branch | gsed 's/<[^>]\+>//g;s/^[ \t]*//g')"
+        shift
+    done
+}
