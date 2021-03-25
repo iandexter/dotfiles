@@ -18,7 +18,7 @@ convert_logs() {
     fi
 }
 gen_trace() {
-    echo "00-$(uuidgen | tr -d '-')-$(uuidgen | tr -d '-' | cut -c1-16)-01" | tr '[A-Z]' '[a-z]'
+    echo "0$((${RANDOM}%2))-$(uuidgen | tr -d '-')-$(uuidgen | tr -d '-' | cut -c1-16)-0$((${RANDOM}%2))" | tr '[A-Z]' '[a-z]'
 }
 get_workspace_urls() {
     [[ $# -ne 1 ]] && echo "$FUNCNAME workspace_id [..]" && return 1
