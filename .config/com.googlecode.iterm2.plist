@@ -21,7 +21,7 @@
 	<key>ClosingHotkeySwitchesSpaces</key>
 	<true/>
 	<key>Command</key>
-	<string></string>
+	<string>/usr/local/bin/bash</string>
 	<key>CommandSelection</key>
 	<true/>
 	<key>Control</key>
@@ -840,7 +840,7 @@
 					<key>algorithm</key>
 					<integer>0</integer>
 					<key>auto-rainbow style</key>
-					<integer>0</integer>
+					<integer>3</integer>
 					<key>font</key>
 					<string>Menlo-Regular 11</string>
 					<key>remove empty components</key>
@@ -856,7 +856,7 @@
 							<key>knobs</key>
 							<dict>
 								<key>base: compression resistance</key>
-								<integer>1</integer>
+								<real>1</real>
 								<key>base: priority</key>
 								<real>5</real>
 								<key>maxwidth</key>
@@ -882,7 +882,7 @@
 								<key>algorithm</key>
 								<integer>0</integer>
 								<key>auto-rainbow style</key>
-								<integer>0</integer>
+								<integer>3</integer>
 								<key>font</key>
 								<string>Menlo-Regular 11</string>
 								<key>remove empty components</key>
@@ -938,7 +938,7 @@
 								<key>algorithm</key>
 								<integer>0</integer>
 								<key>auto-rainbow style</key>
-								<integer>0</integer>
+								<integer>3</integer>
 								<key>font</key>
 								<string>Menlo-Regular 11</string>
 								<key>remove empty components</key>
