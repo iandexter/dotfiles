@@ -1,4 +1,7 @@
 ### Databricks
+alias awsc='aws --profile  aws-cust-test1_databricks-power-user'
+alias databricksg='databricks --profile genie'
+alias dbfsg='dbfs --profile genie'
 convert_logs() {
     if [[ $# -lt 1 ]] ; then
         echo "$FUNCNAME csv_file [..]" && return 1
