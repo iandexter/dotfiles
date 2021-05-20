@@ -2,6 +2,17 @@
 alias awsc='aws --profile  aws-cust-test1_databricks-power-user'
 alias databricksg='databricks --profile genie'
 alias dbfsg='dbfs --profile genie'
+add_genie_cfg() {
+    if [[ $# -lt 2 ]] ; then
+        echo "$FUNCNAME host token" && return 1
+    else
+        genie_host=${1}
+        genie_token=${2}
+        curr_host=$(grep -A1 genie $HOME/.databrickscfg | awk '/host/ {print $NF}')
+        curr_token=$(grep -A2 genie $HOME/.databrickscfg | awk '/token/ {print $NF}')
+        sed -i.bak "s,${curr_host},${genie_host},g;s,${curr_token},${genie_token},g" $HOME/.databrickscfg
+    fi
+}
 convert_logs() {
     if [[ $# -lt 1 ]] ; then
         echo "$FUNCNAME csv_file [..]" && return 1
