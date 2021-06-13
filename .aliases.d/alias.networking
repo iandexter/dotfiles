@@ -57,10 +57,10 @@ myip() {
     printip() {
         [[ -n ${2} ]] && printf "%-10s: %-14s %3s\n" "${1}" ${2} $(geoip ${2} | awk -F, '{print $NF}' | sed 's/\"//g')
     }
-    printip "Google" $(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | sed 's/"//g')
-    printip "OpenDNS" $(dig +short myip.opendns.com @resolver1.opendns.com)
-    printip "OpenDNS" $(dig +short -6 myip.opendns.com aaaa @resolver1.ipv6-sandbox.opendns.com)
-    printip "icanhazip" $(curl -s4 icanhazip.com)
-    printip "icanhazip" $(curl -s6 icanhazip.com)
-    printip "AWS" $(curl -s checkip.amazonaws.com)
+    printip "Google" $(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com 2>/dev/null | sed 's/"//g')
+    printip "OpenDNS" $(dig +short myip.opendns.com @resolver1.opendns.com 2>/dev/null)
+    printip "OpenDNS" $(dig +short -6 myip.opendns.com aaaa @resolver1.ipv6-sandbox.opendns.com 2>/dev/null)
+    printip "icanhazip" $(curl -s4 icanhazip.com 2>/dev/null)
+    printip "icanhazip" $(curl -s6 icanhazip.com 2>/dev/null)
+    printip "AWS" $(curl -s checkip.amazonaws.com 2>/dev/null)
 }
