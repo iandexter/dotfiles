@@ -1,16 +1,56 @@
 ### Databricks
-alias awsc='aws --profile  aws-cust-test1_databricks-power-user'
+alias awsc='aws --profile aws-cust-test1_databricks-power-user'
+alias databricksaz='databricks --profile azure'
 alias databricksg='databricks --profile genie'
+alias dbfsaz='dbfs --profile azure'
 alias dbfsg='dbfs --profile genie'
 add_genie_cfg() {
     if [[ $# -lt 2 ]] ; then
-        echo "$FUNCNAME host token" && return 1
+        echo "$FUNCNAME host token [generate-postman-config (true|false)]" && return 1
     else
-        genie_host=${1}
+        genie_host="https://${1}"
         genie_token=${2}
         curr_host=$(grep -A1 genie $HOME/.databrickscfg | awk '/host/ {print $NF}')
         curr_token=$(grep -A2 genie $HOME/.databrickscfg | awk '/token/ {print $NF}')
         sed -i.bak "s,${curr_host},${genie_host},g;s,${curr_token},${genie_token},g" $HOME/.databrickscfg
+        if [[ "xtrue" == "x${3}" ]] ; then
+            postman_id=$(uuidgen | tr 'A-Z' 'a-z')
+            cat >> $HOME/Downloads/genie.postman_env.json <<EOF
+{
+ "id": "${postman_id}",
+ "name": "genie",
+ "values": [
+  {
+   "key": "host",
+   "value": "${1}",
+   "enabled": true
+  },
+  {
+   "key": "token",
+   "value": "${2}",
+   "enabled": true
+  },
+  {
+   "key": "endpoint",
+   "value": "",
+   "enabled": false
+  },
+  {
+   "key": "cluster_id",
+   "value": "",
+   "enabled": false
+  },
+  {
+   "key": "job_id",
+   "value": "",
+   "enabled": false
+  }
+ ],
+ "_postman_variable_scope": "environment"
+}
+EOF
+            echo "Import $HOME/Downloads/genie.postman_env.json to Postman"
+        fi
     fi
 }
 convert_logs() {
