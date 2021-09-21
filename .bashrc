@@ -52,6 +52,9 @@ export GPG_KEY=0x126A3EDFFB6E402E
 if [[ $(uname) = 'Darwin' ]] ; then
     export LC_ALL=en_GB.UTF-8
     export LANG=en_GB.UTF-8
+    if [[ -f $(brew --prefix)/etc/bash_completion ]] ; then
+        source $(brew --prefix)/etc/bash_completion
+    fi
     if command -v pyenv &>/dev/null ; then
         export PYENV_ROOT="$HOME/.pyenv"
         export PATH="$PYENV_ROOT/bin:$PATH"
