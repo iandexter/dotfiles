@@ -1,9 +1,14 @@
 export PATH=$PATH:$HOME/bin
 [[ -d $HOME/.local/bin ]] && export PATH=$PATH:$HOME/.local/bin
 # Aliases
-test -e ~/.aliases && . ~/.aliases || true
-if [[ -e ~/.aliases.d ]] ; then
-    for a in ~/.aliases.d/* ; do
+test -e $HOME/.aliases && . $HOME/.aliases || true
+if [[ -e $HOME/.aliases.d ]] ; then
+    for a in $HOME/.aliases.d/* ; do
+        source $a
+    done
+fi
+if [[ -e $HOME/.local/.aliases.d ]] ; then
+    for a in $HOME/.local/.aliases.d/* ; do
         source $a
     done
 fi
@@ -48,19 +53,49 @@ if [[ $(uname) = 'Darwin' ]] ; then
     export LC_ALL=en_GB.UTF-8
     export LANG=en_GB.UTF-8
     if [[ -f $(brew --prefix)/etc/bash_completion ]] ; then
-        . $(brew --prefix)/etc/bash_completion
-        ### if which kubectl > /dev/null ; then . <(kubectl completion bash) ; fi
+        source $(brew --prefix)/etc/bash_completion
     fi
-    if which pyenv > /dev/null ; then
-        eval "$(pyenv init -)" ;
-        eval "$(pyenv virtualenv-init -)" ;
+    if command -v pyenv &>/dev/null ; then
+        export PYENV_ROOT="$HOME/.pyenv"
+        export PATH="$PYENV_ROOT/bin:$PATH"
+        eval "$(pyenv init --path)"
+        eval "$(pyenv init -)"
+        if command -v pyenv virtualenv &>/dev/null ; then
+            eval "$(pyenv virtualenv-init -)"
+        fi
         export PYENV_VIRTUALENV_DISABLE_PROMPT=1
     fi
     [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && .  "/usr/local/etc/profile.d/bash_completion.sh"
     [[ -d /Library/TeX/texbin ]] && export PATH=$PATH:/Library/TeX/texbin
     [[ -d $HOME/bin/platform-tools ]] && export PATH=$PATH:$HOME/bin/platform-tools
-    [[ -d $HOME/.gem/ruby/2.0.0/bin ]] && export PATH=$PATH:$HOME/.gem/ruby/2.0.0/bin
-    [[ -d /usr/local/opt/curl/bin ]] && export PATH=/usr/local/opt/curl/bin:$PATH
+    if [[ -d /usr/local/opt/curl/bin ]] ; then
+        export PATH=/usr/local/opt/curl/bin:$PATH
+        export LDFLAGS="-L/usr/local/opt/curl/lib"
+        export CPPFLAGS="-I/usr/local/opt/curl/include"
+        export PKG_CONFIG_PATH="/usr/local/opt/curl/lib/pkgconfig"
+    fi
+    if [[ -d /usr/local/opt/ruby ]] ; then
+        export LDFLAGS="-L/usr/local/opt/ruby/lib"
+        export CPPFLAGS="-I/usr/local/opt/ruby/include"
+        export PKG_CONFIG_PATH="/usr/local/opt/ruby/lib/pkgconfig"
+        export PATH=/usr/local/opt/ruby/bin:$PATH:$HOME/.gem/ruby/2.6.0/bin
+    fi
+    if [[ -f /Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home/bin/java ]] ; then
+        export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home
+        export PATH=${JAVA_HOME}/bin:$PATH
+    fi
+    if [[ -d ~/bin/google-cloud-sdk ]] ; then
+        export PATH=~/bin/google-cloud-sdk/bin:$PATH
+    fi
+    if [[ -d /usr/local/opt/gnu-sed ]] ; then
+        export PATH=/usr/local/opt/gnu-sed/libexec/gnubin:$PATH
+    fi
+fi
+# Vagrant
+if which vagrant &>/dev/null ; then
+    if [[ -d $HOME/projects/vagrant ]] ; then
+        export VAGRANT_CWD=$HOME/projects/vagrant
+    fi
 fi
 # https://github.com/chris-marsh/pureline
 if [[ -f $HOME/.bash_powerline ]] ; then
@@ -70,11 +105,19 @@ fi
 if [[ -x $(which pass 2>/dev/null) && -d $HOME/.passwords ]] ; then
     export PASSWORD_STORE_DIR=$HOME/.passwords
     export PASSWORD_STORE_GIT=$HOME/.passwords
-	if [[ -e $(brew --prefix)/etc/bash_completion.d/pass ]] ; then
-    	source $(brew --prefix)/etc/bash_completion.d/pass
-    fi
 fi
 # Colors
 export CLICOLOR=1
 export LSCOLORS=GxFxCxDxBxegedabagaced
 export LS_COLORS="di=34:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43"
+# Terraform
+if which terraform &>/dev/null ; then
+   complete -C /usr/local/bin/terraform terraform
+fi
+# Databricks
+if [[ -d $HOME/projects/databricks/universe/eng-tools/bin ]] ; then
+    export PATH=~/projects/databricks/universe/eng-tools/bin:$PATH
+fi
+if [[ -d $HOME/projects/databricks/universe/bazel ]] ; then
+    export PATH=~/projects/databricks/universe/bazel:$PATH
+fi
