@@ -15,4 +15,4 @@ dbxcli
 .config/iterm2/
 .config/pip/
 .config/wireshark/
-.config/com.googlecode.iterm2.plist
+**/.config/com.googlecode.iterm2.plist
