@@ -42,4 +42,8 @@ autocmd BufReadPost * if line("'\"") > 0 && line ("'\"") <= line("$") | exe "nor
 " Filetype-specific indentation
 filetype plugin indent on
 autocmd BufEnter *.c setl noet ts=8 sw=8 cin
+autocmd BufEnter *.py setl noet ts=4 cin
 autocmd FileType make setl noet ts=8 sw=8 cin
+
+" Autosave as you type
+autocmd TextChanged,TextChangedI <buffer> if &readonly == 0 && filereadable(bufname('%')) | silent write | endif

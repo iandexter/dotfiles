@@ -16,7 +16,7 @@ svnadd() {
 }
 headtails() {
 	head -n ${2:-10} ${1}
-	echo "..."
+	echo -ne "${3:-...\n}"
 	tail -n ${2:-10} ${1}
 }
 mkcd() {
@@ -106,7 +106,7 @@ to_utc() {
      fi
 }
 from_epoch() {
-    [[ $# -lt 1 ]] && echo "$FUNCNAME \"epoch_time\"" && return 1
+    [[ $# -lt 1 ]] && echo "$FUNCNAME \"epoch_time_in_ms\"" && return 1
     epoch="${1}"
     if [[ $(uname) = 'Darwin' ]] ; then
         date -r "$((${epoch}/1000))"
@@ -129,7 +129,27 @@ gtr() {
         gawk -f <(curl -Ls git.io/translate) -- -shell
     fi
 }
-
+reformat() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME filename" && return 1
+    cat ${1} | sed 's/\x1b\[[0-9;]*m//g'
+}
+tabtitle() {
+    PRELINE="\r\033[A"
+    random_color() {
+        echo -e "\033]6;1;bg;red;brightness;$((1 + $RANDOM % 255))\a"$PRELINE
+        echo -e "\033]6;1;bg;green;brightness;$((1 + $RANDOM % 255))\a"$PRELINE
+        echo -e "\033]6;1;bg;blue;brightness;$((1 + $RANDOM % 255))\a"$PRELINE
+    }
+    echo -ne "\033]0;"$*"\007"
+    random_color
+}
+newtab() {
+	if [[ $(uname) = 'Darwin' ]] ; then
+  		osascript \
+    		-e 'tell application "iTerm2" to tell current window to set newWindow to (create tab with default profile)'\
+    		-e "tell application \"iTerm2\" to tell current session of newWindow to write text \"tabtitle ${@}\""
+	fi
+}
 
 ### Java
 # Function to switch JDK versions
