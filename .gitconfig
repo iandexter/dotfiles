@@ -14,21 +14,21 @@
     ci = commit -sS
     co = checkout
     fp = fetch --prune origin
-    fr = "!git fetch origin master && git rebase origin/master"
-    fu = "!git fetch upstream && git checkout master && git merge upstream/master"
+    fr = "!f() { main=${1:-main} ; git fetch origin ${main} && git rebase origin/${main} ; } ; f"
+    fu = "!f() { main=${1:-main} ; git fetch upstream && git checkout ${main} && git merge upstream/${main} ; } ; f"
     ld = log --pretty=format:\"%ad %C(yellow)%h %Cred%d %Creset%s%Cblue [%cn]\" --decorate --date=relative
     lo = log --oneline --decorate
     lg = log --graph --decorate --pretty=oneline --abbrev-commit
     lp = log --graph --abbrev-commit --decorate --all --format=format:\"%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(dim white) - %an%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n %C(white)%s%C(reset)\"
     mf = merge --no-ff
     pb = push --set-upstream origin
-    pm = "!git remote | xargs -I % git push --set-upstream %"
+    pm = !git remote | xargs -I % git push --no-verify --set-upstream % 
     rv = remote --verbose
-    sf = diff-tree --no-commit-id --name-only -r
+    sf = diff-tree --no-commit-id --name-status -r
     sp = show --pretty=oneline --abbrev-commit
     ss = status --short --branch
     st = status
-    up = "!git remote update && git checkout master && git pull --rebase --prune"
+    up = "!f() { main=${1:-master} ; git remote update && git checkout \"${main}\" && git pull --rebase --prune ; } ; f"
 [color]
     branch = auto
     diff = auto
