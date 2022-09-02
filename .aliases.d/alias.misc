@@ -109,9 +109,9 @@ from_epoch() {
     [[ $# -lt 1 ]] && echo "$FUNCNAME \"epoch_time_in_ms\"" && return 1
     epoch="${1}"
     if [[ $(uname) = 'Darwin' ]] ; then
-        date -r "$((${epoch}/1000))"
+        TZ=UTC date -r "$((${epoch}/1000))"
     else
-        date -d "${utc}"
+        TZ=UTC date -d "${utc}"
     fi
 }
 mdless() {
