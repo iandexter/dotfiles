@@ -18,7 +18,7 @@ set encoding=utf-8
 
 " Display
 syntax on
-colorscheme delek
+" colorscheme delek
 set number
 set ruler
 set showmatch
