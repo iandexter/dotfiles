@@ -1,8 +1,10 @@
 ### Databricks
 alias awsc='aws --profile aws-cust-test1_databricks-power-user'
 alias databricksaz='databricks --profile azure'
+alias databrickse2='databricks --profile e2'
 alias databricksg='databricks --profile genie'
 alias dbfsaz='dbfs --profile azure'
+alias dbfse2='dbfs --profile e2'
 alias dbfsg='dbfs --profile genie'
 add_genie_cfg() {
     if [[ $# -lt 2 ]] ; then
