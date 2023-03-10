@@ -90,6 +90,13 @@ if [[ $(uname) = 'Darwin' ]] ; then
     if [[ -d /usr/local/opt/gnu-sed ]] ; then
         export PATH=/usr/local/opt/gnu-sed/libexec/gnubin:$PATH
     fi
+    if [[ -d $(brew --prefix)/bin/go ]] ; then
+        export PATH=$(brew --prefix)/bin/go/bin:$PATH
+    elif [[ -d $(go env GOPATH) ]] ; then
+        export PATH=$(go env GOPATH)/bin:$PATH
+    elif [[ -d ~/go ]] ; then
+        export PATH=~/go/bin:$PATH
+	fi
 fi
 # Vagrant
 if which vagrant &>/dev/null ; then
@@ -121,3 +128,5 @@ fi
 if [[ -d $HOME/projects/databricks/universe/bazel ]] ; then
     export PATH=~/projects/databricks/universe/bazel:$PATH
 fi
+# Dedupe PATH
+export PATH=$(echo -n $PATH | awk -v RS=: '!($0 in a) {a[$0]; printf("%s%s", length(a) > 1 ? ":" : "", $0)}')
