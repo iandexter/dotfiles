@@ -17,7 +17,7 @@ export PS1='\[\033[1;32m\]$USER@\[\033[1;31m\]$HOSTNAME\[\033[1;32m\]:\[\033[0;3
 \$\[\033[m\] '
 # History
 export HISTCONTROL=ignoreboth
-export HISTSIZE=99999
+export HISTSIZE=10000000
 export HISTTIMEFORMAT="%D %T "
 shopt -s histappend
 export PROMPT_COMMAND='history -a'
