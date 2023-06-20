@@ -30,22 +30,8 @@ add_genie_cfg() {
   {
    "key": "token",
    "value": "${2}",
-   "enabled": true
-  },
-  {
-   "key": "endpoint",
-   "value": "",
-   "enabled": false
-  },
-  {
-   "key": "cluster_id",
-   "value": "",
-   "enabled": false
-  },
-  {
-   "key": "job_id",
-   "value": "",
-   "enabled": false
+   "enabled": true,
+   "type": secret
   }
  ],
  "_postman_variable_scope": "environment"

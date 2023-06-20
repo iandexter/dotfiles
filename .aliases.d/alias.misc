@@ -1,26 +1,26 @@
 ### MISC
 wiki() {
-	dig +short txt ${1}.wp.dg.cx
+    dig +short txt ${1}.wp.dg.cx
 }
 logMessage() {
-	COMMAND="$*"
-	sh -c "${COMMAND} | awk '{
-		\"echo \\\"$(date +%b\ %e\ %T) $(hostname) $(basename ${0})[$$]:\\\"\"|getline timestamp;
-		close(\"echo \\\"$(date +%b\ %e\ %T) $(hostname) $(basename ${0})[$$]:\\\"\");
-		printf(\"%s %s\n\", timestamp, \${0})
-	}'"
+    COMMAND="$*"
+    sh -c "${COMMAND} | awk '{
+        \"echo \\\"$(date +%b\ %e\ %T) $(hostname) $(basename ${0})[$$]:\\\"\"|getline timestamp;
+        close(\"echo \\\"$(date +%b\ %e\ %T) $(hostname) $(basename ${0})[$$]:\\\"\");
+        printf(\"%s %s\n\", timestamp, \${0})
+    }'"
 }
 svnadd() {
-	svn add --auto-props ${1}
-	svn propset svn:keywords "Date Id URL Rev Author" ${1}
+    svn add --auto-props ${1}
+    svn propset svn:keywords "Date Id URL Rev Author" ${1}
 }
 headtails() {
-	head -n ${2:-10} ${1}
-	echo -ne "${3:-...\n}"
-	tail -n ${2:-10} ${1}
+    head -n ${2:-10} ${1}
+    echo -ne "${3:-...\n}"
+    tail -n ${2:-10} ${1}
 }
 mkcd() {
-	[ ! -d ${1} ] && mkdir ${1} && cd ${1}
+    [ ! -d ${1} ] && mkdir ${1} && cd ${1}
 }
 newscreen() {
     unset TMOUT
@@ -144,11 +144,12 @@ tabtitle() {
     random_color
 }
 newtab() {
-	if [[ $(uname) = 'Darwin' ]] ; then
-  		osascript \
-    		-e 'tell application "iTerm2" to tell current window to set newWindow to (create tab with default profile)'\
-    		-e "tell application \"iTerm2\" to tell current session of newWindow to write text \"tabtitle ${@}\""
-	fi
+    if [[ $(uname) = 'Darwin' ]] ; then
+        osascript \
+            -e 'tell application "iTerm2" to tell current window to set newWindow to (create tab with default profile)'\
+            -e "tell application \"iTerm2\" to tell current session of newWindow to write text \"tabtitle ${@}\""\
+            -e 'tell application "iTerm2" to tell current session of newWindow to write text "cd ~/Downloads"'
+fi
 }
 
 ### Java
