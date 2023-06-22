@@ -52,8 +52,8 @@ export GPG_KEY=0x126A3EDFFB6E402E
 if [[ $(uname) = 'Darwin' ]] ; then
     export LC_ALL=en_GB.UTF-8
     export LANG=en_GB.UTF-8
-    if [[ -f $(brew --prefix)/etc/bash_completion ]] ; then
-        source $(brew --prefix)/etc/bash_completion
+    if [[ -f $(brew --prefix)/etc/profile.d/bash_completion.sh ]] ; then
+        source $(brew --prefix)/etc/profile.d/bash_completion.sh
     fi
     if command -v pyenv &>/dev/null ; then
         export PYENV_ROOT="$HOME/.pyenv"
@@ -120,13 +120,6 @@ export LS_COLORS="di=34:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:su=30;41:sg=30
 # Terraform
 if which terraform &>/dev/null ; then
    complete -C /usr/local/bin/terraform terraform
-fi
-# Databricks
-if [[ -d $HOME/projects/databricks/universe/eng-tools/bin ]] ; then
-    export PATH=~/projects/databricks/universe/eng-tools/bin:$PATH
-fi
-if [[ -d $HOME/projects/databricks/universe/bazel ]] ; then
-    export PATH=~/projects/databricks/universe/bazel:$PATH
 fi
 # Dedupe PATH
 export PATH=$(echo -n $PATH | awk -v RS=: '!($0 in a) {a[$0]; printf("%s%s", length(a) > 1 ? ":" : "", $0)}')
