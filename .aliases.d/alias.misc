@@ -145,10 +145,11 @@ tabtitle() {
 }
 newtab() {
     if [[ $(uname) = 'Darwin' ]] ; then
+        [[ -n ${2} && -d ${2} ]] && newtab_dir=${2} || newtab_dir=~/Downloads
         osascript \
             -e 'tell application "iTerm2" to tell current window to set newWindow to (create tab with default profile)'\
-            -e "tell application \"iTerm2\" to tell current session of newWindow to write text \"tabtitle ${@}\""\
-            -e 'tell application "iTerm2" to tell current session of newWindow to write text "cd ~/Downloads"'
+            -e "tell application \"iTerm2\" to tell current session of newWindow to write text \"tabtitle ${1}\""\
+            -e "tell application \"iTerm2\" to tell current session of newWindow to write text \"cd ${newtab_dir}\""
 fi
 }
 

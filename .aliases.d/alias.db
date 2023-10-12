@@ -10,11 +10,13 @@ add_genie_cfg() {
     if [[ $# -lt 2 ]] ; then
         echo "$FUNCNAME host token [generate-postman-config (true|false)]" && return 1
     else
-        genie_host="https://${1}"
-        genie_token=${2}
+        genie_host="${1}"
+        genie_host="${genie_host#*://}"
+        genie_host="${genie_host%/}"
+        genie_token="${2}"
         curr_host=$(grep -A1 genie $HOME/.databrickscfg | awk '/host/ {print $NF}')
         curr_token=$(grep -A2 genie $HOME/.databrickscfg | awk '/token/ {print $NF}')
-        sed -i.bak "s,${curr_host},${genie_host},g;s,${curr_token},${genie_token},g" $HOME/.databrickscfg
+        sed -i.bak "s,${curr_host},https://${genie_host},g;s,${curr_token},${genie_token},g" $HOME/.databrickscfg
         if [[ "xtrue" == "x${3}" ]] ; then
             postman_id=$(uuidgen | tr 'A-Z' 'a-z')
             cat >> $HOME/Downloads/genie.postman_env.json <<EOF
@@ -24,14 +26,14 @@ add_genie_cfg() {
  "values": [
   {
    "key": "host",
-   "value": "${1}",
+   "value": "${genie_host}",
    "enabled": true
   },
   {
    "key": "token",
-   "value": "${2}",
+   "value": "${genie_token}",
    "enabled": true,
-   "type": secret
+   "type": "secret"
   }
  ],
  "_postman_variable_scope": "environment"
