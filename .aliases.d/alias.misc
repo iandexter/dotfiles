@@ -150,7 +150,14 @@ newtab() {
             -e 'tell application "iTerm2" to tell current window to set newWindow to (create tab with default profile)'\
             -e "tell application \"iTerm2\" to tell current session of newWindow to write text \"tabtitle ${1}\""\
             -e "tell application \"iTerm2\" to tell current session of newWindow to write text \"cd ${newtab_dir}\""
-fi
+    fi
+}
+jqcat() {
+    if command -v pygmentize >/dev/null ; then
+        jq -r . < "$1" | pygmentize -l json
+    else
+        jq -r . < "$1"
+    fi
 }
 
 ### Java
