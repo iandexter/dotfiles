@@ -73,6 +73,11 @@ if [[ $(uname) = 'Darwin' ]] ; then
         export LDFLAGS="-L/usr/local/opt/curl/lib"
         export CPPFLAGS="-I/usr/local/opt/curl/include"
         export PKG_CONFIG_PATH="/usr/local/opt/curl/lib/pkgconfig"
+    elif [[ -d $(brew --prefix)/opt/curl/bin ]] ; then
+        export PATH="$(brew --prefix)/opt/curl/bin:$PATH"
+        export LDFLAGS="-L$(brew --prefix)/opt/curl/lib"
+        export CPPFLAGS="-I$(brew --prefix)/opt/curl/include"
+        export PKG_CONFIG_PATH="$(brew --prefix)/opt/curl/lib/pkgconfig"
     fi
     if [[ -d /usr/local/opt/ruby ]] ; then
         export LDFLAGS="-L/usr/local/opt/ruby/lib"
@@ -96,7 +101,12 @@ if [[ $(uname) = 'Darwin' ]] ; then
         export PATH=$(go env GOPATH)/bin:$PATH
     elif [[ -d ~/go ]] ; then
         export PATH=~/go/bin:$PATH
-	fi
+    fi
+    if command -v pygmentize >/dev/null ; then
+        unalias less
+        alias cless='pygmentize -g | less -R'
+        alias jless='pygmentize -l json | less -R'
+    fi
 fi
 # Vagrant
 if which vagrant &>/dev/null ; then
