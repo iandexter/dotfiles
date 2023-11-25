@@ -60,3 +60,4 @@ augroup END
 
 " Autosave as you type
 autocmd TextChanged,TextChangedI <buffer> if &readonly == 0 && filereadable(bufname('%')) | silent write | endif
+
