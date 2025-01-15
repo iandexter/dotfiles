@@ -15,6 +15,7 @@ svnadd() {
     svn propset svn:keywords "Date Id URL Rev Author" ${1}
 }
 headtails() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME filename num_lines" && return 1
     head -n ${2:-10} ${1}
     echo -ne "${3:-...\n}"
     tail -n ${2:-10} ${1}
@@ -158,6 +159,19 @@ jqcat() {
     else
         jq -r . < "$1"
     fi
+}
+alias jqcopy='jq -r . | pbcopy'
+camel_to_snake() {
+  local s=$1
+  local result=""
+  for ((i=0; i<${#s}; i++)); do
+    char=${s:$i:1}
+    if [[ $char =~ [A-Z] && $i != 0 ]]; then
+      result+="_"
+    fi
+    result+=${char,,}
+  done
+  echo "$result"
 }
 
 ### Java
