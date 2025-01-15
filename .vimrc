@@ -61,3 +61,7 @@ augroup END
 " Autosave as you type
 autocmd TextChanged,TextChangedI <buffer> if &readonly == 0 && filereadable(bufname('%')) | silent write | endif
 
+" Enable paste mode automatically when entering Insert mode
+autocmd InsertEnter * set paste
+autocmd InsertLeave * set nopaste
+
