@@ -22,7 +22,7 @@ add_genie_cfg() {
             cat >> $HOME/Downloads/genie.postman_env.json <<EOF
 {
  "id": "${postman_id}",
- "name": "genie",
+ "name": ".genie",
  "values": [
   {
    "key": "host",
@@ -62,18 +62,38 @@ convert_logs() {
     fi
 }
 gen_trace() {
-    echo "0$((${RANDOM}%2))-$(uuidgen | tr -d '-')-$(uuidgen | tr -d '-' | cut -c1-16)-0$((${RANDOM}%2))" | tr '[A-Z]' '[a-z]'
+    # echo "0$((${RANDOM}%2))-$(uuidgen | tr -d '-')-$(uuidgen | tr -d '-' | cut -c1-16)-0$((${RANDOM}%2))" | tr '[A-Z]' '[a-z]'
+    echo "00-$(uuidgen | tr -d '-')-$(uuidgen | tr -d '-' | cut -c1-16)-01" | tr '[A-Z]' '[a-z]'
 }
-get_workspace_urls() {
-    [[ $# -ne 1 ]] && echo "$FUNCNAME workspace_id [..]" && return 1
+get_workspace_region() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME workspace_id [..]" && return 1
     while [[ -n "${1}" ]] ; do
         o=${1}
         new="adb-${o}.$(( ${o} % 20 )).azuredatabricks.net"
         c=$(host ${new} | tail -1 | awk '{print $1}')
-        echo "Workspace ID: ${o}"
-        echo "New URL: https://${new}"
-        echo "Old URL: https://${c}/?o=${o}"
-        echo "Version: $(curl -s https://${new}/version | grep branch | gsed 's/<[^>]\+>//g;s/^[ \t]*//g')"
+        r="${c%%.*}"
+        echo "${o} : ${r//-/}"
         shift
     done
 }
+bigEmoji() { 
+    local inner=$(echo "$1" | tr -d ':' | sed 's/./&+/g;s/+$//'); 
+    local result=$(for i in {0..3}; do for j in {0..3}; do printf ":___b+i+g___%s___%d-%d:" "$inner" "$j" "$i"; done; echo; done); 
+    echo "$result" | (if command -v pbcopy &> /dev/null; then pbcopy; else xclip -selection clipboard; fi); 
+    echo "BigEmoji copied to clipboard. Or use this:" >&2; 
+    echo "$result" 
+}
+jira_assign() {
+   [[ $# -le 1 ]] && echo "$FUNCNAME ticket [..]" && return 1
+   while [[ -n "${1}" ]] ; do
+      jira issue assign ${1} $(jira me)
+      shift
+   done
+}
+jira_open() {
+   [[ $# -ne 1 ]] && echo "$FUNCNAME ticket" && return 1
+   open https://databricks.atlassian.net/browse/${1}
+}
+alias ji='jira_open'
+alias jl='jira issue list'
+alias ja='jira_assign'
