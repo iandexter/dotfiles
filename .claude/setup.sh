@@ -34,7 +34,7 @@ fi
 # Merge settings.json using jq
 echo "Merging settings.json..."
 if [[ -f "$LOCAL_CLAUDE/settings.databricks.json" ]]; then
-  jq -s '.[0] * .[1] | .permissions.allow = (.[0].permissions.allow + .[1].permissions.allow | unique)' \
+  jq -s '.[0] as $base | .[1] as $dbr | $base * $dbr | .permissions.allow = ($base.permissions.allow + $dbr.permissions.allow | unique)' \
     "$DOTFILES_CLAUDE/settings.base.json" \
     "$LOCAL_CLAUDE/settings.databricks.json" \
     > "$TARGET/settings.json"
