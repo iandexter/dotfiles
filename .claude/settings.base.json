@@ -1,0 +1,71 @@
+{
+  "env": {
+    "ANTHROPIC_MODEL": "sonnet"
+  },
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:*.anthropic.com)",
+      "WebFetch(domain:*.stackoverflow.com)",
+      "WebFetch(domain:*.mozilla.org)",
+      "WebFetch(domain:*.github.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(ls:*)",
+      "Bash(pwd:*)",
+      "Bash(echo:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(find:^(?!.*(rm|-delete)).*$)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(rg:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(cd:*)",
+      "Bash(ps:*)",
+      "Bash(top:*)",
+      "Bash(df:*)",
+      "Bash(du:*)",
+      "Bash(which:*)",
+      "Bash(whereis:*)",
+      "Bash(whoami:*)",
+      "Bash(git checkout:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git branch:*)",
+      "Bash(git show:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh api:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh issue view:*)",
+      "Bash(kubectl describe:*)",
+      "Bash(kubectl get:*)",
+      "Bash(kubectl logs:*)",
+      "Bash(kubectl version)",
+      "Bash(bazel query:*)",
+      "Bash(bazel build:*)",
+      "Bash(bazel test:*)"
+    ],
+    "disableBypassPermissionsMode": "disable"
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '{session_id, transcript_path}' > /tmp/claude-code-session-report.json"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "printf '%s  %s' \"$(pwd | sed \"s|$HOME|~|\")\" \"$(git branch --show-current 2>/dev/null || echo '')\""
+  },
+  "alwaysThinkingEnabled": true
+}
