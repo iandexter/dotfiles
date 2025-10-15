@@ -103,9 +103,11 @@ if [[ $(uname) = 'Darwin' ]] ; then
         export PATH=~/go/bin:$PATH
     fi
     if command -v pygmentize >/dev/null ; then
-        unalias less
+        unalias less 2>/dev/null
+        alias ccat='pygmentize -g'
         alias cless='pygmentize -g | less -R'
         alias jless='pygmentize -l json | less -R'
+        alias jqless='jq -r . | jless'
     fi
 fi
 # Vagrant
@@ -123,13 +125,19 @@ if [[ -x $(which pass 2>/dev/null) && -d $HOME/.passwords ]] ; then
     export PASSWORD_STORE_DIR=$HOME/.passwords
     export PASSWORD_STORE_GIT=$HOME/.passwords
 fi
+# Node
+if which node &>/dev/null ; then
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+fi
 # Colors
 export CLICOLOR=1
 export LSCOLORS=GxFxCxDxBxegedabagaced
 export LS_COLORS="di=34:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43"
 # Terraform
 if which terraform &>/dev/null ; then
-   complete -C /usr/local/bin/terraform terraform
+    complete -C $(which terraform) terraform
 fi
 # Dedupe PATH
 export PATH=$(echo -n $PATH | awk -v RS=: '!($0 in a) {a[$0]; printf("%s%s", length(a) > 1 ? ":" : "", $0)}')
