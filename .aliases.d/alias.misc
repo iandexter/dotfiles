@@ -173,6 +173,7 @@ camel_to_snake() {
   done
   echo "$result"
 }
+alias grep='grep --color'
 
 ### Java
 # Function to switch JDK versions
