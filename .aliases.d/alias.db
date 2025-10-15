@@ -3,9 +3,12 @@ alias awsc='aws --profile aws-cust-test1_databricks-power-user'
 alias databricksaz='databricks --profile azure'
 alias databrickse2='databricks --profile e2'
 alias databricksg='databricks --profile genie'
+alias databricksd='databricks --debug'
 alias dbfsaz='dbfs --profile azure'
 alias dbfse2='dbfs --profile e2'
 alias dbfsg='dbfs --profile genie'
+alias claude='~/universe/devtools/ai/llm agent session'
+alias llm='~/universe/devtools/ai/llm'
 add_genie_cfg() {
     if [[ $# -lt 2 ]] ; then
         echo "$FUNCNAME host token [generate-postman-config (true|false)]" && return 1
@@ -16,7 +19,7 @@ add_genie_cfg() {
         genie_token="${2}"
         curr_host=$(grep -A1 genie $HOME/.databrickscfg | awk '/host/ {print $NF}')
         curr_token=$(grep -A2 genie $HOME/.databrickscfg | awk '/token/ {print $NF}')
-        sed -i.bak "s,${curr_host},https://${genie_host},g;s,${curr_token},${genie_token},g" $HOME/.databrickscfg
+        sed -i.bak "s,${curr_host},https://${genie_host},;s,${curr_token},${genie_token}," $HOME/.databrickscfg
         if [[ "xtrue" == "x${3}" ]] ; then
             postman_id=$(uuidgen | tr 'A-Z' 'a-z')
             cat >> $HOME/Downloads/genie.postman_env.json <<EOF
