@@ -16,3 +16,13 @@ dbxcli
 .config/pip/
 .config/wireshark/
 **/.config/com.googlecode.iterm2.plist
+# Claude Code runtime files
+.claude/cost_cache.json
+.claude/debug/
+.claude/file-history/
+.claude/history.jsonl
+.claude/shell-snapshots/
+.claude/todos/
+.claude/statsig/
+.claude/ide/
+.claude/projects/
