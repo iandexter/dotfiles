@@ -494,7 +494,7 @@ PL_GIT_AHEAD=true
 PL_GIT_MODIFIED=true
 PL_GIT_STAGED=true
 PL_GIT_CONFLICTS=true
-PL_GIT_UNTRACKED=true
+PL_GIT_UNTRACKED=false
 PL_GIT_STASH=true
 PL_SHORT=true              # Show symbols or shortcuts only
 
@@ -550,8 +550,8 @@ declare -A PL_SYMBOLS=(
 [battery_discharging]="▮"
 
 [user]=""
-[path]="פּ"
-[time]=""
+[path]=""
+[time]="󰥔"
 )
 
 # check if an argument has been given for a config file
