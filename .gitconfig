@@ -1,17 +1,19 @@
 [user]
     name = Ian Dexter D Marquez
-    email = iandexter@users.noreply.github.com
+    email = 79125+iandexter@users.noreply.github.com.x 
     logallrefupdates = true
     signingkey = 126A3EDFFB6E402E
 [core]
     excludesfile = /Users/iandexter/.gitignore
     editor = vim
+    fsmonitor = true
+    untrackedcache = true
 [alias]
     ba = branch --all
     bd = branch --delete --force
     ca = config --get-regexp '^alias\\.'
     cb = checkout -b
-    ci = commit -sS
+    ci = commit # -sS
     co = checkout
     fp = fetch --prune origin
     fr = "!f() { main=${1:-main} ; git fetch origin ${main} && git rebase origin/${main} ; } ; f"
@@ -29,6 +31,7 @@
     ss = status --short --branch
     st = status
     up = "!f() { main=${1:-master} ; git remote update && git checkout \"${main}\" && git pull --rebase --prune ; } ; f"
+    pp = "!bash -c \"new_args=(); remote=\\\"\\\"; ref=\\\"\\\"; start=0; if [[ \\$0 == \\\"bash\\\" ]]; then start=1; fi; for ((i=start; i<=\\$#; i++)); do arg=\\${!i}; if [[ \\\"\\$arg\\\" != -* ]]; then if [[ \\\"\\$remote\\\" == \\\"\\\" ]]; then remote=\\\"\\$arg\\\"; new_args+=(\\\"\\$arg\\\"); else if [[ \\$ref == \\\"\\\" ]]; then ref=\\\"\\$arg\\\"; fi; if [[ \\\"\\$ref\\\" != ian-marquez_data/* ]]; then new_args+=(\\\"\\$arg:ian-marquez_data/\\$arg\\\"); else new_args+=(\\\"\\$arg\\\"); fi; fi; else new_args+=(\\\"\\$arg\\\"); fi; done; if [[ \\$remote == \\\"\\\" ]]; then new_args+=(\\\"origin\\\"); fi; if [[ \\$ref == \\\"\\\" ]]; then branch=\\$(git branch --show-current); if [[ \\\"\\$branch\\\" != ian-marquez_data/* ]]; then new_args+=(\\\"\\$branch:ian-marquez_data/\\$branch\\\"); else new_args+=(\\\"\\$branch\\\"); fi; fi; git push -u \\\"\\${new_args[@]}\\\"\" "
 [color]
     branch = auto
     diff = auto
@@ -50,7 +53,7 @@
 [gpg]
     program = gpg
 [commit]
-    gpgsign = true
+    # gpgsign = true
 [init]
     ### templateDir = ~/projects/compareglobal/git-template
 [secrets]
