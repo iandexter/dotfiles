@@ -159,6 +159,37 @@ The CSV provides only total days to mitigate. The breakdown below is an assumpti
 - Wait for user confirmation before proceeding
 - If Slack API call fails with auth error, prompt user to reauthenticate and retry
 
+### Agent usage
+
+**Available agents in Claude Code:**
+- **Explore** - Fast agent for finding files by patterns, searching code for keywords, and exploring the codebase. Specify thoroughness level: "quick", "medium", or "very thorough"
+- **codebase-explainer** - Agent for explaining how specific code works, tracing data flows, and documenting implementation details
+- **web-researcher** - Agent for searching the web, finding external documentation, and gathering online information
+
+**When to use each agent:**
+- Use **Explore** to find WHERE files and components live
+- Use **Explore** to search for patterns and examples across the codebase
+- Use **codebase-explainer** to understand HOW specific code works (provide file paths)
+- Use **Explore** to discover what documents exist in directories
+- Use **codebase-explainer** to extract insights from specific documents
+- Use **web-researcher** for external documentation only if needed
+
+**Invalid agent types (do not use):**
+- `codebase-locator` - Use **Explore** instead
+- `codebase-analyzer` - Use **codebase-explainer** instead
+- `codebase-pattern-finder` - Use **Explore** instead
+- `thoughts-locator` - Use **Explore** instead
+- `thoughts-analyzer` - Use **codebase-explainer** instead
+- `web-search-researcher` - Use **web-researcher** instead
+- `ui-agent` - Not available
+
+**Agent orchestration best practices:**
+- Spawn multiple agents in parallel when researching independent areas
+- Specify thoroughness level for Explore agent (quick/medium/very thorough)
+- Provide detailed, focused instructions to each agent
+- Wait for ALL agents to complete before synthesizing findings
+- Verify agent results and spawn follow-up tasks if results seem incorrect
+
 ## Work patterns
 
 ### Parallel tool execution
