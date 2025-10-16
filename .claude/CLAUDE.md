@@ -359,6 +359,11 @@ Then wait for the user's input.
   - Keep action concise (analyze, plan, review, evaluate, etc.)
   - Keep topic descriptive but brief
 
+**Exception for ticket analysis:**
+- Use format: `<ticket-number>_<topic>.md`
+- Examples: `ES-1608323_scim_analysis.md`, `JOBS-12345_timeout_investigation.md`
+- Ticket number comes first, followed by descriptive topic
+
 ### Planning workflow
 
 **Writing plans:**
