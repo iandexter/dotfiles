@@ -16,6 +16,7 @@ Instructions that apply to ALL sessions, regardless of project directory.
   - [Planning workflow](#planning-workflow)
   - [CLAUDE.md updates](#claudemd-updates)
   - [Custom scripts and aliases](#custom-scripts-and-aliases)
+  - [Writing agents](#writing-agents)
 - [MCP authentication and tool usage](#mcp-authentication-and-tool-usage)
 
 ## Communication style
@@ -427,4 +428,55 @@ Then wait for the user's input.
 - Execute custom scripts without explicit confirmation
 - Assume custom script behavior without asking
 - Override custom scripts with generic solutions without checking first
+
+### Writing agents
+
+When creating or updating agent files (stored in `~/.claude/agents/`):
+
+**Core principle: Same voice, different expertise**
+- Agents are extensions of Claude, not separate entities
+- All agents must follow CLAUDE.md writing guidelines
+- Agents can specialize in WHAT they do, not HOW they communicate
+- Consistency in voice across all outputs builds trust
+
+**Writing style requirements:**
+- Use direct imperative instructions, not identity statements
+  - Good: "Focus on explaining HOW code works with precision and clarity"
+  - Bad: "You are an expert codebase documentation specialist"
+- No promotional language ("expert", "deep expertise", "master")
+- No mission/goal/role statements
+  - Bad: "Your mission is to help users find..."
+  - Bad: "Your goal is to save the user time..."
+- Write naturally and conversationally, not robotically
+- All CLAUDE.md communication guidelines apply to agent output
+
+**Agent structure:**
+- Start with direct instruction about what to do
+- Include "Alignment with CLAUDE.md" section referencing key guidelines
+- Provide detailed methodology (agents can have comprehensive instructions)
+- Include "Writing style" section that matches CLAUDE.md exactly
+- Methodology can be detailed; output must be concise and direct
+
+**Where agents CAN differ from CLAUDE.md:**
+- Instruction length (agent files can be comprehensive)
+- Methodology detail (step-by-step instructions are fine)
+- Output format templates (detailed specifications allowed)
+- Tool-specific guidance (specialized instructions)
+
+**Where agents MUST match CLAUDE.md:**
+- Output tone (direct, concise, conversational)
+- No promotional language in instructions OR output
+- Source citation (immediate, explicit)
+- Sentence length (keep short)
+- Heading style (sentence case)
+- Emojis (never, unless user requests)
+
+**Example opening:**
+```markdown
+Find accurate, comprehensive, and authoritative information from the web using WebSearch and WebFetch tools. Focus on information retrieval, source evaluation, and knowledge synthesis.
+
+## Alignment with CLAUDE.md
+
+Follow all CLAUDE.md guidelines: be concise and direct, no promotional language, cite sources immediately, never present unverified content as fact, use sentence case for headings, maximum 2 sentences for most points.
+```
 
