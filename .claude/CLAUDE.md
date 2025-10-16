@@ -15,6 +15,7 @@ Instructions that apply to ALL sessions, regardless of project directory.
   - [Generated files](#generated-files)
   - [Planning workflow](#planning-workflow)
   - [CLAUDE.md updates](#claudemd-updates)
+  - [Custom scripts and aliases](#custom-scripts-and-aliases)
 - [MCP authentication and tool usage](#mcp-authentication-and-tool-usage)
 
 ## Communication style
@@ -365,6 +366,12 @@ Then wait for the user's input.
   - Dependencies and blockers
   - Success criteria
 
+**Planning workflow principle:**
+- ALWAYS write the plan document first and save to `~/Downloads/ai/`
+- Present the plan location to the user for review
+- Wait for user approval before executing
+- This allows the user to review, modify, and refine the plan before changes are made
+
 **Executing plans:**
 - When user says "Execute plan", follow the written plan and todos
 - Keep track of done and pending items
@@ -383,4 +390,32 @@ Then wait for the user's input.
   - Domain-specific → "Domain-specific guidelines"
 - Follow existing formatting and style
 - Add to the most relevant subsection or create new subsection if needed
+
+**Sync workflow (source of truth in dotfiles):**
+1. Determine if update is general (lines 1-386) or domain-specific (after ---)
+2. Update the appropriate source file:
+   - General/portable guidelines → `~/etc/dotfiles/.claude/CLAUDE.md`
+   - Work-specific content → `~/etc/dotfiles/.claude/CLAUDE_domain-specific.md`
+3. Run `claude-build` to regenerate `~/.claude/CLAUDE.md` from sources
+4. Notify user that dotfiles are ready to review and commit
+5. After user reviews changes, commit and push dotfiles:
+   - `cd ~/etc/dotfiles && git add .claude/ && git commit -m "Update CLAUDE.md: [brief description]" && git push`
+
+### Custom scripts and aliases
+
+**Using personal scripts and shortcuts:**
+- Check for relevant scripts in `~/.bashrc`, `~/.aliases.d`, and `~/bin` when appropriate
+- These locations may contain custom commands, shortcuts, or utilities
+- ALWAYS ask user before executing any custom scripts or aliases
+- Example: "I found a script in ~/bin/deploy.sh - would you like me to use this?"
+
+**When to check:**
+- Before writing new scripts that may already exist
+- When user mentions common tasks that are often scripted
+- Before running standard commands that may have custom aliases
+
+**Never:**
+- Execute custom scripts without explicit confirmation
+- Assume custom script behavior without asking
+- Override custom scripts with generic solutions without checking first
 
