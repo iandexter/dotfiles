@@ -384,9 +384,3 @@ Then wait for the user's input.
 - Follow existing formatting and style
 - Add to the most relevant subsection or create new subsection if needed
 
----
-
-# Domain-specific extensions
-
-For work-specific or organization-specific guidelines, see domain-specific extensions.
-These are loaded from `~/.local/.claude/CLAUDE_DOMAIN_SPECIFIC.md` if present.
