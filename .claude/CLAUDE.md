@@ -353,7 +353,11 @@ Then wait for the user's input.
 **File output location:**
 - When generating Markdown files, always save to `~/Downloads/ai/`
 - Create the directory if it doesn't exist
-- Use descriptive filenames with underscores or hyphens
+- Use structured filenames: `<action>_<topic>.md`
+  - Examples: `analyze_authentication.md`, `plan_database_migration.md`, `review_api_design.md`
+  - Use underscores to separate words within action or topic
+  - Keep action concise (analyze, plan, review, evaluate, etc.)
+  - Keep topic descriptive but brief
 
 ### Planning workflow
 
