@@ -17,7 +17,6 @@ Instructions that apply to ALL sessions, regardless of project directory.
   - [CLAUDE.md updates](#claudemd-updates)
   - [Custom scripts and aliases](#custom-scripts-and-aliases)
   - [Writing agents](#writing-agents)
-- [MCP authentication and tool usage](#mcp-authentication-and-tool-usage)
 
 ## Communication style
 
@@ -136,59 +135,6 @@ The CSV provides only total days to mitigate. The breakdown below is an assumpti
 2. Conservative estimate within 20-30% range for RCA activities
 3. Reflects time on log access and correlation, not solution development
 ```
-
-## MCP authentication and tool usage
-
-### Google Workspace (Docs, Sheets, Drive)
-
-**ALWAYS use Google MCP first, NOT Glean:**
-- Try `mcp__proxy__google__google_read_api_call` or `mcp__proxy__google__google_write_api_call` first
-- If auth fails with "no refresh token" error, prompt user: "Please reauthenticate the Google MCP extension and let me know when ready"
-- After user confirms reauth, retry the Google MCP call
-- Only fall back to Glean if Google MCP is unavailable after successful auth
-
-**Always check document freshness:**
-- After fetching via Google MCP, note the file size and compare with previous fetches
-- If document appears stale or truncated (significantly smaller than expected), prompt user to confirm it's the correct/latest version
-- For iterative document reviews, always refetch from source to ensure latest changes are included
-
-### Slack
-
-**ALWAYS confirm authentication before any Slack action:**
-- Before calling any `mcp__proxy__slack__*` tool, first ask: "Please reauthenticate the Slack MCP extension if needed, then let me know when you're ready for me to proceed with Slack operations"
-- Wait for user confirmation before proceeding
-- If Slack API call fails with auth error, prompt user to reauthenticate and retry
-
-### Agent usage
-
-**Available agents in Claude Code:**
-- **Explore** - Fast agent for finding files by patterns, searching code for keywords, and exploring the codebase. Specify thoroughness level: "quick", "medium", or "very thorough"
-- **codebase-explainer** - Agent for explaining how specific code works, tracing data flows, and documenting implementation details
-- **web-researcher** - Agent for searching the web, finding external documentation, and gathering online information
-
-**When to use each agent:**
-- Use **Explore** to find WHERE files and components live
-- Use **Explore** to search for patterns and examples across the codebase
-- Use **codebase-explainer** to understand HOW specific code works (provide file paths)
-- Use **Explore** to discover what documents exist in directories
-- Use **codebase-explainer** to extract insights from specific documents
-- Use **web-researcher** for external documentation only if needed
-
-**Invalid agent types (do not use):**
-- `codebase-locator` - Use **Explore** instead
-- `codebase-analyzer` - Use **codebase-explainer** instead
-- `codebase-pattern-finder` - Use **Explore** instead
-- `thoughts-locator` - Use **Explore** instead
-- `thoughts-analyzer` - Use **codebase-explainer** instead
-- `web-search-researcher` - Use **web-researcher** instead
-- `ui-agent` - Not available
-
-**Agent orchestration best practices:**
-- Spawn multiple agents in parallel when researching independent areas
-- Specify thoroughness level for Explore agent (quick/medium/very thorough)
-- Provide detailed, focused instructions to each agent
-- Wait for ALL agents to complete before synthesizing findings
-- Verify agent results and spawn follow-up tasks if results seem incorrect
 
 ## Work patterns
 
