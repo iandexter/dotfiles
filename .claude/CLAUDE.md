@@ -366,6 +366,13 @@ Then wait for the user's input.
 - Mark completed items clearly
 - Note any deviations or blockers encountered
 
+### Pull request review workflow
+
+**General principles:**
+- Automated reviewers may generate comments that aren't auto-resolved
+- Distinguish critical (bugs, logic errors) vs style (edge cases, documentation)
+- When PR is approved but has style comments: acknowledge trade-offs explicitly before merging
+
 ### CLAUDE.md updates
 
 **Self-modification:**
