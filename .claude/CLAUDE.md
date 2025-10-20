@@ -391,8 +391,9 @@ Then wait for the user's input.
    - General/portable guidelines → `~/etc/dotfiles/.claude/CLAUDE.md`
    - Work-specific content → `~/etc/dotfiles/.claude/CLAUDE_domain-specific.md`
 3. Run `claude-build` to regenerate `~/.claude/CLAUDE.md` from sources
-4. Notify user that dotfiles are ready to review and commit
-5. After user reviews changes, commit and push dotfiles:
+4. Check `.gitignore` before attempting git operations (domain-specific file is intentionally not tracked)
+5. Notify user that dotfiles are ready to review and commit
+6. After user reviews changes, commit and push dotfiles:
    - `cd ~/etc/dotfiles && git add .claude/ && git commit -m "Update CLAUDE.md: [brief description]" && git push`
 
 ### Custom scripts and aliases
