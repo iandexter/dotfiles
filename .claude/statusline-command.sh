@@ -29,7 +29,12 @@ if [ -n "$branch" ] && [ "$branch" != "(detached)" ]; then
     files=${files:-0}
 
     # Build git info with colors, only showing non-zero values
-    git_info=" 🔀 $branch"
+    # Use yellow for dirty branch, magenta for clean
+    if [ "$added" != "0" ] || [ "$removed" != "0" ] || [ "$files" != "0" ]; then
+        git_info=$(printf ' 🔀 \033[1;33m%s\033[0m' "$branch")
+    else
+        git_info=$(printf ' 🔀 \033[1;35m%s\033[0m' "$branch")
+    fi
     [ "$added" != "0" ] && git_info="$git_info | $(printf '\033[32m+%s\033[0m' "$added")"
     [ "$removed" != "0" ] && git_info="$git_info | $(printf '\033[31m-%s\033[0m' "$removed")"
     [ "$files" != "0" ] && git_info="$git_info | $(printf '\033[33m~%s\033[0m' "$files")"
