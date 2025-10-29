@@ -188,143 +188,6 @@ Always ask before proceeding when:
 - Verify documentation reflects current reality, not outdated information
 - When documenting systems, describe what IS, not what SHOULD BE (unless explicitly asked for recommendations)
 
-### Quantitative analysis and calculations
-
-**Show your work:**
-- Display calculation steps explicitly, not just final results
-- Cite data sources inline with every number
-- Label units clearly (hours, days, cases, percentage)
-- Use tables for multi-step calculations to show intermediate values
-
-**Distinguish data types in calculations:**
-```python
-# FROM DATA (cite source):
-total_cases = 30,803  # From DBR_Doctor.csv, FY26 Q1-Q3
-avg_mttr = 10.4 days  # From DBR_Doctor.csv, weighted average
-
-# FROM ASSUMPTION (justify):
-debugging_portion = 0.25  # ASSUMPTION: 25% of MTTR, based on typical support lifecycle
-cases_needing_debugging = 0.70  # ASSUMPTION: 70% of cases require log analysis
-
-# CALCULATED (show formula):
-debugging_cases = total_cases * cases_needing_debugging  # 21,562 cases
-```
-
-**Before delivering analysis:**
-- Review every number for citation
-- Check every assumption is labeled and justified
-- Verify calculations are shown step-by-step
-- Confirm user can reproduce your math
-
-### Writing Claude commands
-
-When asked to create a Claude command (stored in `~/.claude/commands/`):
-
-**File format:**
-- Commands are Markdown files (`.md`), not shell scripts
-- No YAML frontmatter
-- Filename uses kebab-case: `command-name.md`
-
-**Structure:**
-```markdown
-# Command title
-
-Brief description of what the command does.
-
-## Initial response
-
-When this command is invoked, respond with:
-```
-[Prompt that explains required parameters and optional inputs]
-```
-
-Then wait for the user's input.
-
-## Workflow
-
-After receiving [parameters]:
-
-1. [Step 1 description]
-2. [Step 2 description]
-3. [Step 3 description]
-
-## Style requirements
-
-- [Specific style requirements]
-- Follow CLAUDE.md guidelines
-```
-
-**Key principles:**
-
-1. **No external dependencies**:
-   - Embed all templates, formats, and examples directly in the command
-   - Don't reference external files (PDFs, other docs) that others may not have
-   - Make the command self-contained
-
-2. **Clear parameter documentation**:
-   - Explain required vs optional parameters in the initial response
-   - Provide examples in the prompt (e.g., "Topic name (e.g., 'Token Authentication', 'SSO')")
-   - Show what user needs to provide before proceeding
-
-3. **Interactive workflow**:
-   - Always wait for user input after initial prompt
-   - Use numbered steps in workflow section
-   - Mark decision points where user confirmation is needed
-
-4. **Embedded templates**:
-   - Include full format/structure in the command itself
-   - Show examples of expected output
-   - Provide formatting guidelines (sentence case, bold labels, etc.)
-
-5. **Style consistency**:
-   - Use sentence case for all headings
-   - Keep descriptions concise and direct
-   - Reference CLAUDE.md for general style requirements
-   - No collaborative preambles ("Let me help you...")
-
-**Example pattern:**
-```markdown
-# Create checklist
-
-Create checklists following standard format.
-
-## Initial response
-
-When this command is invoked, respond with:
-```
-I'll create a checklist. Please provide:
-1. Topic name (e.g., "Authentication", "Deployment")
-2. Primary reference (URL or doc path)
-3. Additional context (optional)
-
-I'll generate the checklist following the standard format.
-```
-
-Then wait for the user's input.
-
-## Workflow
-
-1. Read the primary reference to extract key information
-2. Search for additional relevant sources
-3. Generate checklist following this template:
-
-### Template structure
-
-[Embedded template with full formatting details]
-
-## Style requirements
-
-- Use sentence case for headings
-- Keep descriptions concise (1-2 sentences)
-- Follow CLAUDE.md communication guidelines
-```
-
-**Don't:**
-- Use YAML frontmatter (not needed for commands)
-- Reference external files others don't have
-- Create shell scripts instead of markdown
-- Skip the "Initial response" section
-- Assume parameters without prompting user
 
 ### Generated files
 
@@ -414,54 +277,18 @@ Then wait for the user's input.
 - Assume custom script behavior without asking
 - Override custom scripts with generic solutions without checking first
 
-### Writing agents
+### Command recommendations
 
-When creating or updating agent files (stored in `~/.claude/agents/`):
+When user requests match these patterns, proactively suggest the appropriate command:
 
-**Core principle: Same voice, different expertise**
-- Agents are extensions of Claude, not separate entities
-- All agents must follow CLAUDE.md writing guidelines
-- Agents can specialize in WHAT they do, not HOW they communicate
-- Consistency in voice across all outputs builds trust
+- **Writing/creating commands** → `/create-command`
+- **Writing/creating agents** → `/create-agent`
+- **Quantitative analysis with calculations** → `/analyze-quantitative`
+- **Customer support investigation** → `/investigate-support`
+- **PRD/design doc review** → `/review-prd`
+- **Interview evaluation writing** → `/evaluate-interview`
 
-**Writing style requirements:**
-- Use direct imperative instructions, not identity statements
-  - Good: "Focus on explaining HOW code works with precision and clarity"
-  - Bad: "You are an expert codebase documentation specialist"
-- No promotional language ("expert", "deep expertise", "master")
-- No mission/goal/role statements
-  - Bad: "Your mission is to help users find..."
-  - Bad: "Your goal is to save the user time..."
-- Write naturally and conversationally, not robotically
-- All CLAUDE.md communication guidelines apply to agent output
+Suggest format: "This matches the [command-name] workflow. Would you like me to invoke that command, or proceed directly?"
 
-**Agent structure:**
-- Start with direct instruction about what to do
-- Include "Alignment with CLAUDE.md" section referencing key guidelines
-- Provide detailed methodology (agents can have comprehensive instructions)
-- Include "Writing style" section that matches CLAUDE.md exactly
-- Methodology can be detailed; output must be concise and direct
-
-**Where agents CAN differ from CLAUDE.md:**
-- Instruction length (agent files can be comprehensive)
-- Methodology detail (step-by-step instructions are fine)
-- Output format templates (detailed specifications allowed)
-- Tool-specific guidance (specialized instructions)
-
-**Where agents MUST match CLAUDE.md:**
-- Output tone (direct, concise, conversational)
-- No promotional language in instructions OR output
-- Source citation (immediate, explicit)
-- Sentence length (keep short)
-- Heading style (sentence case)
-- Emojis (never, unless user requests)
-
-**Example opening:**
-```markdown
-Find accurate, comprehensive, and authoritative information from the web using WebSearch and WebFetch tools. Focus on information retrieval, source evaluation, and knowledge synthesis.
-
-## Alignment with CLAUDE.md
-
-Follow all CLAUDE.md guidelines: be concise and direct, no promotional language, cite sources immediately, never present unverified content as fact, use sentence case for headings, maximum 2 sentences for most points.
-```
+User can choose to use the command (for full methodology) or proceed directly (for immediate execution).
 
