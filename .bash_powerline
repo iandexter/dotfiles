@@ -188,14 +188,14 @@ function read_only_module {
 #   PL_GIT_MODIFIED: true/false
 #   PL_GIT_UNTRACKED: true/false
 function git_module {
-    local git_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
+    local git_branch=$(git --no-optional-locks rev-parse --abbrev-ref HEAD 2> /dev/null)
     if [ -n "$git_branch" ]; then
         local bg_color="$1"
         local fg_color="$2"
         local content="${PL_SYMBOLS[git_branch]} $git_branch"
 
         if [ "$PL_GIT_STASH" = true ]; then
-            local number_stash="$(git stash list 2>/dev/null | wc -l)"
+            local number_stash="$(git --no-optional-locks stash list 2>/dev/null | wc -l)"
             if [ ! "$number_stash" -eq 0 ]; then
                 content+="${PL_SYMBOLS[git_stash]}$number_stash"
             fi
@@ -216,34 +216,34 @@ function git_module {
         fi
 
         if [ "$PL_GIT_STAGED" = true ]; then
-            local number_staged="$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l | sed 's/\ //g')"
+            local number_staged="$(git --no-optional-locks diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l | sed 's/\ //g')"
             if [ ! "$number_staged" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_staged]}$number_staged"
             fi
         fi
 
         if [ "$PL_GIT_CONFLICTS" = true ]; then
-            local number_conflicts="$(git diff --name-only --diff-filter=U 2>/dev/null | wc -l | sed 's/\ //g')"
+            local number_conflicts="$(git --no-optional-locks diff --name-only --diff-filter=U 2>/dev/null | wc -l | sed 's/\ //g')"
             if [ ! "$number_conflicts" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_conflicts]}$number_conflicts"
             fi
         fi
 
         if [ "$PL_GIT_MODIFIED" = true ]; then
-            local number_modified="$(git diff --name-only --diff-filter=M 2>/dev/null | wc -l | sed 's/\ //g')"
+            local number_modified="$(git --no-optional-locks diff --name-only --diff-filter=M 2>/dev/null | wc -l | sed 's/\ //g')"
             if [ ! "$number_modified" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_modified]}$number_modified"
             fi
         fi
 
         if [ "$PL_GIT_UNTRACKED" = true ]; then
-            local number_untracked="$(git ls-files --other --exclude-standard | wc -l | sed 's/\ //g')"
+            local number_untracked="$(git --no-optional-locks ls-files --other --exclude-standard | wc -l | sed 's/\ //g')"
             if [ ! "$number_untracked" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_untracked]}$number_untracked"
             fi
         fi
 
-        if [ -n "$(git status --porcelain)" ]; then
+        if [ -n "$(git --no-optional-locks status --porcelain)" ]; then
             if [ -n "$PL_GIT_DIRTY_FG" ]; then
                 fg_color="$PL_GIT_DIRTY_FG"
             fi
@@ -490,7 +490,7 @@ PL_SSH_SHOW_HOST=true
 PL_SSH_USE_IP=true
 PL_GIT_DIRTY_FG=Black
 PL_GIT_DIRTY_BG=MyOrange
-PL_GIT_AHEAD=true
+PL_GIT_AHEAD=false
 PL_GIT_MODIFIED=true
 PL_GIT_STAGED=true
 PL_GIT_CONFLICTS=true
