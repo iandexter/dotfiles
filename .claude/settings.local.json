@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/ian.marquez/.claude/**)",
+      "Read(//Users/ian.marquez/bin/**)",
+      "Bash(claude-build)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
