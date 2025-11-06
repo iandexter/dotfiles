@@ -28,3 +28,4 @@ dbxcli
 .claude/projects/
 .claude/CLAUDE_domain-specific.md
 .claude/commands/
+.claude/agents/
