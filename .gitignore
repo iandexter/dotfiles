@@ -27,5 +27,6 @@ dbxcli
 .claude/ide/
 .claude/projects/
 .claude/CLAUDE_domain-specific.md
-.claude/commands/
 .claude/agents/
+.claude/commands/
+.claude/skills/
