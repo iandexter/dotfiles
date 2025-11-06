@@ -10,13 +10,11 @@ Instructions that apply to ALL sessions, regardless of project directory.
   - [When to use TodoWrite](#when-to-use-todowrite)
   - [When to ask clarifying questions](#when-to-ask-clarifying-questions)
   - [File reading and sub-agent orchestration](#file-reading-and-sub-agent-orchestration)
-  - [Quantitative analysis and calculations](#quantitative-analysis-and-calculations)
-  - [Writing Claude commands](#writing-claude-commands)
   - [Generated files](#generated-files)
   - [Planning workflow](#planning-workflow)
   - [CLAUDE.md updates](#claudemd-updates)
   - [Custom scripts and aliases](#custom-scripts-and-aliases)
-  - [Writing agents](#writing-agents)
+  - [Command recommendations](#command-recommendations)
 
 ## Communication style
 
