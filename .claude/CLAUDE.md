@@ -201,7 +201,7 @@ Always ask before proceeding when:
 
 **Exception for ticket analysis:**
 - Use format: `<ticket-number>_<topic>.md`
-- Examples: `ES-1608323_scim_analysis.md`, `JOBS-12345_timeout_investigation.md`
+- Examples: `PROJ-123_scim_analysis.md`, `TASK-456_timeout_investigation.md`
 - Ticket number comes first, followed by descriptive topic
 
 ### Planning workflow
