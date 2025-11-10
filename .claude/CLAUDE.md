@@ -278,16 +278,21 @@ Always ask before proceeding when:
 
 ### Command recommendations
 
-When user requests match these patterns, proactively suggest the appropriate command:
+When user requests match these patterns, **automatically invoke the command** instead of proceeding directly:
 
+**Automatic invocation (don't ask):**
+- **Deep investigation of failures/errors** → `/investigate-support`
+  - Patterns: "Investigate why X failed", "Trace request through services", "Customer reports error", "Debug component issue", "RCA for incident"
+  - These ALWAYS benefit from structured scope definition and proof requirements
+
+**Suggest but don't auto-invoke:**
 - **Writing/creating commands** → `/create-command`
 - **Writing/creating agents** → `/create-agent`
 - **Quantitative analysis with calculations** → `/analyze-quantitative`
-- **Customer support investigation** → `/investigate-support`
 - **PRD/design doc review** → `/review-prd`
 - **Interview evaluation writing** → `/evaluate-interview`
 
-Suggest format: "This matches the [command-name] workflow. Would you like me to invoke that command, or proceed directly?"
+For suggestions, use format: "This matches the [command-name] workflow. Would you like me to invoke that command, or proceed directly?"
 
 User can choose to use the command (for full methodology) or proceed directly (for immediate execution).
 
