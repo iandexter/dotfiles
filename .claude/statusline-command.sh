@@ -40,9 +40,32 @@ if [ -n "$branch" ] && [ "$branch" != "(detached)" ]; then
     [ "$files" != "0" ] && git_info="$git_info | $(printf '\033[33m~%s\033[0m' "$files")"
 fi
 
+# Extract cost data from JSON
+cost_usd=$(echo "$input" | jq -r '.cost.total_cost_usd // 0')
+duration_ms=$(echo "$input" | jq -r '.cost.total_duration_ms // 0')
+api_duration_ms=$(echo "$input" | jq -r '.cost.total_api_duration_ms // 0')
+lines_added=$(echo "$input" | jq -r '.cost.total_lines_added // 0')
+lines_removed=$(echo "$input" | jq -r '.cost.total_lines_removed // 0')
+
+# Format durations (ms to seconds with 1 decimal)
+duration_s=$(awk "BEGIN {printf \"%.1f\", $duration_ms/1000}")
+api_duration_s=$(awk "BEGIN {printf \"%.1f\", $api_duration_ms/1000}")
+
+# Build cost info section
+cost_info=""
+if [ "$cost_usd" != "0" ] || [ "$duration_ms" != "0" ]; then
+    cost_info=$(printf ' 💰 \033[1;33m$%.4f\033[0m ⏱️  \033[1;36m%ss\033[0m \033[0;37m(API: %ss)\033[0m 📝 \033[32m+%s\033[0m/\033[31m-%s\033[0m' \
+        "$cost_usd" \
+        "$duration_s" \
+        "$api_duration_s" \
+        "$lines_added" \
+        "$lines_removed")
+fi
+
 # Print status line with colors and icons
-printf '\033[1;34m[%s]\033[0m 🤖 \033[1;36m%s\033[0m 📁 \033[0;32m%s\033[0m%s' \
+printf '\033[1;34m[%s]\033[0m 🤖 \033[1;36m%s\033[0m 📁 \033[0;32m%s\033[0m%s%s' \
     "$version" \
     "$model" \
     "$cwd" \
-    "$git_info"
+    "$git_info" \
+    "$cost_info"
