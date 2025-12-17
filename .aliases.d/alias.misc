@@ -145,12 +145,31 @@ tabtitle() {
     random_color
 }
 newtab() {
-    if [[ $(uname) = 'Darwin' ]] ; then
-        [[ -n ${2} && -d ${2} ]] && newtab_dir=${2} || newtab_dir=~/Downloads
-        osascript \
-            -e 'tell application "iTerm2" to tell current window to set newWindow to (create tab with default profile)'\
-            -e "tell application \"iTerm2\" to tell current session of newWindow to write text \"tabtitle ${1}\""\
-            -e "tell application \"iTerm2\" to tell current session of newWindow to write text \"cd ${newtab_dir}\""
+    local target_dir="${1:-~/Downloads}"
+    local tab_title="${2:-✨ New tab}"
+    local badge_text="${3}"
+    local profile_name="${4:-Default}"
+
+    [[ ! -d "$target_dir" ]] && target_dir=~/Downloads
+    [[ -z "$badge_text" ]] && badge_text="${tab_title:0:1}"
+
+    if [[ $(uname) = 'Darwin' ]]; then
+        local script=$(mktemp)
+        cat > "$script" <<EOF
+tell application "iTerm2"
+    tell current window
+        set newTab to (create tab with profile "$profile_name")
+        tell current session of newTab
+            write text "cd $target_dir"
+            set name to "$tab_title"
+            set variable named "user.customBadge" to "$badge_text"
+            write text "clear"
+        end tell
+    end tell
+end tell
+EOF
+        osascript "$script"
+        rm -f "$script"
     fi
 }
 jqcat() {
