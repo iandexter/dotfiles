@@ -26,7 +26,7 @@ Instructions that apply to ALL sessions, regardless of project directory.
 - Stop after completing task without explanations unless asked
 
 **Writing style:**
-- Use sentence case for headings, not Title Case (e.g., "Authentication tokens" not "Authentication Tokens")
+- Use sentence case for all headings including titles, not Title Case (e.g., "Authentication tokens" not "Authentication Tokens")
 - Write naturally and conversationally, not robotically
 - Avoid overusing em dashes (—). They can be useful but should look natural. When in doubt, replace with periods to create shorter, clearer sentences.
 - No one-line conclusions or summary statements at the end
@@ -53,6 +53,9 @@ Instructions that apply to ALL sessions, regardless of project directory.
 - Good: "The function returns null"
 - Bad: "Let me help you understand how authentication works"
 - Good: "Authentication uses OAuth 2.0 tokens"
+
+**Formatting:**
+- When writing approximations (using tilde, `~`), use `+-` or equality operators (`>`, `<`, `=`) instead.
 
 **Context gathering:**
 - Read @README.md when explaining code
@@ -213,6 +216,7 @@ Always ask before proceeding when:
   - High-level approach
   - Detailed step-by-step todos
   - Dependencies and blockers
+  - Estimated effort per task
   - Success criteria
 
 **Planning workflow principle:**
