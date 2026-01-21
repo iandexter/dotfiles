@@ -145,9 +145,9 @@ tabtitle() {
     random_color
 }
 newtab() {
-    local target_dir="${1:-~/Downloads}"
-    local tab_title="${2:-✨ New tab}"
-    local badge_text="${3}"
+    local tab_title="${1:-✨ New tab}"
+    local badge_text="${2}"
+    local target_dir="${3:-~/Downloads}"
     local profile_name="${4:-Default}"
 
     [[ ! -d "$target_dir" ]] && target_dir=~/Downloads
