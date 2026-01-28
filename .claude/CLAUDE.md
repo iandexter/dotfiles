@@ -9,6 +9,7 @@ Instructions that apply to ALL sessions, regardless of project directory.
   - [Parallel tool execution](#parallel-tool-execution)
   - [When to use TodoWrite](#when-to-use-todowrite)
   - [When to ask clarifying questions](#when-to-ask-clarifying-questions)
+  - [Coding assistance guardrails](#coding-assistance-guardrails)
   - [File reading and sub-agent orchestration](#file-reading-and-sub-agent-orchestration)
   - [Generated files](#generated-files)
   - [Planning workflow](#planning-workflow)
@@ -206,6 +207,35 @@ Always ask before proceeding when:
 - Requirements are ambiguous or incomplete
 - Missing critical context (workspace IDs, error messages, stack traces)
 - About to make assumptions that could lead to wrong solution
+- About to make an assumption about implementation approach
+- The request could be interpreted multiple ways
+- You see potential inconsistencies in requirements
+
+### Coding assistance guardrails
+
+**Never make assumptions - always clarify:**
+- If requirements are ambiguous, ASK before proceeding
+- Surface inconsistencies in the request rather than silently resolving them
+- Present tradeoffs when multiple approaches exist
+- Push back when a request seems problematic
+
+**Plan before code (mandatory for non-trivial changes):**
+- ALWAYS propose 2-3 high-level approaches with pros/cons before writing code
+- Let user pick the approach before writing implementation
+- Never jump straight to code - the user's judgment on approach matters more than speed
+- For trivial changes (typos, one-liners): proceed directly
+- For anything else: plan first, code second
+
+**Prefer simplicity:**
+- Before implementing, ask yourself: "Is there a simpler way?"
+- Avoid bloated abstractions - 100 lines is better than 1000
+- Don't add features/complexity not explicitly requested
+- Clean up dead code you create; don't leave orphaned code
+
+**Stay in scope:**
+- Never change comments or code orthogonal to the task
+- Don't "improve" code you weren't asked to touch
+- If you notice issues elsewhere, mention them separately - don't fix silently
 
 ### File reading and sub-agent orchestration
 
