@@ -69,3 +69,5 @@
     patterns = [0-9a-fA-F]{32,48}
 [url "git@github.com:"]
     insteadOf = https://github.com/
+[url "git@github.com-emu:"]
+    insteadOf = git@github.com:
