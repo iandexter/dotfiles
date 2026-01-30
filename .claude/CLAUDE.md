@@ -106,6 +106,7 @@ Instructions that apply to ALL sessions, regardless of project directory.
 **Git/commits:**
 - Use short, direct commit messages
 - Never push without explicit request
+- Use project-specific CLAUDE.md for git workflow (branch naming, push commands)
 
 ## Factual accuracy and claims
 
@@ -331,6 +332,21 @@ Always ask before proceeding when:
 5. Notify user that dotfiles are ready to review and commit
 6. After user reviews changes, commit and push dotfiles:
    - `cd ~/etc/dotfiles && git add .claude/ && git commit -m "Update CLAUDE.md: [brief description]" && git push`
+
+### Conflict resolution across CLAUDE.md files
+
+All CLAUDE.md files in the directory hierarchy are concatenated and loaded together. There is no automatic override mechanism.
+
+**When conflicting rules exist:**
+- Do NOT attempt to follow both rules simultaneously
+- Do NOT silently pick one rule over another
+- ASK the user which rule should apply in this context
+- Example: "I see conflicting branch naming conventions in global vs project CLAUDE.md. Which should I follow for this repo?"
+
+**Preventing conflicts:**
+- Global CLAUDE.md: General, portable rules (not project-specific)
+- Project CLAUDE.md: Project-specific overrides and additions
+- More specific files should refine or replace global rules, not contradict them
 
 ### Custom scripts and aliases
 
