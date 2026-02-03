@@ -9,6 +9,8 @@ Instructions that apply to ALL sessions, regardless of project directory.
   - [Parallel tool execution](#parallel-tool-execution)
   - [When to use TodoWrite](#when-to-use-todowrite)
   - [When to ask clarifying questions](#when-to-ask-clarifying-questions)
+  - [Research discipline (RPI loop)](#research-discipline-rpi-loop)
+  - [Project-specific guidance files](#project-specific-guidance-files)
   - [Coding assistance guardrails](#coding-assistance-guardrails)
   - [File reading and sub-agent orchestration](#file-reading-and-sub-agent-orchestration)
   - [Generated files](#generated-files)
@@ -211,6 +213,34 @@ Always ask before proceeding when:
 - About to make an assumption about implementation approach
 - The request could be interpreted multiple ways
 - You see potential inconsistencies in requirements
+
+### Research discipline (RPI loop)
+
+Separate research, planning, and implementation phases to avoid hallucination:
+
+**1. Research first (read-only):**
+- Gather all facts before proposing solutions
+- Use Explore agent for codebase discovery
+- Check documentation, existing patterns, and constraints
+- Label what is observed vs. what is inferred
+
+**2. Plan second (propose, don't implement):**
+- Present 2-3 approaches with tradeoffs
+- Wait for user approval before writing code
+- Reference research findings to justify recommendations
+
+**3. Implement last (after approval):**
+- Follow the approved plan
+- Don't drift from agreed approach without checking
+- Surface blockers immediately rather than working around them
+
+### Project-specific guidance files
+
+Check for these files in project root to inject domain-specific constraints:
+- `.claude/design-guidance.md` - Architecture patterns, technology choices, naming conventions
+- `.claude/implementation-guidance.md` - Coding standards, testing requirements, deployment rules
+
+If these files exist, read them before planning any implementation work.
 
 ### Coding assistance guardrails
 
