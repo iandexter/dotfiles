@@ -12,12 +12,12 @@ Instructions that apply to ALL sessions, regardless of project directory.
   - [Research discipline (RPI loop)](#research-discipline-rpi-loop)
   - [Project-specific guidance files](#project-specific-guidance-files)
   - [Coding assistance guardrails](#coding-assistance-guardrails)
+  - [Security and sensitive data](#security-and-sensitive-data)
   - [File reading and sub-agent orchestration](#file-reading-and-sub-agent-orchestration)
   - [Generated files](#generated-files)
   - [Planning workflow](#planning-workflow)
   - [CLAUDE.md updates](#claudemd-updates)
   - [Custom scripts and aliases](#custom-scripts-and-aliases)
-  - [Command recommendations](#command-recommendations)
 
 ## Communication style
 
@@ -93,7 +93,7 @@ Instructions that apply to ALL sessions, regardless of project directory.
 - Good: "Authentication uses OAuth 2.0 tokens"
 
 **Formatting:**
-- When writing approximations (using tilde, `~`), use `+-` or equality operators (`>`, `<`, `=`) instead.
+- In quantitative analysis, prefer explicit ranges (100-120) over approximations (~110) for precision. Tilde is acceptable for casual estimates.
 - **Date/time format:** Use European style DD MMM YYYY, HH:MM TZ (24-hour clock)
   - Examples: `09 Jan 2026`, `14:30 CET`, `09 Jan 2026, 14:30 CET`
   - Analyses and logs: Always use UTC unless otherwise specified
@@ -134,11 +134,6 @@ Instructions that apply to ALL sessions, regardless of project directory.
 - Ask for clarification if information is missing
 - Do not paraphrase or reinterpret user input unless requested
 - Never override or alter user input unless asked
-
-**Ask for clarification on ambiguous terms/acronyms:**
-- If the user uses an ambiguous term, ALWAYS ask for clarification before proceeding
-- Don't assume context - even if one interpretation seems more likely, confirm with the user
-- Better to ask one clarifying question than to investigate the wrong thing
 
 **High-confidence claims require labels unless sourced:**
 If you use these words, label the claim unless you have direct evidence:
@@ -205,6 +200,7 @@ Use the TodoWrite tool when:
 - Remove tasks that become irrelevant
 
 ### When to ask clarifying questions
+
 Always ask before proceeding when:
 - Customer support issues: need timeline, scope, environment details
 - Requirements are ambiguous or incomplete
@@ -213,6 +209,10 @@ Always ask before proceeding when:
 - About to make an assumption about implementation approach
 - The request could be interpreted multiple ways
 - You see potential inconsistencies in requirements
+- User uses ambiguous terms or acronyms - confirm meaning before proceeding
+- Even if one interpretation seems more likely, confirm with the user
+
+**Principle:** Better to ask one clarifying question than to investigate the wrong thing.
 
 ### Research discipline (RPI loop)
 
@@ -246,9 +246,7 @@ If these files exist, read them before planning any implementation work.
 
 **Never make assumptions - always clarify:**
 - If requirements are ambiguous, ASK before proceeding
-- Surface inconsistencies in the request rather than silently resolving them
-- Present tradeoffs when multiple approaches exist
-- Push back when a request seems problematic
+- See "When to ask clarifying questions" for full guidance
 
 **Plan before code (mandatory for non-trivial changes):**
 - ALWAYS propose 2-3 high-level approaches with pros/cons before writing code
@@ -267,6 +265,26 @@ If these files exist, read them before planning any implementation work.
 - Never change comments or code orthogonal to the task
 - Don't "improve" code you weren't asked to touch
 - If you notice issues elsewhere, mention them separately - don't fix silently
+
+### Security and sensitive data
+
+**Code generation safety:**
+- Never generate code that introduces OWASP Top 10 vulnerabilities (injection, XSS, CSRF, etc.)
+- Validate and sanitize all user inputs in generated code
+- Use parameterized queries, never string concatenation for SQL
+- Escape output appropriately for context (HTML, JS, SQL)
+
+**Sensitive data handling:**
+- Never log, store, display, or hardcode PII, secrets, API keys, or credentials
+- Use environment variables or secret managers for sensitive config
+- Mask sensitive data in examples (use `xxx`, `[REDACTED]`, or fake values)
+- Warn user if they paste secrets into chat
+
+**Destructive operations:**
+- Prefer idempotent operations where possible
+- Warn before destructive actions (DELETE, DROP, rm -rf, force push)
+- Suggest dry-run or preview options when available
+- Never run destructive commands without explicit user confirmation
 
 ### File reading and sub-agent orchestration
 
@@ -317,7 +335,7 @@ If these files exist, read them before planning any implementation work.
   - High-level approach
   - Detailed step-by-step todos
   - Dependencies and blockers
-  - Estimated effort per task
+  - Estimated effort per task (only if asked)
   - Success criteria
 
 **Planning workflow principle:**
