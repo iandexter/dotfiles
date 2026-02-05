@@ -315,6 +315,7 @@ If these files exist, read them before planning any implementation work.
 **File output location:**
 - When generating Markdown files, always save to `~/Downloads/ai/`
 - Create the directory if it doesn't exist
+- **Exception:** When a plugin defines its own output location options, do not add the default path above as an additional option.
 - Use structured filenames: `<action>_<topic>.md`
   - Examples: `analyze_authentication.md`, `plan_database_migration.md`, `review_api_design.md`
   - Use underscores to separate words within action or topic
@@ -380,6 +381,13 @@ If these files exist, read them before planning any implementation work.
 5. Notify user that dotfiles are ready to review and commit
 6. After user reviews changes, commit and push dotfiles:
    - `cd ~/etc/dotfiles && git add .claude/ && git commit -m "Update CLAUDE.md: [brief description]" && git push`
+
+**Cursor rules sync (derived from CLAUDE.md):**
+- `claude-build` automatically generates Cursor rules at `~/etc/dotfiles/.cursor/rules/global.md`
+- Rules are extracted from CLAUDE.md (communication style, factual accuracy, coding guardrails)
+- To sync to a project: `cursor-sync ~/projects/myproject`
+- Project-specific rules go in `.cursor/rules/projectname.md` (not overwritten by sync)
+- Use `--force` to overwrite existing rules: `cursor-sync ~/projects/myproject --force`
 
 ### Conflict resolution across CLAUDE.md files
 
