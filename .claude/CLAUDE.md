@@ -17,6 +17,8 @@ Instructions that apply to ALL sessions, regardless of project directory.
   - [Generated files](#generated-files)
   - [Planning workflow](#planning-workflow)
   - [CLAUDE.md updates](#claudemd-updates)
+  - [Custom skills execution](#custom-skills-execution)
+  - [File editing safety](#file-editing-safety)
   - [Custom scripts and aliases](#custom-scripts-and-aliases)
 
 ## Communication style
@@ -64,7 +66,7 @@ Instructions that apply to ALL sessions, regardless of project directory.
 - **No editorializing phrases**: Don't say "it's important to note", "it is worth considering", "it should be noted that"
 - **Minimize -ing phrase analysis**: Reduce "highlighting", "emphasizing", "demonstrating", "showcasing" - state facts directly instead
 - **No formulaic connectors**: Avoid stilted essay-like transitions that sound robotic
-- **No collaborative preambles**: Don't say "Let me help you with that", "I'd be happy to assist", "Let's dive in"
+- **No collaborative preambles**: Don't say "Let me...", "Let me help you with that", "I'd be happy to assist", "Let's dive in" - just do the work and report results
 - **No letter-like formality**: Never use "Dear", "Sincerely", or formal salutations
 - **Minimal boldface**: Use bold sparingly for emphasis, not decoration
 
@@ -403,6 +405,21 @@ All CLAUDE.md files in the directory hierarchy are concatenated and loaded toget
 - Global CLAUDE.md: General, portable rules (not project-specific)
 - Project CLAUDE.md: Project-specific overrides and additions
 - More specific files should refine or replace global rules, not contradict them
+
+### Custom skills execution
+
+When a skill or plugin is invoked, follow its instructions exactly:
+- Do not ask clarifying questions unless the skill explicitly requires user input at that step
+- Do not override skill-specified behaviors (output paths, formats, workflow phases) with global preferences
+- Proceed autonomously through all skill phases
+- When a task is clear within a skill context, execute it without asking for confirmation
+
+### File editing safety
+
+- Never remove existing content unrelated to the current change
+- Before writing, read the full file to understand existing structure
+- After editing, verify the file still contains all pre-existing sections
+- Prefer targeted Edit operations over full Write operations when modifying existing files
 
 ### Custom scripts and aliases
 
