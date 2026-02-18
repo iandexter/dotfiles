@@ -30,3 +30,4 @@ dbxcli
 .claude/agents/
 .claude/commands/
 .claude/skills/
+.cursor/rules/
