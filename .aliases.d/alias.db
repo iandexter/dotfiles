@@ -1,4 +1,5 @@
 ### Databricks
+alias agent='cursor-agent'
 alias awsc='aws --profile aws-cust-test1_databricks-power-user'
 alias databricksaz='databricks --profile azure'
 alias databrickse2='databricks --profile e2'
@@ -7,7 +8,6 @@ alias databricksd='databricks --debug'
 alias dbfsaz='dbfs --profile azure'
 alias dbfse2='dbfs --profile e2'
 alias dbfsg='dbfs --profile genie'
-alias claude='~/universe/devtools/ai/llm agent session'
 alias llm='~/universe/devtools/ai/llm'
 add_genie_cfg() {
     if [[ $# -lt 2 ]] ; then
