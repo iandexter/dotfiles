@@ -8,6 +8,7 @@
     editor = vim
     fsmonitor = true
     untrackedcache = true
+    hooksPath = /Users/ian.marquez/.databricks/githooks
 [alias]
     ba = branch --all
     bd = branch --delete --force
@@ -71,3 +72,4 @@
     insteadOf = https://github.com/
 [url "git@github.com-emu:"]
     insteadOf = git@github.com:
+    insteadOf = org-145372899@github.com:
