@@ -20,6 +20,7 @@ Instructions that apply to ALL sessions, regardless of project directory.
   - [Custom skills execution](#custom-skills-execution)
   - [File editing safety](#file-editing-safety)
   - [Custom scripts and aliases](#custom-scripts-and-aliases)
+  - [Self-improvement loop](#self-improvement-loop)
 
 ## Communication style
 
@@ -439,3 +440,10 @@ When a skill or plugin is invoked, follow its instructions exactly:
 - Assume custom script behavior without asking
 - Override custom scripts with generic solutions without checking first
 
+### Self-improvement loop
+
+**After any user correction**, write the mistake pattern and fix to `memory/MEMORY.md`:
+- Keep entries concise (1-2 lines each)
+- Group by category (e.g., wrong assumptions, style violations, tool misuse)
+- Check memory at session start before repeating known mistakes
+- Remove entries that are no longer relevant or were proven wrong
