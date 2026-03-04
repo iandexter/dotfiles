@@ -53,6 +53,20 @@ Instructions that apply to ALL sessions, regardless of project directory.
 - Good: "This feature changes how users interact with the system"
 - Bad: "This isn't a bug, it's a design decision"
 - Good: "This behavior is intentional"
+- **No reframing escalation:** Don't use "not just X, it's Y" to inflate scope or severity. State the actual concern at the right level.
+- Bad: "This isn't just a performance issue, it's a trust issue"
+- Good: "Latency increased 3x after the deploy"
+- Bad: "This isn't just about the API, it's about our entire architecture"
+- Good: "The API contract needs to change. That affects three downstream services."
+
+**No paralipsis (saying you won't say something):**
+- Never mention what you claim to be omitting. State the point directly or leave it out.
+- Bad: "I won't say the implementation is terrible, but it needs work"
+- Good: "The implementation needs work"
+- Bad: "Without calling it a failure, the rollout didn't meet targets"
+- Good: "The rollout missed its targets"
+- Bad: "Not to be harsh, but this code has problems"
+- Good: "This code has three problems: [list them]"
 
 **Cut filler phrases:**
 - "in order to" → "to"
