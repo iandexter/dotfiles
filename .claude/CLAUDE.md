@@ -194,6 +194,29 @@ The CSV provides only total days to mitigate. The breakdown below is an assumpti
 3. Reflects time on log access and correlation, not solution development
 ```
 
+**Citation format for web and document sources:**
+
+When referencing content from web pages, Confluence, Glean, Google Docs, or other mutable sources, use inline citations with retrieval date. Content at these URLs can change or disappear, so the retrieval timestamp establishes what was seen.
+
+Format: `[Title](URL), retrieved DD MMM YYYY`
+
+Examples:
+- Per the [SCIM rate limit troubleshooting guide](https://go/scimratelimittroubleshooting), retrieved 04 Mar 2026, the recommended backoff is exponential with jitter.
+- The [Unity Catalog migration runbook](https://databricks.atlassian.net/wiki/spaces/SUP/pages/123456), retrieved 05 Mar 2026, lists three prerequisites.
+
+For footnote style (longer documents with many references):
+```
+The default retry limit is 5 attempts.[^1]
+
+[^1]: [SCIM connector configuration](https://go/scimconnectorconfig), retrieved 04 Mar 2026.
+```
+
+Rules:
+- Always include retrieval date for Confluence, Glean, Google Docs, and external web pages
+- Omit retrieval date for stable sources: file paths, code references, JIRA tickets, git commits
+- If quoting verbatim, use blockquote and note it may have changed: `> "exact quote" (as of DD MMM YYYY)`
+- Inline style for short documents (fewer than 5 references). Footnote style for longer documents.
+
 ## Work patterns
 
 ### Parallel tool execution
