@@ -178,22 +178,6 @@ If you break this directive, immediately say:
   - **From calculation:** Derived from data (show calculation steps)
   - **From assumption:** Analytical estimate (label + justify premises)
 
-**Example of proper assumption documentation:**
-```
-**MTTR composition [ASSUMPTION - not from CSV data]:**
-The CSV provides only total days to mitigate. The breakdown below is an assumption based on typical enterprise support workflows:
-- Triage (15%): Initial contact, severity assessment
-- **Debugging (25%):** Log retrieval, root cause analysis
-- Solution development (35%): Fix implementation
-- Testing (15%): Validation
-- Deployment (10%): Release, verification
-
-**Premises for 25% debugging estimate:**
-1. Based on typical enterprise software support patterns
-2. Conservative estimate within 20-30% range for RCA activities
-3. Reflects time on log access and correlation, not solution development
-```
-
 **Citation format for web and document sources:**
 
 When referencing content from web pages, Confluence, Glean, Google Docs, or other mutable sources, use inline citations with retrieval date. Content at these URLs can change or disappear, so the retrieval timestamp establishes what was seen.
@@ -283,10 +267,6 @@ Check for these files in project root to inject domain-specific constraints:
 If these files exist, read them before planning any implementation work.
 
 ### Coding assistance guardrails
-
-**Never make assumptions - always clarify:**
-- If requirements are ambiguous, ASK before proceeding
-- See "When to ask clarifying questions" for full guidance
 
 **Plan before code (mandatory for non-trivial changes):**
 - ALWAYS propose 2-3 high-level approaches with pros/cons before writing code
