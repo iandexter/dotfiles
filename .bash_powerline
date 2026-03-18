@@ -243,7 +243,11 @@ function git_module {
             fi
         fi
 
-        if [ -n "$(git --no-optional-locks status --porcelain)" ]; then
+        # Skip dirty check for large repos to avoid multi-second git status scans.
+        # Drop a .git/skip-dirty-check file in any repo to opt out:
+        #   touch /path/to/repo/.git/skip-dirty-check
+        local repo_root="$(git --no-optional-locks rev-parse --show-toplevel 2>/dev/null)"
+        if [ ! -f "${repo_root}/.git/skip-dirty-check" ] && [ -n "$(git --no-optional-locks status --porcelain)" ]; then
             if [ -n "$PL_GIT_DIRTY_FG" ]; then
                 fg_color="$PL_GIT_DIRTY_FG"
             fi
