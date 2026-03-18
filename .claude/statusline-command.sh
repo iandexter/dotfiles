@@ -62,10 +62,25 @@ if [ "$cost_usd" != "0" ] || [ "$duration_ms" != "0" ]; then
         "$lines_removed")
 fi
 
+# Extract token usage from context_window.current_usage
+token_info=""
+ctx_usage=$(echo "$input" | jq '.context_window.current_usage // empty')
+if [ -n "$ctx_usage" ]; then
+    ctx_size=$(echo "$input" | jq -r '.context_window.context_window_size // 0')
+    used=$(echo "$ctx_usage" | jq -r '(.input_tokens + .cache_creation_input_tokens + .cache_read_input_tokens) // 0')
+    pct=$(awk "BEGIN {printf \"%d\", ($used / $ctx_size) * 100}" 2>/dev/null)
+    if   [ "$pct" -ge 80 ]; then color='\033[1;31m'
+    elif [ "$pct" -ge 50 ]; then color='\033[1;33m'
+    else                         color='\033[1;32m'
+    fi
+    token_info=$(printf " 🧠 ${color}%s/%s (%d%%)\033[0m" "$used" "$ctx_size" "$pct")
+fi
+
 # Print status line with colors and icons
-printf '\033[1;34m[%s]\033[0m 🤖 \033[1;36m%s\033[0m 📁 \033[0;32m%s\033[0m%s%s' \
+printf '\033[1;34m[%s]\033[0m 🤖 \033[1;36m%s\033[0m 📁 \033[0;32m%s\033[0m%s%s%s' \
     "$version" \
     "$model" \
     "$cwd" \
     "$git_info" \
+    "$token_info" \
     "$cost_info"

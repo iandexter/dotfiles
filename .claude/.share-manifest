@@ -1,0 +1,31 @@
+# ~/.claude/.share-manifest
+# Files listed here are copied to universe/experimental by claude-share
+# SSOT: ~/etc/dotfiles/.claude/.share-manifest
+# Deployed to ~/.claude/.share-manifest by claude-build
+
+# Configuration (extracted by claude-build)
+CLAUDE.md.general
+CLAUDE.md.domain
+
+# Security hardening — settings template and hooks
+settings-template.json
+hooks/block-dangerous-rm.sh
+hooks/block-sensitive-paths.sh
+hooks/audit-log.sh
+
+# Commands - generic
+commands/create-command.md
+commands/create-agent.md
+commands/create-plan.md
+commands/analyze-quantitative.md
+commands/review-prd.md
+commands/update-doc.md
+commands/research-codebase.md
+
+# Agents - generic
+agents/web-researcher.md
+agents/codebase-explainer.md
+agents/parse-table-from-notebook.md
+
+# Skills
+skills/investigate-support/
