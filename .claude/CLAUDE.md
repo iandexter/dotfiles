@@ -126,6 +126,7 @@ Instructions that apply to ALL sessions, regardless of project directory.
 - Use short, direct commit messages
 - Never push without explicit request
 - Use project-specific CLAUDE.md for git workflow (branch naming, push commands)
+- Default: create NEW commits (not amend). Exception: on `stack/*` branches, use `git stack commit --amend` to keep a single commit per branch. Check the branch name before deciding.
 
 ## Factual accuracy and claims
 
@@ -209,6 +210,7 @@ Rules:
 - When multiple pieces of information are independent, execute all tool calls in a single message
 - Examples: reading multiple files, searching different sources, checking multiple logs
 - Only run tools sequentially when one depends on the output of another
+- **Exception: Bazel commands.** Never run multiple Bazel commands in parallel — the Bazel server holds a lock, so concurrent invocations block or fail. Combine targets into one command (e.g., `bazel test //a //b`) and let Bazel parallelize internally.
 - This maximizes efficiency and reduces wait time
 
 ### When to use TodoWrite
@@ -285,6 +287,22 @@ If these files exist, read them before planning any implementation work.
 - Never change comments or code orthogonal to the task
 - Don't "improve" code you weren't asked to touch
 - If you notice issues elsewhere, mention them separately - don't fix silently
+
+### Code comments
+
+Comments explain WHY, not WHAT. Follow this hierarchy — only move to the next level if the previous is insufficient:
+
+1. Make the code self-documenting (good names, clear structure) — no comment needed
+2. Extract a well-named method — no comment needed
+3. Add an inline "why" comment at the decision point explaining a non-obvious choice
+4. Add a docstring explaining the public contract of an abstraction
+5. ~~"What" comment restating obvious code~~ — never do this
+
+**DO comment for:** quirks/gotchas, design decisions, compatibility concerns, non-obvious constraints. Include ticket/doc links when the "why" involves external context.
+
+**DON'T comment for:** change history (use commit messages), obvious operations, stale comments (delete them). Exception: if the obvious approach doesn't work, a brief comment + Jira link prevents others from "fixing" it back.
+
+**Docstrings vs inline:** Docstrings show on hover for callers (cover the abstraction contract). Inline comments are hidden (explain specific implementation choices). Place "why" comments at the tricky line, not only in the docstring.
 
 ### Security and sensitive data
 
