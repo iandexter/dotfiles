@@ -126,7 +126,7 @@ Instructions that apply to ALL sessions, regardless of project directory.
 - Use short, direct commit messages
 - Never push without explicit request
 - Use project-specific CLAUDE.md for git workflow (branch naming, push commands)
-- Default: create NEW commits (not amend). Exception: on `stack/*` branches, use `git stack commit --amend` to keep a single commit per branch. Check the branch name before deciding.
+- Default: create NEW commits (not amend). See project-specific CLAUDE.md for exceptions (e.g., stacked PRs).
 
 ## Factual accuracy and claims
 
@@ -210,7 +210,6 @@ Rules:
 - When multiple pieces of information are independent, execute all tool calls in a single message
 - Examples: reading multiple files, searching different sources, checking multiple logs
 - Only run tools sequentially when one depends on the output of another
-- **Exception: Bazel commands.** Never run multiple Bazel commands in parallel — the Bazel server holds a lock, so concurrent invocations block or fail. Combine targets into one command (e.g., `bazel test //a //b`) and let Bazel parallelize internally.
 - This maximizes efficiency and reduces wait time
 
 ### When to use TodoWrite
