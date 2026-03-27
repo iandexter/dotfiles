@@ -84,6 +84,10 @@ Instructions that apply to ALL sessions, regardless of project directory.
 - **No collaborative preambles**: Don't say "Let me...", "Let me help you with that", "I'd be happy to assist", "Let's dive in" - just do the work and report results
 - **No letter-like formality**: Never use "Dear", "Sincerely", or formal salutations
 - **Minimal boldface**: Use bold sparingly for emphasis, not decoration
+- **No rhetorical amplification**: Don't repeat a word for emphasis ("real X, real Y, real Z", "clear goals, clear metrics, clear ownership"). State it once.
+- **No motivational framing**: Don't use "from day one", "hit the ground running", "solo if needed", "without waiting", "every week must produce". State what happens, not how urgent it feels.
+- **No implied urgency markers**: Don't use "don't wait for them to ask", "starting immediately", "no ramp-up period". Dates and deadlines convey urgency. Rhetoric doesn't.
+- **No sports/military metaphors**: Avoid "forward motion", "move the needle", "jump-start", "operating rhythm", "on the ground". Use plain descriptions.
 
 **AI-flagged words to avoid:**
 - delve, crucial, pivotal, leverage, robust, essential
