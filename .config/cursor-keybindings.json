@@ -1,0 +1,22 @@
+// Place your key bindings in this file to override the defaults
+[
+    {
+        "key": "cmd+i",
+        "command": "composerMode.agent"
+    },
+    {
+        "key": "shift+enter",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": {
+            "text": "\\\r\n"
+        },
+        "when": "terminalFocus"
+    },
+    {
+        "key": "alt+a",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": {
+            "text": "/usr/bin/open 'https://sourcegraph.prod.databricks-corp.com/databricks-eng/universe/-/blob/${relativeFile}?L${lineNumber}'\n"
+        }
+    }
+]

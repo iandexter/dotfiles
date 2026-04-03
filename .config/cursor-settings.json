@@ -1,0 +1,60 @@
+{
+  "remote.SSH.preconnect": {"arca.ssh":"/Users/ian.marquez/.local/bin/arca-start.sh"}, // DO NOT EDIT: Added by `arca ide cursor`
+
+  "workbench.statusBar.visible": true, // DO NOT EDIT: Added by `arca ide cursor`
+
+
+  "workbench.activityBar.orientation": "vertical", // DO NOT EDIT: Added by `arca ide cursor`
+  "remote.SSH.serverShutdownTimeout": 86400, // DO NOT EDIT: Added by `arca ide cursor`
+  "remote.SSH.showTrafficMonitor": false, // DO NOT EDIT: Added by `arca ide cursor`
+
+    "window.commandCenter": true,
+    "terminal.external.osxExec": "iTerm.app",
+    "terminal.integrated.profiles.osx": {
+        "bash": {
+            "path": "/opt/homebrew/bin/bash"
+        }
+    },    
+    "terminal.integrated.defaultProfile.osx": "bash",
+    "terminal.integrated.tabs.enabled": false,
+    "python.createEnvironment.trigger": "off",
+    "git.autofetch": true,
+    "explorer.confirmDelete": false,
+    "explorer.confirmDragAndDrop": false,
+    "diffEditor.ignoreTrimWhitespace": false,
+    "cursorpyright.shouldImportPylanceSettings": "never",
+    "cursor.composer.textSizeScale": 1.15,
+    "cursor.composer.planTextSizeScale": "1.15",
+    "[dockercompose]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2,
+        "editor.autoIndent": "advanced",
+        "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
+    "[github-actions-workflow]": {
+        "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
+    "files.autoSave": "onFocusChange",
+    "claude-code.useNodeExecution": true,
+    "workbench.editorAssociations": {
+        "*.md": "vscode.markdown.preview.editor"
+    },
+    "claudeCode.environmentVariables": [],
+    "claudeCode.useTerminal": true,
+    "remote.SSH.remotePlatform": {
+        "arca.ssh": "linux"
+    },
+    "redhat.telemetry.enabled": false,
+    "git.suggestSmartCommit": false,
+    "git.confirmSync": false,
+    "files.watcherExclude": {
+        "**/.bloop": true,
+        "**/.metals": true
+    },
+    "remote.autoForwardPortsSource": "hybrid",
+    "python.languageServer": "None",
+    "terminal.integrated.fontFamily": "Hack Nerd Font Mono",
+    "markdown.preview.fontSize": 16,
+    "terminal.integrated.fontSize": 14,
+    "editor.fontSize": 14
+}
