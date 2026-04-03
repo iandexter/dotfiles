@@ -131,6 +131,7 @@ Instructions that apply to ALL sessions, regardless of project directory.
 - Never push without explicit request
 - Use project-specific CLAUDE.md for git workflow (branch naming, push commands)
 - Default: create NEW commits (not amend). See project-specific CLAUDE.md for exceptions (e.g., stacked PRs).
+- Use `git -C <path>` for commands in other directories instead of `(cd <path> && git ...)`
 
 ## Factual accuracy and claims
 
