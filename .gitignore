@@ -31,3 +31,5 @@ dbxcli
 .claude/commands/
 .claude/skills/
 .cursor/rules/
+# Claude/Cursor scripts (Databricks-specific, SSOT: ~/etc/dotfiles/bin/)
+bin/
