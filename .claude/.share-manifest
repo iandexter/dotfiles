@@ -7,6 +7,10 @@
 CLAUDE.md.general
 CLAUDE.md.domain
 
+# Rule files (split from CLAUDE.md for size, loaded by CC from ~/.claude/rules/)
+rules/communication-style.md
+rules/factual-accuracy.md
+
 # Security hardening — settings template and hooks
 settings-template.json
 hooks/block-dangerous-rm.sh
