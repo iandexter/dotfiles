@@ -31,6 +31,7 @@ Instructions that apply to ALL sessions, regardless of project directory.
 - Examples: reading multiple files, searching different sources, checking multiple logs
 - Only run tools sequentially when one depends on the output of another
 - This maximizes efficiency and reduces wait time
+- **Minimize total tool calls.** When making multiple changes to the same file, use one Edit with a broader context block instead of N separate Edits. When making similar changes across files, batch independent calls in a single message. Three tool calls doing one thing each is worse than one tool call doing three things.
 
 ### When to use TodoWrite
 Use the TodoWrite tool when:
