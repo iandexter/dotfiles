@@ -123,5 +123,8 @@ export LS_COLORS="di=34:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:su=30;41:sg=30
 if which terraform &>/dev/null ; then
     complete -C $(which terraform) terraform
 fi
+# Machine-specific overrides
+[[ -f ~/Dropbox/etc/laptop/bashrc.local ]] && source ~/Dropbox/etc/laptop/bashrc.local
+[[ -f ~/.bashrc.local ]] && source ~/.bashrc.local
 # Dedupe PATH
 export PATH=$(echo -n $PATH | awk -v RS=: '!($0 in a) {a[$0]; printf("%s%s", length(a) > 1 ? ":" : "", $0)}')
