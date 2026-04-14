@@ -54,8 +54,9 @@ convert_logs() {
             c=${1}
             if [[ -e ${c} && ${c: -4} == ".csv" ]] ; then
                 l=$(basename ${c} .csv).log
-                cat ${c} | cut -d, -f2- | gsed 's/^\"//;s/\"$//;s/\"\"/\"/g' > ${l}
-                gsed -i '1d;/^$/d' ${l}
+                if command -v gsed &>/dev/null ; then _sed=gsed; else _sed=sed; fi
+                cat ${c} | cut -d, -f2- | $_sed 's/^"//;s/"$//;s/""/"/g' > ${l}
+                $_sed -i '1d;/^$/d' ${l}
                 echo "Converted to ${l}"
             else
                 echo "${c} must exist and be a CSV file" && return 1
@@ -95,7 +96,9 @@ jira_assign() {
 }
 jira_open() {
    [[ $# -ne 1 ]] && echo "$FUNCNAME ticket" && return 1
-   open https://databricks.atlassian.net/browse/${1}
+   if [[ $(uname) = 'Darwin' ]] ; then open https://databricks.atlassian.net/browse/${1}
+   else echo "https://databricks.atlassian.net/browse/${1}"
+   fi
 }
 alias ji='jira_open'
 alias jl='jira issue list'

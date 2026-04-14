@@ -71,14 +71,13 @@ rdiff() {
     fi
 }
 urlopen() {
+    [[ $# -lt 1 ]] && echo "$FUNCNAME url" && return 1
     if [[ $(uname) = 'Darwin' ]] ; then
-        if [[ $# -lt 1 ]] ; then
-            echo "$FUNCNAME url" && return 1
-        else
-            /usr/bin/open -a "Google Chrome" ${1} --args --incognito
-        fi
+        /usr/bin/open -a "Google Chrome" ${1} --args --incognito
+    elif command -v xdg-open &>/dev/null ; then
+        xdg-open "${1}"
     else
-        echo "Only available for MacOS" && return 1
+        echo "No browser opener available" && return 1
     fi
 }
 weather() {
@@ -112,17 +111,23 @@ from_epoch() {
     if [[ $(uname) = 'Darwin' ]] ; then
         TZ=UTC date -r "$((${epoch}/1000))"
     else
-        TZ=UTC date -d "${utc}"
+        TZ=UTC date -d @"$((${epoch}/1000))"
     fi
 }
 mdless() {
-    if [[ $(uname) = 'Darwin' ]] ; then
+    if command -v pandoc &>/dev/null ; then
         pandoc -s -f markdown -t man ${1:-README.md} | groff -T utf8 -man | less
+    else
+        less ${1:-README.md}
     fi
 }
 bcurl() {
-    if [[ $(uname) = 'Darwin' ]] ; then
-        /usr/local/opt/curl/bin/curl $@
+    if [[ -x /usr/local/opt/curl/bin/curl ]] ; then
+        /usr/local/opt/curl/bin/curl "$@"
+    elif [[ -x $(brew --prefix 2>/dev/null)/opt/curl/bin/curl ]] ; then
+        "$(brew --prefix)/opt/curl/bin/curl" "$@"
+    else
+        curl "$@"
     fi
 }
 gtr() {
@@ -179,7 +184,11 @@ jqcat() {
         jq -r . < "$1"
     fi
 }
-alias jqcopy='jq -r . | pbcopy'
+if command -v pbcopy &>/dev/null ; then
+    alias jqcopy='jq -r . | pbcopy'
+elif command -v xclip &>/dev/null ; then
+    alias jqcopy='jq -r . | xclip -selection clipboard'
+fi
 camel_to_snake() {
   local s=$1
   local result=""

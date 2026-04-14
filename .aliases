@@ -4,6 +4,10 @@ alias la='ls -lartF'
 alias ll='ls -lrt'
 alias mv='mv -i'
 alias rm='rm -i'
-alias ssh='/usr/local/bin/gpg-connect-agent -q updatestartuptty /bye &>/dev/null ; LC_ALL=en_US.UTF-8 ssh'
+if [[ $(uname) = 'Darwin' ]] ; then
+    alias ssh='/usr/local/bin/gpg-connect-agent -q updatestartuptty /bye &>/dev/null ; LC_ALL=en_US.UTF-8 ssh'
+else
+    alias ssh='LC_ALL=en_US.UTF-8 ssh'
+fi
 alias strings='strings -a'
 alias vi='vim'

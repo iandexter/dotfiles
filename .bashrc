@@ -19,7 +19,7 @@ export PS1='\[\033[1;32m\]$USER@\[\033[1;31m\]$HOSTNAME\[\033[1;32m\]:\[\033[0;3
 export HISTCONTROL=ignoreboth
 export HISTSIZE=10000000
 export HISTTIMEFORMAT="%D %T "
-shopt -s histappend
+[[ -n "$BASH_VERSION" ]] && shopt -s histappend
 export PROMPT_COMMAND='history -a'
 # Locale
 export LC_ALL=C
@@ -93,6 +93,34 @@ if [[ $(uname) = 'Darwin' ]] ; then
         alias jless='pygmentize -l json | less -R'
         alias jqless='jq -r . | jless'
     fi
+fi
+# Linux / Arca
+if [[ $(uname) = 'Linux' ]] ; then
+    if locale -a 2>/dev/null | grep -q en_GB.utf8; then
+        export LC_ALL=en_GB.UTF-8
+        export LANG=en_GB.UTF-8
+    else
+        export LC_ALL=en_US.UTF-8
+        export LANG=en_US.UTF-8
+    fi
+    [[ -d $HOME/.local/bin ]] && export PATH="$HOME/.local/bin:$PATH"
+    if [[ -d ~/.arca ]] ; then
+        export UNIVERSE=$HOME/universe
+    fi
+    if command -v pyenv &>/dev/null ; then
+        export PYENV_ROOT="$HOME/.pyenv"
+        export PATH="$PYENV_ROOT/bin:$PATH"
+        eval "$(pyenv init --path)"
+        eval "$(pyenv init -)"
+    fi
+    if [[ -d ~/go ]] ; then
+        export PATH=~/go/bin:$PATH
+    fi
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    # Bash completions
+    [[ -f /usr/share/bash-completion/bash_completion ]] && source /usr/share/bash-completion/bash_completion
+    command -v kubectl &>/dev/null && source <(kubectl completion bash)
 fi
 # Vagrant
 if which vagrant &>/dev/null ; then
