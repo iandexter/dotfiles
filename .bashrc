@@ -152,7 +152,7 @@ if which terraform &>/dev/null ; then
     complete -C $(which terraform) terraform
 fi
 # Machine-specific overrides
-[[ -f ~/Dropbox/etc/laptop/bashrc.local ]] && source ~/Dropbox/etc/laptop/bashrc.local
+[[ -f ~/Dropbox/Documents/Ian/tech/laptop/etc/bashrc.local ]] && source ~/Dropbox/Documents/Ian/tech/laptop/etc/bashrc.local
 [[ -f ~/.bashrc.local ]] && source ~/.bashrc.local
 # Dedupe PATH
 export PATH=$(echo -n $PATH | awk -v RS=: '!($0 in a) {a[$0]; printf("%s%s", length(a) > 1 ? ":" : "", $0)}')
