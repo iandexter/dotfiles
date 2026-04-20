@@ -1,0 +1,198 @@
+#!/bin/bash
+# Generate Cursor rules from merged CLAUDE.md, ~/.claude/skills/, and ~/.claude/commands/
+#
+# Usage: cursor-rules-gen
+#
+# This script is called by claude-build to keep Cursor rules in sync
+# with the main CLAUDE.md source of truth.
+
+set -euo pipefail
+
+SOURCE="$HOME/.claude/CLAUDE.md"
+OUTPUT_DIR="$HOME/etc/dotfiles/.cursor/rules"
+OUTPUT="$OUTPUT_DIR/global.md"
+SKILLS_DIR="$HOME/.claude/skills"
+COMMANDS_DIR="$HOME/.claude/commands"
+
+if [[ ! -f "$SOURCE" ]]; then
+    echo "Error: Source not found: $SOURCE"
+    echo "Run claude-build first to generate CLAUDE.md"
+    exit 1
+fi
+
+mkdir -p "$OUTPUT_DIR"
+
+# Print file content while removing leading YAML frontmatter if present.
+strip_optional_frontmatter() {
+    local file="$1"
+    awk '
+    NR == 1 && $0 == "---" { in_frontmatter = 1; next }
+    in_frontmatter && $0 == "---" { in_frontmatter = 0; next }
+    !in_frontmatter { print }
+    ' "$file"
+}
+
+cat > "$OUTPUT" << 'HEADER'
+---
+description: Global writing, communication, and coding guidelines (auto-generated from CLAUDE.md)
+alwaysApply: true
+---
+
+# Global Cursor rules
+
+> Auto-generated from ~/.claude/CLAUDE.md by cursor-rules-gen
+> Do not edit directly - edit source and run claude-build
+
+---
+
+HEADER
+
+# Append instruction files first (split out from CLAUDE.md for Claude Code size limits).
+RULES_DIR="$HOME/.claude/rules"
+if [[ -d "$RULES_DIR" ]]; then
+    for instr in "$RULES_DIR"/*.md; do
+        [[ -f "$instr" ]] || continue
+        echo "" >> "$OUTPUT"
+        cat "$instr" >> "$OUTPUT"
+    done
+fi
+
+# Use the full merged CLAUDE.md content so domain-specific guidance is included.
+cat "$SOURCE" >> "$OUTPUT"
+
+# Add Cursor-specific notes
+cat >> "$OUTPUT" << 'FOOTER'
+
+---
+
+## Cursor-specific
+
+These rules are automatically synced from the global CLAUDE.md.
+For project-specific rules, create additional .md files in `.cursor/rules/`.
+FOOTER
+
+LINES=$(wc -l < "$OUTPUT" | tr -d ' ')
+echo "Generated: $OUTPUT ($LINES lines)"
+
+# Generate one Cursor rule file per Claude skill.
+# - Prefer skill.md as source
+# - Fall back to README.md for skills without skill.md
+echo ""
+echo "Generating skill rules..."
+
+SKILLS_GENERATED=0
+SKILLS_SKIPPED=0
+
+# Remove previously generated skill rule files to avoid stale rules.
+rm -f "$OUTPUT_DIR"/skill-*.md
+
+if [[ ! -d "$SKILLS_DIR" ]]; then
+    echo "Skills directory not found: $SKILLS_DIR (skipping)"
+else
+    for skill_dir in "$SKILLS_DIR"/*; do
+        [[ -d "$skill_dir" ]] || continue
+
+        skill_name=$(basename "$skill_dir")
+        source_file=""
+        if [[ -f "$skill_dir/skill.md" ]]; then
+            source_file="$skill_dir/skill.md"
+        elif [[ -f "$skill_dir/README.md" ]]; then
+            source_file="$skill_dir/README.md"
+        else
+            echo "Skipped skill '$skill_name': no skill.md or README.md"
+            ((SKILLS_SKIPPED++))
+            continue
+        fi
+
+        # Best-effort description from source frontmatter; use fallback if absent.
+        skill_description=$(awk '
+        BEGIN { in_frontmatter = 0 }
+        NR == 1 && $0 == "---" { in_frontmatter = 1; next }
+        in_frontmatter && $0 == "---" { exit }
+        in_frontmatter && /^description:[[:space:]]*/ {
+            sub(/^description:[[:space:]]*/, "", $0)
+            print
+            exit
+        }
+        ' "$source_file")
+
+        if [[ -z "$skill_description" ]]; then
+            skill_description="Claude skill port: $skill_name"
+        fi
+
+        # Escape quotes/backslashes for YAML-safe double-quoted string.
+        safe_description=${skill_description//\\/\\\\}
+        safe_description=${safe_description//\"/\\\"}
+
+        output_file="$OUTPUT_DIR/skill-$skill_name.md"
+
+        cat > "$output_file" << EOF
+---
+description: "$safe_description"
+alwaysApply: false
+---
+
+# Skill: $skill_name
+
+> Auto-generated from $source_file by cursor-rules-gen
+> Use this rule when the user request matches this skill.
+
+EOF
+
+        strip_optional_frontmatter "$source_file" >> "$output_file"
+
+        skill_lines=$(wc -l < "$output_file" | tr -d ' ')
+        echo "Generated: $output_file ($skill_lines lines)"
+        ((SKILLS_GENERATED++))
+    done
+fi
+
+echo "Skill rules generated: $SKILLS_GENERATED (skipped: $SKILLS_SKIPPED)"
+
+# Generate one Cursor rule file per Claude command markdown file.
+echo ""
+echo "Generating command rules..."
+
+COMMANDS_GENERATED=0
+COMMANDS_SKIPPED=0
+
+# Remove previously generated command rule files to avoid stale rules.
+rm -f "$OUTPUT_DIR"/command-*.md
+
+if [[ ! -d "$COMMANDS_DIR" ]]; then
+    echo "Commands directory not found: $COMMANDS_DIR (skipping)"
+else
+    for command_file in "$COMMANDS_DIR"/*.md; do
+        [[ -f "$command_file" ]] || continue
+
+        command_name=$(basename "$command_file" .md)
+        command_description="Claude command port: /$command_name"
+
+        # Escape quotes/backslashes for YAML-safe double-quoted string.
+        safe_description=${command_description//\\/\\\\}
+        safe_description=${safe_description//\"/\\\"}
+
+        output_file="$OUTPUT_DIR/command-$command_name.md"
+
+        cat > "$output_file" << EOF
+---
+description: "$safe_description"
+alwaysApply: false
+---
+
+# Command: /$command_name
+
+> Auto-generated from $command_file by cursor-rules-gen
+> Use this rule when the user request matches this command workflow.
+
+EOF
+
+        strip_optional_frontmatter "$command_file" >> "$output_file"
+
+        command_lines=$(wc -l < "$output_file" | tr -d ' ')
+        echo "Generated: $output_file ($command_lines lines)"
+        ((COMMANDS_GENERATED++))
+    done
+fi
+
+echo "Command rules generated: $COMMANDS_GENERATED (skipped: $COMMANDS_SKIPPED)"

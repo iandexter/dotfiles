@@ -1,0 +1,134 @@
+#!/bin/bash
+# Sync Cursor rules to a project
+#
+# Usage: cursor-sync [project-path] [--force]
+#        cursor-sync                    # Sync to current directory
+#        cursor-sync ~/projects/castor  # Sync to specific project
+#        cursor-sync . --force          # Force overwrite existing rules
+#
+# Global rules from ~/etc/dotfiles/.cursor/rules/ are copied to the
+# project's .cursor/rules/ directory. Existing files are skipped unless
+# --force is specified.
+#
+# After syncing, all .md files in the project's .cursor/rules/ directory
+# are checked for YAML frontmatter. Missing frontmatter is added
+# automatically. This operation is idempotent -- running it multiple
+# times will never duplicate frontmatter.
+
+set -euo pipefail
+
+# Parse arguments
+PROJECT="${1:-.}"
+FORCE=false
+
+for arg in "$@"; do
+    if [[ "$arg" == "--force" ]]; then
+        FORCE=true
+    fi
+done
+
+# Resolve to absolute path
+PROJECT=$(cd "$PROJECT" 2>/dev/null && pwd) || {
+    echo "Error: Cannot access directory: $1"
+    exit 1
+}
+
+GLOBAL_RULES="$HOME/etc/dotfiles/.cursor/rules"
+PROJECT_RULES="$PROJECT/.cursor/rules"
+
+# ---------------------------------------------------------------------------
+# ensure_frontmatter FILE
+#
+# Idempotent: checks whether FILE starts with "---". If it already has
+# frontmatter, does nothing. Otherwise, prepends a default frontmatter
+# block derived from the filename.
+# ---------------------------------------------------------------------------
+ensure_frontmatter() {
+    local file="$1"
+    local name
+    name=$(basename "$file" .md)
+
+    # Already has frontmatter -- nothing to do
+    if head -1 "$file" | grep -q '^---$'; then
+        return 0
+    fi
+
+    # Build a description from the filename (e.g. "castor" -> "Castor project rules")
+    local desc capitalized
+    case "$name" in
+        global) desc="Global writing, communication, and coding guidelines (auto-generated from CLAUDE.md)" ;;
+        *)
+            # Capitalize first letter (portable, no bash 4+ needed)
+            capitalized="$(echo "$name" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')"
+            desc="$capitalized project rules"
+            ;;
+    esac
+
+    local tmp
+    tmp=$(mktemp)
+    {
+        printf '%s\n' "---"
+        printf 'description: %s\n' "$desc"
+        printf '%s\n' "alwaysApply: true"
+        printf '%s\n' "---"
+        printf '\n'
+        cat "$file"
+    } > "$tmp"
+    mv "$tmp" "$file"
+
+    echo "  Added frontmatter: $name.md"
+}
+
+# Check global rules exist
+if [[ ! -d "$GLOBAL_RULES" ]]; then
+    echo "Error: Global rules not found at $GLOBAL_RULES"
+    echo "Run: claude-build"
+    exit 1
+fi
+
+# Check there are rules to sync
+if ! ls "$GLOBAL_RULES"/*.md &>/dev/null; then
+    echo "Error: No .md files in $GLOBAL_RULES"
+    echo "Run: cursor-rules-gen"
+    exit 1
+fi
+
+# Create project rules directory
+mkdir -p "$PROJECT_RULES"
+
+# Sync each rule file
+SYNCED=0
+SKIPPED=0
+
+for rule in "$GLOBAL_RULES"/*.md; do
+    name=$(basename "$rule")
+    dest="$PROJECT_RULES/$name"
+    
+    if [[ ! -f "$dest" ]] || [[ "$FORCE" == "true" ]]; then
+        cp "$rule" "$dest"
+        echo "Synced: $name"
+        ((SYNCED++))
+    else
+        echo "Skipped (exists): $name"
+        ((SKIPPED++))
+    fi
+done
+
+# Ensure every .md in the project rules dir has frontmatter (idempotent)
+FRONTMATTER_ADDED=0
+for rule in "$PROJECT_RULES"/*.md; do
+    [[ -f "$rule" ]] || continue
+    if ! head -1 "$rule" | grep -q '^---$'; then
+        ensure_frontmatter "$rule"
+        ((FRONTMATTER_ADDED++))
+    fi
+done
+
+echo ""
+echo "Rules synced to: $PROJECT_RULES"
+echo "  Synced: $SYNCED, Skipped: $SKIPPED, Frontmatter added: $FRONTMATTER_ADDED"
+
+if [[ $SKIPPED -gt 0 ]] && [[ "$FORCE" != "true" ]]; then
+    echo ""
+    echo "Tip: Use --force to overwrite existing files"
+fi
