@@ -40,4 +40,20 @@ if echo "$cmd" | grep -Eq '(^|[;&|])\s*pip3?\s+install\s'; then
   fi
 fi
 
+# Block rsync --delete (destination-wiping). Triggered a hook wipe on
+# 20 Apr 2026 when a sparse source rsync'd over a populated destination.
+# Allowed if --dry-run is also present, or if caller sets ALLOW_RSYNC_DELETE=1
+# as an explicit opt-in.
+if echo "$cmd" | grep -Eq '(^|[;&|])\s*rsync\s' && \
+   echo "$cmd" | grep -Eq -- '(^|\s)(--delete|--del($|\s)|--delete-before|--delete-during|--delete-after|--delete-excluded)'; then
+  if echo "$cmd" | grep -Eq -- '(^|\s)(--dry-run|-n($|\s))'; then
+    : # dry run is safe
+  elif [[ "${ALLOW_RSYNC_DELETE:-0}" == "1" ]]; then
+    : # explicit opt-in
+  else
+    echo "Blocked: rsync with --delete is destructive. Add --dry-run to preview, or set ALLOW_RSYNC_DELETE=1 to confirm intent." >&2
+    exit 2
+  fi
+fi
+
 exit 0
