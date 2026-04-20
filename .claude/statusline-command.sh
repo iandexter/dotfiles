@@ -6,6 +6,8 @@ input=$(cat)
 # Extract version and model
 version=$(echo "$input" | jq -r '.version')
 model=$(echo "$input" | jq -r '.model.display_name')
+session_id=$(echo "$input" | jq -r '.session_id // ""')
+session_short="${session_id:0:8}"
 
 # Get current directory
 cwd=$(pwd)
@@ -77,10 +79,17 @@ if [ -n "$ctx_usage" ]; then
 fi
 
 # Print status line with colors and icons
-printf '\033[1;34m[%s]\033[0m 🤖 \033[1;36m%s\033[0m 📁 \033[0;32m%s\033[0m%s%s%s' \
+# Build session info
+session_info=""
+if [ -n "$session_short" ]; then
+    session_info=$(printf ' 🔗 \033[0;37m%s\033[0m' "$session_short")
+fi
+
+printf '\033[1;34m[%s]\033[0m 🤖 \033[1;36m%s\033[0m 📁 \033[0;32m%s\033[0m%s%s%s%s' \
     "$version" \
     "$model" \
     "$cwd" \
     "$git_info" \
+    "$session_info" \
     "$token_info" \
     "$cost_info"
