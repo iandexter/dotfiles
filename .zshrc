@@ -9,5 +9,5 @@ if command -v pyenv >/dev/null 2>&1; then
   eval "$(pyenv init -)"
 fi
 
-export UV_EXTRA_INDEX_URL="/Users/ian.marquez/projects/databricks/ds-projects/packages/py_wheels/simple/"
-export PIP_EXTRA_INDEX_URL="/Users/ian.marquez/projects/databricks/ds-projects/packages/py_wheels/simple/"
+# Machine-specific overrides
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local

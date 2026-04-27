@@ -15,6 +15,7 @@ dbxcli
 .config/iterm2/
 .config/pip/
 .config/wireshark/
+.config/cursor-*.json
 **/.config/com.googlecode.iterm2.plist
 # Claude Code runtime files
 .claude/cost_cache.json
@@ -27,6 +28,7 @@ dbxcli
 .claude/ide/
 .claude/projects/
 .claude/CLAUDE_domain-specific.md
+.claude/settings.local.json
 .claude/agents/
 .claude/commands/
 .claude/skills/

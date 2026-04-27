@@ -1,5 +1,5 @@
 # ~/.claude/.share-manifest
-# Files listed here are copied to universe/experimental by claude-share
+# Files listed here are copied by claude-share to its configured destination.
 # SSOT: ~/etc/dotfiles/.claude/.share-manifest
 # Deployed to ~/.claude/.share-manifest by claude-build
 

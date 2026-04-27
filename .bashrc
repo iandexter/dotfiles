@@ -94,7 +94,7 @@ if [[ $(uname) = 'Darwin' ]] ; then
         alias jqless='jq -r . | jless'
     fi
 fi
-# Linux / Arca
+# Linux
 if [[ $(uname) = 'Linux' ]] ; then
     if locale -a 2>/dev/null | grep -q en_GB.utf8; then
         export LC_ALL=en_GB.UTF-8
@@ -104,9 +104,6 @@ if [[ $(uname) = 'Linux' ]] ; then
         export LANG=en_US.UTF-8
     fi
     [[ -d $HOME/.local/bin ]] && export PATH="$HOME/.local/bin:$PATH"
-    if [[ -d ~/.arca ]] ; then
-        export UNIVERSE=$HOME/universe
-    fi
     if command -v pyenv &>/dev/null ; then
         export PYENV_ROOT="$HOME/.pyenv"
         export PATH="$PYENV_ROOT/bin:$PATH"
@@ -151,8 +148,7 @@ export LS_COLORS="di=34:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:su=30;41:sg=30
 if which terraform &>/dev/null ; then
     complete -C $(which terraform) terraform
 fi
-# Machine-specific overrides
-[[ -f ~/Dropbox/Documents/Ian/tech/laptop/etc/bashrc.local ]] && source ~/Dropbox/Documents/Ian/tech/laptop/etc/bashrc.local
+# Machine-specific overrides. Source lives elsewhere; deployed to ~/.local/ and symlinked here by claude-build.
 [[ -f ~/.bashrc.local ]] && source ~/.bashrc.local
 # Dedupe PATH
 export PATH=$(echo -n $PATH | awk -v RS=: '!($0 in a) {a[$0]; printf("%s%s", length(a) > 1 ? ":" : "", $0)}')
