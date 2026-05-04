@@ -9,6 +9,19 @@ model=$(echo "$input" | jq -r '.model.display_name')
 session_id=$(echo "$input" | jq -r '.session_id // ""')
 session_short="${session_id:0:8}"
 
+# Detect Pipe Piper host. Mirrors the resolution order in
+# pipe-piper SKILL.md "Host identity (multi-machine)":
+# env var > Linux+~/.arca > laptop. bashrc.local sets the env var
+# for interactive shells; this fallback covers non-interactive ones.
+if [ -n "${PIPE_PIPER_HOST:-}" ]; then
+    pipe_piper_host="$PIPE_PIPER_HOST"
+elif [ "$(uname)" = "Linux" ] && [ -d "$HOME/.arca" ]; then
+    pipe_piper_host="arca"
+else
+    pipe_piper_host="laptop"
+fi
+host_info=$(printf ' 🖥️  \033[1;35m%s\033[0m' "$pipe_piper_host")
+
 # Get current directory
 cwd=$(pwd)
 
@@ -85,9 +98,10 @@ if [ -n "$session_short" ]; then
     session_info=$(printf ' 🔗 \033[0;37m%s\033[0m' "$session_short")
 fi
 
-printf '\033[1;34m[%s]\033[0m 🤖 \033[1;36m%s\033[0m 📁 \033[0;32m%s\033[0m%s%s%s%s' \
+printf '\033[1;34m[%s]\033[0m 🤖 \033[1;36m%s\033[0m%s 📁 \033[0;32m%s\033[0m%s%s%s%s' \
     "$version" \
     "$model" \
+    "$host_info" \
     "$cwd" \
     "$git_info" \
     "$session_info" \
