@@ -1,13 +1,16 @@
 [user]
     name = Ian Dexter D Marquez
-    email = 79125+iandexter@users.noreply.github.com.x 
+    email = 79125+iandexter@users.noreply.github.com
     logallrefupdates = true
     signingkey = 126A3EDFFB6E402E
+[github]
+    username = iandexter
 [core]
     excludesfile = /Users/iandexter/.gitignore
     editor = vim
     fsmonitor = true
     untrackedcache = true
+	hooksPath = /Users/ian.marquez/.databricks/githooks
 [alias]
     ba = branch --all
     bd = branch --delete --force
