@@ -1,0 +1,21 @@
+# Glow config: Arca (Linux) variant
+# Deployed to ~/.config/glow/glow.yml on Arca (XDG-Linux location).
+# macOS/laptop uses glow.macos.yml instead — see ~/etc/dotfiles/glow.macos.yml.
+# SSOT for both files lives in this dotfiles repo; deploy mechanics in claude-build
+# (laptop) and arca-sync.conf [bash.dotfiles_kv] (Arca).
+#
+# Values are intentionally identical to glow.macos.yml — the only per-host
+# difference is the deploy path (XDG-Linux vs XDG-Apple).
+
+# style name or JSON path (default "auto")
+style: "auto"
+# mouse support (TUI-mode only)
+mouse: true
+# use pager to display markdown
+pager: true
+# word-wrap at width
+width: 100
+# show all files, including hidden and ignored.
+all: false
+# show line numbers (TUI-mode only)
+showLineNumbers: true
