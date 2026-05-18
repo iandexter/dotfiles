@@ -144,6 +144,12 @@ Comments explain WHY, not WHAT. Follow this hierarchy — only move to the next 
 - Suggest dry-run or preview options when available
 - Never run destructive commands without explicit user confirmation
 
+**Agent workflow security:**
+- Sanitize and quote untrusted content (pull-request bodies, issue text, commit messages) before interpolating it into a prompt or a shell command.
+- Default to least-privilege scopes — workflow tokens should be read-only unless write access is genuinely needed.
+- Never `eval` or pipe model output into a shell. Separate analysis steps from execution steps; require an explicit human approval gate for any execution path that runs against production.
+- Ensure secrets are not readable by an agent step and never get printed to logs.
+
 ### File reading and sub-agent orchestration
 
 **Always read files completely:**
@@ -213,9 +219,44 @@ Comments explain WHY, not WHAT. Follow this hierarchy — only move to the next 
 ### Pull request review workflow
 
 **General principles:**
-- Automated reviewers may generate comments that aren't auto-resolved
-- Distinguish critical (bugs, logic errors) vs style (edge cases, documentation)
-- When PR is approved but has style comments: acknowledge trade-offs explicitly before merging
+- Treat automated review (Copilot, Claude Code review, IDE pair-programming critique) as a prerequisite, not noise — let it catch the mechanical defects before a human has to.
+- Distinguish critical (bugs, logic errors) vs style (edge cases, documentation).
+- When a PR is approved but has style comments: acknowledge trade-offs explicitly before merging.
+- Automated reviewers may generate comments that are not auto-resolved — resolve or acknowledge each one in writing.
+
+### Reviewing agent-authored changes
+
+Submission-time review of pull requests authored by a coding agent (Claude Code, Cursor, Copilot, IDE pair-programming surface). The agent is a productive, literal, pattern-following contributor with zero context about your incident history, edge case lore, or the operational constraints that do not live in the repository. The part of review that does not get automated is judgment, and judgment requires context only you have. Reviewing your own pull request when an agent wrote it is not optional — it is basic respect for the reviewer's time.
+
+**Five red flags to watch for:**
+
+1. **Verification weakening.** Any change that disables, skips, or removes a pre-merge check. Examples: removed or skipped tests, lowered coverage thresholds, lint steps gated behind new conditions, `|| true` appended to test commands, workflows that stopped running on forks or pull requests. Any change that weakens verification is a blocker. Full stop.
+2. **Code reuse blindness.** New utilities or helpers that duplicate existing ones with slightly different names; validation logic reimplemented across files; middleware written from scratch when a shared module already exists. For every new helper, do a quick search. If an equivalent exists, require consolidation before merge — do not leave a comment and ship.
+3. **Hallucinated correctness.** Code that compiles, passes every test, and is wrong. Off-by-one errors in pagination, missing permission checks on branches never hit in tests, validation that short-circuits under edge cases, wrong behavior under race conditions. Trace one critical path end-to-end; do not just scan the diff.
+4. **Agentic ghosting.** Large pull requests with no implementation plan correlate with agent abandonment or misalignment. Before deep review, require a breakdown. Sample language: "This pull request is too large for me to review without a clearer implementation plan. Break it into smaller scoped units."
+5. **Untrusted input in workflows.** Agent workflows that read pull-request bodies, issues, or commit messages, interpolate into prompts, and pipe model output into shell or write-scoped tokens. Blockers: untrusted input flowing into prompts without sanitization, write-scoped tokens where read access would suffice, model output executed as shell, secrets accessible to agent steps or printed to logs. Separate analysis from execution; never `eval` model output.
+
+**Time-allocated review workflow (~10 min, complex agent PR):**
+
+| Time | Step | What to do |
+|------|------|-----------|
+| 1–2 min | Scan and classify | Narrow (docs, small change) or complex (multi-file, logic, performance, tests) |
+| 2–3 min | Check verification surfaces first | CI configs, test files, coverage settings. Flag anything weakening verification |
+| 3–5 min | Scan for new utilities | New functions, helpers, modules. Check for duplicates against the existing tree |
+| 5–8 min | Trace one critical path | Most important logic: input → transforms → output. Check boundaries, permissions, branching |
+| 8–9 min | Security boundaries | Run the security checklist if the PR touches workflows calling LLMs or handling untrusted input |
+| 9–10 min | Require evidence | For non-trivial logic, require a test that fails on pre-change behavior |
+
+**Request a smaller pull request when:**
+1. Diff touches more than five unrelated files.
+2. Purpose cannot be described in one sentence.
+3. Agent has no implementation plan or the PR body is empty.
+4. CI is failing and the only changes are to test files.
+
+**Concrete realisations:**
+- The Databricks 4-sub-agent pre-push diff review (see "Pre-push review workflow" under Git workflow in the domain-specific guidance) is one team-scoped realisation of the author self-review obligation above.
+
+Source: [GitHub blog: Agent pull requests are everywhere, here's how to review them](https://github.blog/ai-and-ml/generative-ai/agent-pull-requests-are-everywhere-heres-how-to-review-them/), retrieved 15 May 2026. Reframed tool-agnostically.
 
 ### CLAUDE.md updates
 
