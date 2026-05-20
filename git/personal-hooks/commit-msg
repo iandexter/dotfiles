@@ -33,7 +33,7 @@ commit-msg: $1
 Expected: <type>[(scope)]: <description>
 Types:       feat | fix | docs | refactor | perf | test | chore | ci | build | style | revert
 Scope:       optional, lowercase, hyphens or slashes ok
-Description: imperative mood, lowercase first char, no trailing period, <=72 chars
+Description: imperative mood, lowercase first char, no trailing period, <=50 chars
 
 Full spec: ~/.claude/CLAUDE.md -> "Git workflow (personal projects)"
 EOF
@@ -41,7 +41,7 @@ EOF
 }
 
 printf '%s' "$subject" | grep -qE "$re" || reject "subject does not match the Conventional Commits format"
-[ ${#subject} -gt 72 ] && reject "subject is ${#subject} chars; cap is 72"
+[ ${#subject} -gt 50 ] && reject "subject is ${#subject} chars; cap is 50"
 case "$subject" in *.) reject "subject ends with a period";; esac
 
 exit 0

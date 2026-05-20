@@ -280,7 +280,7 @@ section.
 - **Scope** (optional): single token, lowercase, hyphens or slashes ok
   (e.g., `feat(dbcert-sync):`, `fix(arca):`, `docs(api/auth):`).
 - **Description**: imperative mood ("add", not "added" or "adds"),
-  lowercase first char, no trailing period, target <=50 chars, hard cap 72.
+  lowercase first char, no trailing period, hard cap 50 chars.
 - **Body**: default to none. Add only when intent isn't obvious from
   type+scope+description. When present, blank line after subject, wrap at
   72, explain *why* — let the code speak for *what*.

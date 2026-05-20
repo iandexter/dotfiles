@@ -2,7 +2,7 @@
 #
 # Type:        feat | fix | docs | refactor | perf | test | chore | ci | build | style | revert
 # Scope:       optional, lowercase, hyphens or slashes ok (e.g., dbcert-sync, arca, api/auth)
-# Description: imperative mood, lowercase first char, no trailing period, <=72 chars
+# Description: imperative mood, lowercase first char, no trailing period, <=50 chars
 #
 # Body (optional): default to none. Add only when intent isn't obvious
 # from type+scope+description. Wrap at 72. Explain *why* -- let the
