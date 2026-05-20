@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# pre-commit chain wrapper.
+# Delegates to $GITHOOKS_UPSTREAM_DIR/pre-commit when set and executable
+# (e.g., a vendor-supplied secret-scan hook). No-op otherwise.
+
+upstream="${GITHOOKS_UPSTREAM_DIR:-}/pre-commit"
+if [ -n "${GITHOOKS_UPSTREAM_DIR:-}" ] && [ -x "$upstream" ]; then
+  exec "$upstream" "$@"
+fi
+exit 0

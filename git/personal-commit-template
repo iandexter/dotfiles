@@ -1,0 +1,15 @@
+# <type>[(scope)]: <description>
+#
+# Type:        feat | fix | docs | refactor | perf | test | chore | ci | build | style | revert
+# Scope:       optional, lowercase, hyphens or slashes ok (e.g., dbcert-sync, arca, api/auth)
+# Description: imperative mood, lowercase first char, no trailing period, <=72 chars
+#
+# Body (optional): default to none. Add only when intent isn't obvious
+# from type+scope+description. Wrap at 72. Explain *why* -- let the
+# code speak for *what*.
+#
+# Footer (optional): Closes #42 / Refs #99 / BREAKING CHANGE: <details>
+#
+# No Co-authored-by trailers.
+#
+# Full spec: ~/.claude/CLAUDE.md -> "Git workflow (personal projects)"

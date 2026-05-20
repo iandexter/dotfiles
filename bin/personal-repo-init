@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# personal-repo-init: configure the current git repo for personal-project
+# commit conventions.
+#
+# Sets:
+#   core.hooksPath  -> ~/etc/dotfiles/git/personal-hooks/
+#                      (commit-msg validator + pre-commit/pre-push wrappers)
+#   commit.template -> ~/etc/dotfiles/git/personal-commit-template
+#
+# The pre-commit/pre-push wrappers chain to $GITHOOKS_UPSTREAM_DIR/<hook>
+# when set (e.g., vendor-supplied secret-scan hook). Set that variable in
+# your private shell rc; it is intentionally not hard-coded here.
+#
+# Idempotent. Run once per personal repo.
+
+set -euo pipefail
+
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "personal-repo-init: not inside a git repo" >&2
+    exit 1
+fi
+
+dotfiles="$HOME/etc/dotfiles"
+hooks_dir="$dotfiles/git/personal-hooks"
+template="$dotfiles/git/personal-commit-template"
+
+for path in "$hooks_dir" "$template"; do
+    if [[ ! -e "$path" ]]; then
+        echo "personal-repo-init: missing $path (dotfiles not deployed?)" >&2
+        exit 1
+    fi
+done
+
+git config core.hooksPath "$hooks_dir"
+git config commit.template "$template"
+
+repo="$(basename "$(git rev-parse --show-toplevel)")"
+echo "personal-repo-init: $repo"
+echo "  core.hooksPath  = $hooks_dir"
+echo "  commit.template = $template"
+
+if [[ -z "${GITHOOKS_UPSTREAM_DIR:-}" ]]; then
+    cat <<EOF
+
+NOTE: GITHOOKS_UPSTREAM_DIR is not set in this shell. The chain wrappers
+will no-op (no secret-scan / push checks). Set it in your private shell
+rc to chain to a vendor hooks dir.
+EOF
+fi

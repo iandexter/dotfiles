@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# commit-msg hook for personal repos.
+# Enforces the Conventional Commits subject format defined in
+# ~/.claude/CLAUDE.md -> "Git workflow (personal projects)".
+#
+# Installed per repo via:
+#   git config core.hooksPath ~/etc/dotfiles/git/personal-hooks
+# (use the personal-repo-init script).
+
+set -eu
+
+msg_file="${1:?commit-msg: missing message file}"
+
+# First non-empty, non-comment line is the subject.
+subject="$(grep -v '^#' "$msg_file" | awk 'NF { print; exit }')"
+
+# Empty message: let git's own validation handle it.
+[ -z "$subject" ] && exit 0
+
+# Allow auto-generated merge and revert subjects untouched.
+case "$subject" in
+  "Merge "*|'Revert "'*) exit 0 ;;
+esac
+
+re='^(feat|fix|docs|refactor|perf|test|chore|ci|build|style|revert)(\([a-z0-9_/-]+\))?!?: [^A-Z].+'
+
+reject() {
+  cat >&2 <<EOF
+commit-msg: $1
+
+  Got: $subject
+
+Expected: <type>[(scope)]: <description>
+Types:       feat | fix | docs | refactor | perf | test | chore | ci | build | style | revert
+Scope:       optional, lowercase, hyphens or slashes ok
+Description: imperative mood, lowercase first char, no trailing period, <=72 chars
+
+Full spec: ~/.claude/CLAUDE.md -> "Git workflow (personal projects)"
+EOF
+  exit 1
+}
+
+printf '%s' "$subject" | grep -qE "$re" || reject "subject does not match the Conventional Commits format"
+[ ${#subject} -gt 72 ] && reject "subject is ${#subject} chars; cap is 72"
+case "$subject" in *.) reject "subject ends with a period";; esac
+
+exit 0

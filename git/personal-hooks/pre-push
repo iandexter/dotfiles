@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# pre-push chain wrapper.
+# Delegates to $GITHOOKS_UPSTREAM_DIR/pre-push when set and executable.
+# No-op otherwise.
+
+upstream="${GITHOOKS_UPSTREAM_DIR:-}/pre-push"
+if [ -n "${GITHOOKS_UPSTREAM_DIR:-}" ] && [ -x "$upstream" ]; then
+  exec "$upstream" "$@"
+fi
+exit 0
