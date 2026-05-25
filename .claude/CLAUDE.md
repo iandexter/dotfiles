@@ -2,25 +2,13 @@
 
 Instructions that apply to ALL sessions, regardless of project directory.
 
-**Table of Contents:**
+**Table of contents:**
 - Communication style → `.claude/rules/communication-style.md`
 - Factual accuracy and claims → `.claude/rules/factual-accuracy.md`
-- [Work patterns](#work-patterns)
-  - [Parallel tool execution](#parallel-tool-execution)
-  - [When to use TodoWrite](#when-to-use-todowrite)
-  - [When to ask clarifying questions](#when-to-ask-clarifying-questions)
-  - [Research discipline (RPI loop)](#research-discipline-rpi-loop)
-  - [Project-specific guidance files](#project-specific-guidance-files)
-  - [Coding assistance guardrails](#coding-assistance-guardrails)
-  - [Security and sensitive data](#security-and-sensitive-data)
-  - [File reading and sub-agent orchestration](#file-reading-and-sub-agent-orchestration)
-  - [Generated files](#generated-files)
-  - [Planning workflow](#planning-workflow)
-  - [CLAUDE.md updates](#claudemd-updates)
-  - [Custom skills execution](#custom-skills-execution)
-  - [File editing safety](#file-editing-safety)
-  - [Custom scripts and aliases](#custom-scripts-and-aliases)
-  - [Self-improvement loop](#self-improvement-loop)
+- Coding guardrails (plan-before-code, comments, security, file safety, reviewing agent-authored changes) → `.claude/rules/coding-guardrails.md`
+- Git workflow (general / personal projects) → `.claude/rules/git-workflow.md`
+- Work patterns (below)
+- Domain-specific guidelines (`CLAUDE_domain-specific.md`)
 
 ## Work patterns
 
@@ -80,75 +68,9 @@ Separate research, planning, and implementation phases to avoid hallucination:
 - Don't drift from agreed approach without checking
 - Surface blockers immediately rather than working around them
 
-### Project-specific guidance files
+### Coding and security guardrails
 
-Check for these files in project root to inject domain-specific constraints:
-- `.claude/design-guidance.md` - Architecture patterns, technology choices, naming conventions
-- `.claude/implementation-guidance.md` - Coding standards, testing requirements, deployment rules
-
-If these files exist, read them before planning any implementation work.
-
-### Coding assistance guardrails
-
-**Plan before code (mandatory for non-trivial changes):**
-- ALWAYS propose 2-3 high-level approaches with pros/cons before writing code
-- Let user pick the approach before writing implementation
-- Never jump straight to code - the user's judgment on approach matters more than speed
-- For trivial changes (typos, one-liners): proceed directly
-- For anything else: plan first, code second
-
-**Prefer simplicity:**
-- Before implementing, ask yourself: "Is there a simpler way?"
-- Avoid bloated abstractions - 100 lines is better than 1000
-- Don't add features/complexity not explicitly requested
-- Clean up dead code you create; don't leave orphaned code
-
-**Stay in scope:**
-- Never change comments or code orthogonal to the task
-- Don't "improve" code you weren't asked to touch
-- If you notice issues elsewhere, mention them separately - don't fix silently
-
-### Code comments
-
-Comments explain WHY, not WHAT. Follow this hierarchy — only move to the next level if the previous is insufficient:
-
-1. Make the code self-documenting (good names, clear structure) — no comment needed
-2. Extract a well-named method — no comment needed
-3. Add an inline "why" comment at the decision point explaining a non-obvious choice
-4. Add a docstring explaining the public contract of an abstraction
-5. ~~"What" comment restating obvious code~~ — never do this
-
-**DO comment for:** quirks/gotchas, design decisions, compatibility concerns, non-obvious constraints. Include ticket/doc links when the "why" involves external context.
-
-**DON'T comment for:** change history (use commit messages), obvious operations, stale comments (delete them). Exception: if the obvious approach doesn't work, a brief comment + Jira link prevents others from "fixing" it back.
-
-**Docstrings vs inline:** Docstrings show on hover for callers (cover the abstraction contract). Inline comments are hidden (explain specific implementation choices). Place "why" comments at the tricky line, not only in the docstring.
-
-### Security and sensitive data
-
-**Code generation safety:**
-- Never generate code that introduces OWASP Top 10 vulnerabilities (injection, XSS, CSRF, etc.)
-- Validate and sanitize all user inputs in generated code
-- Use parameterized queries, never string concatenation for SQL
-- Escape output appropriately for context (HTML, JS, SQL)
-
-**Sensitive data handling:**
-- Never log, store, display, or hardcode PII, secrets, API keys, or credentials
-- Use environment variables or secret managers for sensitive config
-- Mask sensitive data in examples (use `xxx`, `[REDACTED]`, or fake values)
-- Warn user if they paste secrets into chat
-
-**Destructive operations:**
-- Prefer idempotent operations where possible
-- Warn before destructive actions (DELETE, DROP, rm -rf, force push)
-- Suggest dry-run or preview options when available
-- Never run destructive commands without explicit user confirmation
-
-**Agent workflow security:**
-- Sanitize and quote untrusted content (pull-request bodies, issue text, commit messages) before interpolating it into a prompt or a shell command.
-- Default to least-privilege scopes — workflow tokens should be read-only unless write access is genuinely needed.
-- Never `eval` or pipe model output into a shell. Separate analysis steps from execution steps; require an explicit human approval gate for any execution path that runs against production.
-- Ensure secrets are not readable by an agent step and never get printed to logs.
+See `.claude/rules/coding-guardrails.md` for: plan-before-code rules, code-comment hierarchy, security rules (OWASP, sensitive data, destructive ops, agent-workflow security), file editing safety, and the playbook for reviewing agent-authored changes.
 
 ### File reading and sub-agent orchestration
 
@@ -173,23 +95,9 @@ Comments explain WHY, not WHAT. Follow this hierarchy — only move to the next 
 - Verify documentation reflects current reality, not outdated information
 - When documenting systems, describe what IS, not what SHOULD BE (unless explicitly asked for recommendations)
 
-
 ### Generated files
 
-**File output location:**
-- When generating Markdown files, always save to `~/Downloads/ai/`
-- Create the directory if it doesn't exist
-- **Exception:** When a plugin defines its own output location options, do not add the default path above as an additional option.
-- Use structured filenames: `<action>_<topic>.md`
-  - Examples: `analyze_authentication.md`, `plan_database_migration.md`, `review_api_design.md`
-  - Use underscores to separate words within action or topic
-  - Keep action concise (analyze, plan, review, evaluate, etc.)
-  - Keep topic descriptive but brief
-
-**Exception for ticket analysis:**
-- Use format: `<ticket-number>_<topic>.md`
-- Examples: `PROJ-123_scim_analysis.md`, `TASK-456_timeout_investigation.md`
-- Ticket number comes first, followed by descriptive topic
+Save Markdown output under `~/Downloads/ai/<subfolder>/` per the directory table in CLAUDE_domain-specific.md. Filename format: `<action>_<topic>.md` (e.g., `analyze_authentication.md`); for ticket analysis use `<ticket-number>_<topic>.md` (e.g., `BL-15861_scim_analysis.md`). Exception: if a plugin/skill defines its own output path, don't override it.
 
 ### Planning workflow
 
@@ -216,119 +124,25 @@ Comments explain WHY, not WHAT. Follow this hierarchy — only move to the next 
 - Mark completed items clearly
 - Note any deviations or blockers encountered
 
-### Pull request review workflow
+### Git workflow
 
-**General principles:**
-- Treat automated review (Copilot, Claude Code review, IDE pair-programming critique) as a prerequisite, not noise — let it catch the mechanical defects before a human has to.
-- Distinguish critical (bugs, logic errors) vs style (edge cases, documentation).
-- When a PR is approved but has style comments: acknowledge trade-offs explicitly before merging.
-- Automated reviewers may generate comments that are not auto-resolved — resolve or acknowledge each one in writing.
-
-### Reviewing agent-authored changes
-
-Submission-time review of pull requests authored by a coding agent (Claude Code, Cursor, Copilot, IDE pair-programming surface). The agent is a productive, literal, pattern-following contributor with zero context about your incident history, edge case lore, or the operational constraints that do not live in the repository. The part of review that does not get automated is judgment, and judgment requires context only you have. Reviewing your own pull request when an agent wrote it is not optional — it is basic respect for the reviewer's time.
-
-**Five red flags to watch for:**
-
-1. **Verification weakening.** Any change that disables, skips, or removes a pre-merge check. Examples: removed or skipped tests, lowered coverage thresholds, lint steps gated behind new conditions, `|| true` appended to test commands, workflows that stopped running on forks or pull requests. Any change that weakens verification is a blocker. Full stop.
-2. **Code reuse blindness.** New utilities or helpers that duplicate existing ones with slightly different names; validation logic reimplemented across files; middleware written from scratch when a shared module already exists. For every new helper, do a quick search. If an equivalent exists, require consolidation before merge — do not leave a comment and ship.
-3. **Hallucinated correctness.** Code that compiles, passes every test, and is wrong. Off-by-one errors in pagination, missing permission checks on branches never hit in tests, validation that short-circuits under edge cases, wrong behavior under race conditions. Trace one critical path end-to-end; do not just scan the diff.
-4. **Agentic ghosting.** Large pull requests with no implementation plan correlate with agent abandonment or misalignment. Before deep review, require a breakdown. Sample language: "This pull request is too large for me to review without a clearer implementation plan. Break it into smaller scoped units."
-5. **Untrusted input in workflows.** Agent workflows that read pull-request bodies, issues, or commit messages, interpolate into prompts, and pipe model output into shell or write-scoped tokens. Blockers: untrusted input flowing into prompts without sanitization, write-scoped tokens where read access would suffice, model output executed as shell, secrets accessible to agent steps or printed to logs. Separate analysis from execution; never `eval` model output.
-
-**Time-allocated review workflow (~10 min, complex agent PR):**
-
-| Time | Step | What to do |
-|------|------|-----------|
-| 1–2 min | Scan and classify | Narrow (docs, small change) or complex (multi-file, logic, performance, tests) |
-| 2–3 min | Check verification surfaces first | CI configs, test files, coverage settings. Flag anything weakening verification |
-| 3–5 min | Scan for new utilities | New functions, helpers, modules. Check for duplicates against the existing tree |
-| 5–8 min | Trace one critical path | Most important logic: input → transforms → output. Check boundaries, permissions, branching |
-| 8–9 min | Security boundaries | Run the security checklist if the PR touches workflows calling LLMs or handling untrusted input |
-| 9–10 min | Require evidence | For non-trivial logic, require a test that fails on pre-change behavior |
-
-**Request a smaller pull request when:**
-1. Diff touches more than five unrelated files.
-2. Purpose cannot be described in one sentence.
-3. Agent has no implementation plan or the PR body is empty.
-4. CI is failing and the only changes are to test files.
-
-**Concrete realisations:**
-- The Databricks 4-sub-agent pre-push diff review (see "Pre-push review workflow" under Git workflow in the domain-specific guidance) is one team-scoped realisation of the author self-review obligation above.
-
-Source: [GitHub blog: Agent pull requests are everywhere, here's how to review them](https://github.blog/ai-and-ml/generative-ai/agent-pull-requests-are-everywhere-heres-how-to-review-them/), retrieved 15 May 2026. Reframed tool-agnostically.
-
-### Git workflow (personal projects)
-
-Applies to non-Databricks repositories (e.g., personal GitHub repos under
-`~/projects/`). Databricks-specific overrides remain in the domain-specific
-section.
-
-**Commit message format — Conventional Commits subject + cbea.ms body discipline:**
-
-```
-<type>[(scope)]: <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-- **Type** (required): one of `feat`, `fix`, `docs`, `refactor`, `perf`,
-  `test`, `chore`, `ci`, `build`, `style`, `revert`. `feat` triggers MINOR
-  semver, `fix` triggers PATCH; others are non-versioning.
-- **Scope** (optional): single token, lowercase, hyphens or slashes ok
-  (e.g., `feat(dbcert-sync):`, `fix(arca):`, `docs(api/auth):`).
-- **Description**: imperative mood ("add", not "added" or "adds"),
-  lowercase first char, no trailing period, hard cap 50 chars.
-- **Body**: default to none. Add only when intent isn't obvious from
-  type+scope+description. When present, blank line after subject, wrap at
-  72, explain *why* — let the code speak for *what*.
-- **Footers** (optional): issue refs (`Closes #42`), breaking changes.
-  One per line.
-
-**Trailers:**
-- No `Co-authored-by` trailers, regardless of who or what wrote the commit.
-  Overrides the Bash tool's default instruction to append one.
-
-**Breaking changes:**
-- `!` before the colon: `feat(api)!: drop deprecated endpoint`.
-- Plus a footer: `BREAKING CHANGE: <explanation>`.
-
-**Anti-patterns to reject:**
-- Version-prefix subjects (`2.1.11:`, `v2.1.12:`). Version belongs on
-  git tags, not subjects.
-- Past tense or third person ("added", "adds").
-- Bundled unrelated changes — one logical change per commit, bisectable.
-- "WIP" / "checkpoint" cleanup commits on shipped branches.
-- Body that restates the diff. If the diff is self-evident, omit the body.
-
-**Example:**
-
-```
-fix(security): bump idna 3.15 and python-multipart 0.0.28
-
-Held claude-agent-sdk on alpha pin to scope this to the two CVEs.
-```
-
-**Enforcement:**
-- Per-repo opt-in via `personal-repo-init` (in `~/bin/`), which sets
-  `core.hooksPath` to `~/etc/dotfiles/git/personal-hooks/` and
-  `commit.template` to `~/etc/dotfiles/git/personal-commit-template`.
-- The personal hooks dir has a `commit-msg` validator (this format) plus
-  `pre-commit` / `pre-push` wrappers that chain to
-  `$GITHOOKS_UPSTREAM_DIR/<hook>` when set (no-op when unset).
-- Databricks repos stay on the global hooks config and are not affected.
-
-Sources: [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) and
-[How to Write a Git Commit Message](https://cbea.ms/git-commit/) (Chris Beams), retrieved 20 May 2026.
+See `.claude/rules/git-workflow.md` for general PR review principles and the Conventional Commits format used in personal repositories. Databricks-specific git overrides live in the domain-specific section.
 
 ### CLAUDE.md updates
+
+**Before adding any new rule:**
+- Grep `~/.claude/CLAUDE.md` + `~/.claude/rules/` for a similar rule. If one exists, UPDATE it instead of duplicating.
+- Pair the addition with 1 candidate removal. If nothing is removable, the new rule must be <5 lines.
+- `claude-build` enforces a 900-line total cap across CLAUDE.md + rules/*.md; a build that breaches the cap exits non-zero.
 
 **Self-modification:**
 - When user says "Always do this..." or "Never do this...", update the appropriate file:
   - Communication style → `~/etc/dotfiles/.claude/rules/communication-style.md`
   - Factual accuracy → `~/etc/dotfiles/.claude/rules/factual-accuracy.md`
+  - Coding/security/review → `~/etc/dotfiles/.claude/rules/coding-guardrails.md`
+  - Git (general) → `~/etc/dotfiles/.claude/rules/git-workflow.md`
+  - Databricks operations → `~/etc/dotfiles/.claude/rules/databricks-operations.md` (note: SSOT in Dropbox)
+  - Git (Databricks) → `~/etc/dotfiles/.claude/rules/databricks-git-workflow.md` (note: SSOT in Dropbox)
   - Work patterns → `~/etc/dotfiles/.claude/CLAUDE.md`
   - Domain-specific → `~/etc/dotfiles/.claude/CLAUDE_domain-specific.md`
 - Follow existing formatting and style
@@ -337,70 +151,23 @@ Sources: [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1
 **Sync workflow (source of truth in dotfiles):**
 1. Determine which source file to update (see above)
 2. Run `claude-build` to regenerate `~/.claude/CLAUDE.md` and sync `rules/` from sources
-4. Check `.gitignore` before attempting git operations (domain-specific file is intentionally not tracked)
-5. Notify user that dotfiles are ready to review and commit
-6. After user reviews changes, commit and push dotfiles:
+3. Check `.gitignore` before attempting git operations (domain-specific file is intentionally not tracked)
+4. Notify user that dotfiles are ready to review and commit
+5. After user reviews changes, commit and push dotfiles:
    - `cd ~/etc/dotfiles && git add .claude/ && git commit -m "Update CLAUDE.md: [brief description]" && git push`
-
-**Cursor rules sync (derived from CLAUDE.md):**
-- `claude-build` automatically generates Cursor rules at `~/etc/dotfiles/.cursor/rules/global.md`
-- Rules are extracted from CLAUDE.md (communication style, factual accuracy, coding guardrails)
-- To sync to a project: `cursor-sync ~/projects/myproject`
-- Project-specific rules go in `.cursor/rules/projectname.md` (not overwritten by sync)
-- Use `--force` to overwrite existing rules: `cursor-sync ~/projects/myproject --force`
 
 ### Conflict resolution across CLAUDE.md files
 
-All CLAUDE.md files in the directory hierarchy are concatenated and loaded together. There is no automatic override mechanism.
-
-**When conflicting rules exist:**
-- Do NOT attempt to follow both rules simultaneously
-- Do NOT silently pick one rule over another
-- ASK the user which rule should apply in this context
-- Example: "I see conflicting branch naming conventions in global vs project CLAUDE.md. Which should I follow for this repo?"
-
-**Preventing conflicts:**
-- Global CLAUDE.md: General, portable rules (not project-specific)
-- Project CLAUDE.md: Project-specific overrides and additions
-- More specific files should refine or replace global rules, not contradict them
+Global + project CLAUDE.md files are concatenated; there is no automatic override. If a project rule conflicts with a global rule, ask the user which applies in this context (don't pick silently or try to follow both).
 
 ### Custom skills execution
 
-When a skill or plugin is invoked, follow its instructions exactly:
-- Do not ask clarifying questions unless the skill explicitly requires user input at that step
-- Do not override skill-specified behaviors (output paths, formats, workflow phases) with global preferences
-- Proceed autonomously through all skill phases
-- When a task is clear within a skill context, execute it without asking for confirmation
-
-### File editing safety
-
-- Never remove existing content unrelated to the current change
-- Before writing, read the full file to understand existing structure
-- After editing, verify the file still contains all pre-existing sections
-- Prefer targeted Edit operations over full Write operations when modifying existing files
+When a skill or plugin is invoked, follow its instructions exactly. Do not override skill-specified output paths/formats with global preferences, and do not ask clarifying questions unless the skill explicitly requires user input.
 
 ### Custom scripts and aliases
 
-**Using personal scripts and shortcuts:**
-- Check for relevant scripts in `~/.bashrc`, `~/.aliases.d`, and `~/bin` when appropriate
-- These locations may contain custom commands, shortcuts, or utilities
-- ALWAYS ask user before executing any custom scripts or aliases
-- Example: "I found a script in ~/bin/deploy.sh - would you like me to use this?"
-
-**When to check:**
-- Before writing new scripts that may already exist
-- When user mentions common tasks that are often scripted
-- Before running standard commands that may have custom aliases
-
-**Never:**
-- Execute custom scripts without explicit confirmation
-- Assume custom script behavior without asking
-- Override custom scripts with generic solutions without checking first
+Check `~/.bashrc`, `~/.aliases.d`, and `~/bin` for existing scripts before writing new ones. Confirm with the user before invoking any discovered alias or script (per coding-guardrails.md Destructive operations).
 
 ### Self-improvement loop
 
-**After any user correction**, write the mistake pattern and fix to `memory/MEMORY.md`:
-- Keep entries concise (1-2 lines each)
-- Group by category (e.g., wrong assumptions, style violations, tool misuse)
-- Check memory at session start before repeating known mistakes
-- Remove entries that are no longer relevant or were proven wrong
+After any user correction, append a concise (1-2 line) entry to `memory/MEMORY.md` so the auto-memory layer can surface it next session. Remove entries that are obsolete.
