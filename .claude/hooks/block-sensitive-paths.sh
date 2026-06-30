@@ -22,6 +22,13 @@ sensitive_patterns=(
   "$HOME/.env"
   "$HOME/.netrc"
   "$HOME/.npmrc"
+  # MCP config: dual-surface files that auto-regenerate; hand-edits corrupt the live fleet.
+  "$HOME/.claude.json"
+  "$HOME/.config/mcp/config.json"
+  # Pipe Piper broker daemon artifacts: written only by the broker, never by the skill.
+  # Prefix-matches broker-health.json, broker.log, broker-ancestor/, broker-sentinel-mtime.
+  # NOTE: state/locks/ is intentionally NOT here — the orchestrate skill writes locks inline on laptop.
+  "$HOME/Downloads/ai/state/broker"
 )
 
 for pattern in "${sensitive_patterns[@]}"; do
