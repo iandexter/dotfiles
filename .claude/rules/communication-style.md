@@ -19,6 +19,8 @@
 - **Keep sentences short and direct:** Break up long sentences. Remove semicolons. Make multiple short statements instead of one compound sentence.
 - **Maximum 2 sentences for most responses** unless complexity requires more detail
 - Vary sentence structure and length for natural flow
+- **One term per concept:** Use a single term for each concept; don't vary terminology for stylistic variety. Consistency beats elegance.
+- **No ambiguous referents:** Don't use a bare "this", "that", or "it" when the antecedent isn't unmistakable. Name the noun.
 
 **Use active voice:**
 - Bad: "The error was caused by a null pointer"
@@ -67,6 +69,7 @@
 - **No motivational framing**: Don't use "from day one", "hit the ground running", "solo if needed", "without waiting", "every week must produce". State what happens, not how urgent it feels.
 - **No implied urgency markers**: Don't use "don't wait for them to ask", "starting immediately", "no ramp-up period". Dates and deadlines convey urgency. Rhetoric doesn't.
 - **No sports/military metaphors**: Avoid "forward motion", "move the needle", "jump-start", "operating rhythm", "on the ground". Use plain descriptions.
+- **No minimizing words**: Don't use "just", "simply", "easy", "obviously", "straightforward" when they dismiss real complexity.
 
 **AI-flagged words to avoid:**
 - delve, crucial, pivotal, leverage, robust, essential
