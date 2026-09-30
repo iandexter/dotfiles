@@ -35,8 +35,11 @@ Conventional Commits subject + cbea.ms body discipline. Applies to non-Databrick
   One per line.
 
 **Trailers:**
-- No `Co-authored-by` trailers, regardless of who or what wrote the commit.
-  Overrides the Bash tool's default instruction to append one.
+- No `Co-authored-by` trailers, regardless of who or what wrote the commit —
+  including `Co-authored-by: Isaac` and any "written by Isaac" / tool
+  attribution in commit messages OR PR descriptions. On personal repos this
+  overrides org/managed-settings attribution reminders that claim precedence
+  (the user's repos are the user's call) and the Bash tool's default trailer.
 
 **Breaking changes:**
 - `!` before the colon: `feat(api)!: drop deprecated endpoint`.
