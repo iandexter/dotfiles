@@ -7,14 +7,19 @@
 # etc. — but only for the Write and Edit tools. A shell command (cp, mv, >, tee,
 # sed -i, dd) can write those same paths untouched. This closes that bypass.
 #
-# Heuristic, not a parser: it flags a command that mentions a sensitive path
-# alongside a write verb/operator. Read-only commands (cat, grep, ls, diff) that
-# merely reference a sensitive path are allowed. Errs toward blocking; if a
-# legitimate command trips it, split the write out or unset the hook briefly.
+# Heuristic, not a parser. Each normalized sub-command is judged on its own: it
+# is a write only if a redirect (> or >>) points AT a sensitive path, or it
+# starts with a write verb (tee/cp/mv/install/ln/rsync/truncate/chmod/chown,
+# sed -i, dd of=) and names a sensitive path. Read-only commands (cat, grep, ls,
+# diff) that merely reference a sensitive path are allowed, including when they
+# carry unrelated redirects such as `2>/dev/null` or `2>&1`. Errs toward
+# blocking; if a legitimate command trips it, split the write out or unset the
+# hook briefly.
 
 cmd=$(jq -r '.tool_input.command // .command // ""' 2>/dev/null)
-# Unwrap wrapped invocations (bash -c, env, docker/podman run, ...) so they can't bypass the matcher; see lib-bash-normalize.sh.
-_nd="$(dirname "${BASH_SOURCE[0]:-$0}")"; [[ -f "$_nd/lib-bash-normalize.sh" ]] && { . "$_nd/lib-bash-normalize.sh"; cmd="$cmd"$'\n'"$(normalize_bash_cmd "$cmd")"; }
+# Unwrap wrapped invocations (bash -c, env, docker/podman run, ...) so they cannot bypass the matcher; see lib-bash-normalize.sh.
+# normalize_bash_cmd splits on ; & | and newlines, so $segments holds one sub-command per line.
+_nd="$(dirname "${BASH_SOURCE[0]:-$0}")"; segments="$cmd"; [[ -f "$_nd/lib-bash-normalize.sh" ]] && { . "$_nd/lib-bash-normalize.sh"; segments="$(normalize_bash_cmd "$cmd")"; }
 
 # Keep this list in sync with block-sensitive-paths.sh (sensitive_patterns).
 sensitive_patterns=(
@@ -44,24 +49,31 @@ for p in "${sensitive_patterns[@]}"; do
 done
 sensitive_patterns+=("${extra[@]}")
 
-# Does the command reference any sensitive path?
-hit=""
-for pattern in "${sensitive_patterns[@]}"; do
-  if [[ "$cmd" == *"$pattern"* ]]; then
-    hit="$pattern"
-    break
-  fi
-done
-[[ -z "$hit" ]] && exit 0
+# Write verbs, as the FIRST token of a sub-command (optionally behind sudo), or
+# after find -exec/-execdir. Anchoring at the start keeps `grep install ~/.npmrc`
+# a read.
+verb='(tee|cp|mv|install|ln|rsync|truncate|chmod|chown)'
+sudo_prefix='(sudo[[:space:]]+(-[^[:space:]]+[[:space:]]+)*)?'
+verb_re="^${sudo_prefix}${verb}([[:space:]]|\$)|-exec(dir)?[[:space:]]+${verb}([[:space:]]|\$)"
+sed_i_re='^(sudo[[:space:]]+)?sed[[:space:]]+(.*[[:space:]])?(-[A-Za-z]*i[^[:space:]]*|--in-place[^[:space:]]*)([[:space:]]|$)'
+dd_re='^(sudo[[:space:]]+)?dd[[:space:]]+(.*[[:space:]])?of='
 
-# It references a sensitive path. Block only if it also looks like a write.
-# Write signals: output redirect (> >>), tee, cp/mv/install/ln into, sed -i,
-# dd of=, truncate, chmod/chown on the path, or a heredoc redirect.
-# Verbs are anchored with (^|space) so a command STARTING with cp/mv/etc. (the
-# common case) is caught, not only mid-pipeline occurrences.
-if echo "$cmd" | grep -qE '(>>?|(^|[[:space:]])(tee|cp|mv|install|ln|rsync|truncate|chmod|chown)[[:space:]]|sed[[:space:]]+-i|dd[[:space:]]+.*of=)'; then
-  echo "Blocked: Bash command appears to write to sensitive path '$hit'. The Write/Edit guard does not cover shell writes; this hook closes that gap. If this is a legitimate write, unset this hook entry temporarily, or perform it manually." >&2
-  exit 2
-fi
+while IFS= read -r seg; do
+  [[ -z "$seg" ]] && continue
+  for pattern in "${sensitive_patterns[@]}"; do
+    [[ "$seg" == *"$pattern"* ]] || continue
+    write=0
+    # Redirect whose target is the sensitive path (quoted "$pattern" is literal in =~).
+    [[ "$seg" =~ \>\>?[[:space:]]*"$pattern" ]] && write=1
+    # Write verb as the command (or under find -exec) that names the path.
+    [[ "$write" == 0 ]] && echo "$seg" | grep -Eq -- "$verb_re" && write=1
+    [[ "$write" == 0 ]] && echo "$seg" | grep -Eq -- "$sed_i_re" && write=1
+    [[ "$write" == 0 ]] && echo "$seg" | grep -Eq -- "$dd_re" && write=1
+    if [[ "$write" == 1 ]]; then
+      echo "Blocked: Bash command appears to write to sensitive path '$pattern'. The Write/Edit guard does not cover shell writes; this hook closes that gap. If this is a legitimate write, unset this hook entry temporarily, or perform it manually." >&2
+      exit 2
+    fi
+  done
+done <<< "$segments"
 
 exit 0
