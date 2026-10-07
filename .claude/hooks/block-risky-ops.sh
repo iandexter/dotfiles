@@ -12,11 +12,10 @@
 #     gcloud app deploy, aws deploy, aws s3 sync)
 #   - git push --force / -f in any flag position             -> ALLOW_FORCE_PUSH=1
 #     (--force-with-lease / --force-if-includes allowed)
-#   - git commit --no-verify / -n, git push --no-verify       -> ALLOW_NO_VERIFY=1
-#     (these skip git's own commit-msg / pre-commit / pre-push hooks)
 #
-# NOT covered here: plain git push. Normal push is a routine op. Protected-remote
-# push is handled by validate-universe-git.sh.
+# NOT covered here: plain git push (routine; protected-remote push is handled by
+# validate-universe-git.sh); git --no-verify / -n (the `rtk hook claude` Bash hook
+# wired in settings.json already hard-blocks skipping git's own hooks).
 #
 # SSOT: ~/etc/dotfiles/.claude/hooks/block-risky-ops.sh ; deployed by claude-build.
 
@@ -72,22 +71,6 @@ while IFS= read -r _seg; do
   if git_subcmd "$_seg" push && \
      echo "$_seg" | grep -Eq -- '(--force($|[[:space:]=])|(^|[[:space:]])-[A-Za-z]*f[A-Za-z]*([[:space:]]|$))'; then
     [[ "${ALLOW_FORCE_PUSH:-0}" == "1" ]] || block "git push --force rewrites remote history. Use --force-with-lease, or allow." "ALLOW_FORCE_PUSH"
-  fi
-done <<< "$norm"
-
-# 6. --no-verify / -n skips git's own hooks (commit-msg validator, pre-commit,
-#    pre-push). Subcommand-anchored like section 5. `git push -n` is --dry-run,
-#    not a skip, so -n is scoped to commit only. Caveat: a commit MESSAGE that
-#    literally contains a bare `-n` token or `--no-verify` over-blocks (same
-#    quoted-data bias as the other guards) — use git commit -F <file>, or allow.
-while IFS= read -r _seg; do
-  case "$_seg" in *git*) ;; *) continue ;; esac
-  if git_subcmd "$_seg" commit && \
-     echo "$_seg" | grep -Eq -- '(--no-verify|(^|[[:space:]])-[A-Za-z]*n[A-Za-z]*([[:space:]]|$))'; then
-    [[ "${ALLOW_NO_VERIFY:-0}" == "1" ]] || block "git commit --no-verify/-n skips git's own hooks (commit-msg, pre-commit)." "ALLOW_NO_VERIFY"
-  fi
-  if git_subcmd "$_seg" push && echo "$_seg" | grep -Eq -- '--no-verify'; then
-    [[ "${ALLOW_NO_VERIFY:-0}" == "1" ]] || block "git push --no-verify skips the pre-push hook." "ALLOW_NO_VERIFY"
   fi
 done <<< "$norm"
 
