@@ -19,7 +19,10 @@
 cmd=$(jq -r '.tool_input.command // .command // ""' 2>/dev/null)
 # Unwrap wrapped invocations (bash -c, env, docker/podman run, ...) so they cannot bypass the matcher; see lib-bash-normalize.sh.
 # normalize_bash_cmd splits on ; & | and newlines, so $segments holds one sub-command per line.
-_nd="$(dirname "${BASH_SOURCE[0]:-$0}")"; segments="$cmd"; [[ -f "$_nd/lib-bash-normalize.sh" ]] && { . "$_nd/lib-bash-normalize.sh"; segments="$(normalize_bash_cmd "$cmd")"; }
+# The second pass deletes quote characters instead of replacing them with spaces, so a path split by
+# quoting (the home variable quoted, then a slash and the file name) rejoins and still matches.
+_q=$'"\''; stripped="${cmd//[$_q]/}"
+_nd="$(dirname "${BASH_SOURCE[0]:-$0}")"; segments="$cmd"$'\n'"$stripped"; [[ -f "$_nd/lib-bash-normalize.sh" ]] && { . "$_nd/lib-bash-normalize.sh"; segments="$(normalize_bash_cmd "$cmd")"$'\n'"$(normalize_bash_cmd "$stripped")"; }
 
 # Keep this list in sync with block-sensitive-paths.sh (sensitive_patterns).
 sensitive_patterns=(
@@ -42,10 +45,12 @@ sensitive_patterns=(
   "$HOME/Downloads/ai/state/broker"
 )
 
-# Also match the ~-prefixed form, since commands often use the literal tilde.
+# Also match the unexpanded spellings of the home dir that commands use: the literal
+# tilde, $HOME, and ${HOME}. The hook sees command text, so these never equal the expanded path.
+lit_var='$HOME'; lit_brace='${HOME}'
 extra=()
 for p in "${sensitive_patterns[@]}"; do
-  extra+=("${p/#$HOME/\~}")
+  extra+=("${p/#$HOME/\~}" "${p/#$HOME/$lit_var}" "${p/#$HOME/$lit_brace}")
 done
 sensitive_patterns+=("${extra[@]}")
 
@@ -55,7 +60,8 @@ sensitive_patterns+=("${extra[@]}")
 verb='(tee|cp|mv|install|ln|rsync|truncate|chmod|chown)'
 sudo_prefix='(sudo[[:space:]]+(-[^[:space:]]+[[:space:]]+)*)?'
 verb_re="^${sudo_prefix}${verb}([[:space:]]|\$)|-exec(dir)?[[:space:]]+${verb}([[:space:]]|\$)"
-sed_i_re='^(sudo[[:space:]]+)?sed[[:space:]]+(.*[[:space:]])?(-[A-Za-z]*i[^[:space:]]*|--in-place[^[:space:]]*)([[:space:]]|$)'
+sed_i_re='^(sudo[[:space:]]+)?(sed|perl|ruby)[[:space:]]+(.*[[:space:]])?(-[A-Za-z]*i[^[:space:]]*|--in-place[^[:space:]]*)([[:space:]]|$)'
+awk_i_re='^(sudo[[:space:]]+)?g?awk[[:space:]]+(.*[[:space:]])?-i[[:space:]]*inplace'
 dd_re='^(sudo[[:space:]]+)?dd[[:space:]]+(.*[[:space:]])?of='
 
 while IFS= read -r seg; do
@@ -68,6 +74,7 @@ while IFS= read -r seg; do
     # Write verb as the command (or under find -exec) that names the path.
     [[ "$write" == 0 ]] && echo "$seg" | grep -Eq -- "$verb_re" && write=1
     [[ "$write" == 0 ]] && echo "$seg" | grep -Eq -- "$sed_i_re" && write=1
+    [[ "$write" == 0 ]] && echo "$seg" | grep -Eq -- "$awk_i_re" && write=1
     [[ "$write" == 0 ]] && echo "$seg" | grep -Eq -- "$dd_re" && write=1
     if [[ "$write" == 1 ]]; then
       echo "Blocked: Bash command appears to write to sensitive path '$pattern'. The Write/Edit guard does not cover shell writes; this hook closes that gap. If this is a legitimate write, unset this hook entry temporarily, or perform it manually." >&2
