@@ -42,17 +42,26 @@ normalize_bash_cmd() {
           if (match(line, /^(timeout|stdbuf)[[:space:]]+[^[:space:]]+[[:space:]]+/)) { line = substr(line, RLENGTH + 1); changed = 1; continue }
           # bash/sh -c | -lc | -cl ... <payload>
           if (match(line, /^(ba)?sh[[:space:]]+-[a-z]*c[a-z]*[[:space:]]+/)) { line = substr(line, RLENGTH + 1); changed = 1; continue }
-          # docker|podman run [flags] <image> <cmd...>
+          # docker|podman run [flags] <image> <cmd...>: the image token cannot be
+          # located reliably. Valued flags like -v a:b, -w dir, -e K=V consume the
+          # next token and shift any image guess, which is how
+          # (podman run -v PWD:/app ... node npm install) slipped past. So do not
+          # guess: emit EVERY token-suffix of the post-run remainder. One suffix is
+          # the real command tail (e.g. npm install left-pad), which the
+          # boundary-anchored guards then match. Over-exposes by design.
+          # (Keep this comment apostrophe-free: it lives inside awk .)
           if (match(line, /^(docker|podman)[[:space:]]+run[[:space:]]+/)) {
             rest = substr(line, RLENGTH + 1)
+            sub(/^[[:space:]]+/, "", rest)
             m = split(rest, t, /[[:space:]]+/)
-            i = 1
-            while (i <= m && t[i] ~ /^-/) i++   # skip leading option flags (approx)
-            i++                                  # skip the image token
+            for (s = 1; s <= m; s++) {
+              suffix = ""
+              for (i = s; i <= m; i++) suffix = suffix t[i] " "
+              sub(/[[:space:]]+$/, "", suffix)
+              if (suffix != "") print suffix
+            }
             line = ""
-            for (; i <= m; i++) line = line t[i] " "
-            sub(/[[:space:]]+$/, "", line)
-            changed = 1
+            changed = 0
             continue
           }
         }
