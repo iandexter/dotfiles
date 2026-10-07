@@ -10,9 +10,11 @@
 #   - package publish (npm/yarn/pnpm publish)             -> ALLOW_PUBLISH=1
 #   - deploys (wrangler/netlify/vercel/firebase/gh-pages,  -> ALLOW_DEPLOY=1
 #     gcloud app deploy, aws deploy, aws s3 sync)
+#   - git push --force / -f in any flag position             -> ALLOW_FORCE_PUSH=1
+#     (--force-with-lease / --force-if-includes allowed)
 #
-# NOT covered here: git push. Normal push is a routine op; force-push is covered
-# by the deny rules, and protected-remote push by validate-universe-git.sh.
+# NOT covered here: plain git push. Normal push is a routine op. Protected-remote
+# push is handled by validate-universe-git.sh.
 #
 # SSOT: ~/etc/dotfiles/.claude/hooks/block-risky-ops.sh ; deployed by claude-build.
 
@@ -20,7 +22,7 @@ set -uo pipefail
 cmd=$(jq -r '.tool_input.command // .command // ""' 2>/dev/null)
 [[ -z "$cmd" ]] && exit 0
 # Unwrap wrapped invocations (bash -c, env, command, docker/podman run, ...) so they can't bypass the matchers; see lib-bash-normalize.sh.
-_nd="$(dirname "${BASH_SOURCE[0]:-$0}")"; [[ -f "$_nd/lib-bash-normalize.sh" ]] && { . "$_nd/lib-bash-normalize.sh"; cmd="$cmd"$'\n'"$(normalize_bash_cmd "$cmd")"; }
+_nd="$(dirname "${BASH_SOURCE[0]:-$0}")"; norm=""; [[ -f "$_nd/lib-bash-normalize.sh" ]] && { . "$_nd/lib-bash-normalize.sh"; norm="$(normalize_bash_cmd "$cmd")"; cmd="$cmd"$'\n'"$norm"; }
 
 block() { echo "Blocked: $1 Re-run with $2=1 set in the environment to allow." >&2; exit 2; }
 
@@ -45,5 +47,20 @@ fi
 if echo "$cmd" | grep -Eq '(wrangler[[:space:]]+(pages[[:space:]]+)?(deploy|publish)|netlify[[:space:]]+deploy|vercel[[:space:]]+(deploy|--prod)|firebase[[:space:]]+deploy|(^|[[:space:]])gh-pages([[:space:]]|$)|gcloud[[:space:]]+app[[:space:]]+deploy|aws[[:space:]]+deploy|aws[[:space:]]+s3[[:space:]]+sync)'; then
   [[ "${ALLOW_DEPLOY:-0}" == "1" ]] || block "deploy / publish-to-host command." "ALLOW_DEPLOY"
 fi
+
+# 5. Force push (rewrites remote history). The deny rule Bash(git push --force *)
+#    only catches the flag right after `push`; a flag at the end (git push origin
+#    main --force) or a wrapped form (bash -c "git push -f") slips past it. This
+#    closes both. --force-with-lease / --force-if-includes are the safe forms and
+#    are allowed. Checked per normalized sub-command so a nearby `-f` on an
+#    adjacent command (e.g. `git push && rm -f x`) can't false-trip.
+while IFS= read -r _seg; do
+  [[ "$_seg" == *git* && "$_seg" == *push* ]] || continue
+  echo "$_seg" | grep -Eq -- '--force-with-lease|--force-if-includes' && continue
+  if echo "$_seg" | grep -Eq '[[:space:]]push([[:space:]]|$)' && \
+     echo "$_seg" | grep -Eq -- '(--force($|[[:space:]=])|(^|[[:space:]])-[A-Za-z]*f[A-Za-z]*([[:space:]]|$))'; then
+    [[ "${ALLOW_FORCE_PUSH:-0}" == "1" ]] || block "git push --force rewrites remote history. Use --force-with-lease, or allow." "ALLOW_FORCE_PUSH"
+  fi
+done <<< "$norm"
 
 exit 0
