@@ -8,7 +8,7 @@ mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/$(date -u '+%Y-%m-%d').log"
 TIMESTAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
 
-cmd=$(echo "$CLAUDE_TOOL_INPUT" | jq -r '.command // "(empty)"')
+cmd=$(jq -r '.tool_input.command // .command // "(empty)"' 2>/dev/null)
 # Truncate long commands to 500 chars for log readability
 cmd_truncated="${cmd:0:500}"
 

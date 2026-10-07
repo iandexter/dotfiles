@@ -2,7 +2,7 @@
 # Block Write/Edit operations targeting sensitive paths.
 # Called as a PreToolUse hook for Write and Edit tools.
 
-file_path=$(echo "$CLAUDE_TOOL_INPUT" | jq -r '.file_path // ""')
+file_path=$(jq -r '.tool_input.file_path // .file_path // ""' 2>/dev/null)
 
 # Resolve ~ to $HOME for comparison
 resolved="$file_path"

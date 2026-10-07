@@ -12,7 +12,7 @@
 # merely reference a sensitive path are allowed. Errs toward blocking; if a
 # legitimate command trips it, split the write out or unset the hook briefly.
 
-cmd=$(echo "$CLAUDE_TOOL_INPUT" | jq -r '.command // ""')
+cmd=$(jq -r '.tool_input.command // .command // ""' 2>/dev/null)
 
 # Keep this list in sync with block-sensitive-paths.sh (sensitive_patterns).
 sensitive_patterns=(

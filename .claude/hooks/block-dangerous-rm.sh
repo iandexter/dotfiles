@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-cmd=$(echo "$CLAUDE_TOOL_INPUT" | jq -r '.command // ""')
+cmd=$(jq -r '.tool_input.command // .command // ""' 2>/dev/null)
 
 # Block rm with recursive+force in any order, any flag style
 if echo "$cmd" | grep -Eq '(^|[;&|])\s*(sudo\s+)?rm\s' && \

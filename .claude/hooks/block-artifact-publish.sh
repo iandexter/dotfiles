@@ -11,7 +11,7 @@
 # To allow a publish: run the session with ALLOW_ARTIFACT_PUBLISH=1 in the
 # environment, or unset the hook temporarily.
 
-action=$(echo "$CLAUDE_TOOL_INPUT" | jq -r '.action // "publish"')
+action=$(jq -r '.tool_input.action // .action // "publish"' 2>/dev/null)
 
 # Read-only enumeration is harmless.
 if [[ "$action" == "list" ]]; then
