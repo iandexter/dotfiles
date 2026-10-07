@@ -13,6 +13,8 @@
 # legitimate command trips it, split the write out or unset the hook briefly.
 
 cmd=$(jq -r '.tool_input.command // .command // ""' 2>/dev/null)
+# Unwrap wrapped invocations (bash -c, env, docker/podman run, ...) so they can't bypass the matcher; see lib-bash-normalize.sh.
+_nd="$(dirname "${BASH_SOURCE[0]:-$0}")"; [[ -f "$_nd/lib-bash-normalize.sh" ]] && { . "$_nd/lib-bash-normalize.sh"; cmd="$cmd"$'\n'"$(normalize_bash_cmd "$cmd")"; }
 
 # Keep this list in sync with block-sensitive-paths.sh (sensitive_patterns).
 sensitive_patterns=(

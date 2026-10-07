@@ -19,6 +19,8 @@
 set -uo pipefail
 cmd=$(jq -r '.tool_input.command // .command // ""' 2>/dev/null)
 [[ -z "$cmd" ]] && exit 0
+# Unwrap wrapped invocations (bash -c, env, command, docker/podman run, ...) so they can't bypass the matchers; see lib-bash-normalize.sh.
+_nd="$(dirname "${BASH_SOURCE[0]:-$0}")"; [[ -f "$_nd/lib-bash-normalize.sh" ]] && { . "$_nd/lib-bash-normalize.sh"; cmd="$cmd"$'\n'"$(normalize_bash_cmd "$cmd")"; }
 
 block() { echo "Blocked: $1 Re-run with $2=1 set in the environment to allow." >&2; exit 2; }
 
@@ -40,7 +42,7 @@ if echo "$cmd" | grep -Eq '(^|[;&|])[[:space:]]*(npm|yarn|pnpm)[[:space:]]+publi
 fi
 
 # 4. Deploys / publish-to-host.
-if echo "$cmd" | grep -Eq '(wrangler[[:space:]]+(deploy|publish)|netlify[[:space:]]+deploy|vercel[[:space:]]+(deploy|--prod)|firebase[[:space:]]+deploy|(^|[[:space:]])gh-pages([[:space:]]|$)|gcloud[[:space:]]+app[[:space:]]+deploy|aws[[:space:]]+deploy|aws[[:space:]]+s3[[:space:]]+sync)'; then
+if echo "$cmd" | grep -Eq '(wrangler[[:space:]]+(pages[[:space:]]+)?(deploy|publish)|netlify[[:space:]]+deploy|vercel[[:space:]]+(deploy|--prod)|firebase[[:space:]]+deploy|(^|[[:space:]])gh-pages([[:space:]]|$)|gcloud[[:space:]]+app[[:space:]]+deploy|aws[[:space:]]+deploy|aws[[:space:]]+s3[[:space:]]+sync)'; then
   [[ "${ALLOW_DEPLOY:-0}" == "1" ]] || block "deploy / publish-to-host command." "ALLOW_DEPLOY"
 fi
 
