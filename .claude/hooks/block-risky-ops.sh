@@ -54,10 +54,13 @@ fi
 #    closes both. --force-with-lease / --force-if-includes are the safe forms and
 #    are allowed. Checked per normalized sub-command so a nearby `-f` on an
 #    adjacent command (e.g. `git push && rm -f x`) can't false-trip.
+#    `push` must be the git SUBCOMMAND (git [global-opts] push ...), so a commit
+#    message or PR body that merely mentions "git push --force" is not blocked;
+#    anchoring there removes the self-trip that forced `git commit -F <file>`.
 while IFS= read -r _seg; do
   [[ "$_seg" == *git* && "$_seg" == *push* ]] || continue
   echo "$_seg" | grep -Eq -- '--force-with-lease|--force-if-includes' && continue
-  if echo "$_seg" | grep -Eq '[[:space:]]push([[:space:]]|$)' && \
+  if echo "$_seg" | grep -Eq '^([^[:space:]]*/)?git([[:space:]]+(-C[[:space:]]+[^[:space:]]+|-c[[:space:]]+[^[:space:]]+|--[A-Za-z][A-Za-z-]*(=[^[:space:]]*)?|-[A-Za-z]+))*[[:space:]]+push([[:space:]]|$)' && \
      echo "$_seg" | grep -Eq -- '(--force($|[[:space:]=])|(^|[[:space:]])-[A-Za-z]*f[A-Za-z]*([[:space:]]|$))'; then
     [[ "${ALLOW_FORCE_PUSH:-0}" == "1" ]] || block "git push --force rewrites remote history. Use --force-with-lease, or allow." "ALLOW_FORCE_PUSH"
   fi
