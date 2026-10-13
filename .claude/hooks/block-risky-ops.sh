@@ -14,8 +14,9 @@
 #     (--force-with-lease / --force-if-includes allowed)
 #
 # NOT covered here: plain git push (routine; protected-remote push is handled by
-# validate-universe-git.sh); git --no-verify / -n (the `rtk hook claude` Bash hook
-# wired in settings.json already hard-blocks skipping git's own hooks).
+# validate-universe-git.sh); git --no-verify / -n (the org-managed
+# ~/.config/llm-cli/hooks/guard_high_risk_commands.sh, wired in managed settings,
+# already hard-blocks skipping git's own hooks).
 #
 # SSOT: ~/etc/dotfiles/.claude/hooks/block-risky-ops.sh ; deployed by claude-build.
 
