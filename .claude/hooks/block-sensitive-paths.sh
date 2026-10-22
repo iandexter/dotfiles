@@ -14,7 +14,9 @@ sensitive_patterns=(
   "$HOME/.claude/settings.local.json"
   "$HOME/.claude/policy-limits.json"
   "$HOME/.claude/plugins/"
-  "$HOME/.claude/skills/"
+  # ~/.claude/skills/ is intentionally NOT here: every skill there is the
+  # user's own, and Claude deploys and edits them. Plugin skills stay
+  # protected under ~/.claude/plugins/.
   "$HOME/.bashrc"
   "$HOME/.bash_profile"
   "$HOME/.zshrc"

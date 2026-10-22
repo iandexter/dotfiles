@@ -32,7 +32,7 @@ sensitive_patterns=(
   "$HOME/.claude/settings.local.json"
   "$HOME/.claude/policy-limits.json"
   "$HOME/.claude/plugins/"
-  "$HOME/.claude/skills/"
+  # ~/.claude/skills/ intentionally omitted; see block-sensitive-paths.sh.
   "$HOME/.bashrc"
   "$HOME/.bash_profile"
   "$HOME/.zshrc"
