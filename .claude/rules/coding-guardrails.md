@@ -16,6 +16,7 @@ Rules for writing code, reviewing code (your own and others'), and editing files
 - Avoid bloated abstractions - 100 lines is better than 1000
 - Don't add features/complexity not explicitly requested
 - Clean up dead code you create; don't leave orphaned code
+- Tear down what you start: after each test round, unprompted, stop background dev servers and any browser you launched (e.g. the chrome-devtools-mcp profile, never the user's own browser), delete throwaway test credentials, and verify ports are free
 
 **Stay in scope:**
 - Never change comments or code orthogonal to the task
@@ -99,8 +100,5 @@ Submission-time review of pull requests authored by a coding agent (Claude Code,
 2. Purpose cannot be described in one sentence.
 3. Agent has no implementation plan or the PR body is empty.
 4. CI is failing and the only changes are to test files.
-
-**Concrete realisations:**
-- The Databricks 4-sub-agent pre-push diff review (see `rules/databricks-git-workflow.md` "Pre-push review workflow") is one team-scoped realisation of the author self-review obligation above.
 
 Source: [GitHub blog: Agent pull requests are everywhere, here's how to review them](https://github.blog/ai-and-ml/generative-ai/agent-pull-requests-are-everywhere-heres-how-to-review-them/), retrieved 15 May 2026. Reframed tool-agnostically.
