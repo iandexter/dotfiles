@@ -12,6 +12,8 @@
 #     gcloud app deploy, aws deploy, aws s3 sync)
 #   - git push --force / -f in any flag position             -> ALLOW_FORCE_PUSH=1
 #     (--force-with-lease / --force-if-includes allowed)
+#   - DNS / custom-domain writes (CF API POST/PUT/PATCH/DELETE, -> ALLOW_DNS=1
+#     wrangler pages domain add|remove, flarectl dns, terraform/tofu apply|destroy)
 #
 # NOT covered here: plain git push (routine; protected-remote push is handled by
 # validate-universe-git.sh); git --no-verify / -n (the org-managed
@@ -55,6 +57,13 @@ fi
 # 4. Deploys / publish-to-host.
 if echo "$cmd" | grep -Eq '(wrangler[[:space:]]+(pages[[:space:]]+)?(deploy|publish)|netlify[[:space:]]+deploy|vercel[[:space:]]+(deploy|--prod)|firebase[[:space:]]+deploy|(^|[[:space:]])gh-pages([[:space:]]|$)|gcloud[[:space:]]+app[[:space:]]+deploy|aws[[:space:]]+deploy|aws[[:space:]]+s3[[:space:]]+sync)'; then
   [[ "${ALLOW_DEPLOY:-0}" == "1" ]] || block "deploy / publish-to-host command." "ALLOW_DEPLOY"
+fi
+
+# 4b. DNS / custom-domain changes. A wrong record takes the site AND its MX
+#     (email) offline, and TTL caching makes rollback slow. Read-only queries
+#     (curl GET to the CF API, dig, wrangler pages domain list) stay allowed.
+if echo "$cmd" | grep -Eq '(curl[^|;&]*(-X|--request)[[:space:]]*(POST|PUT|PATCH|DELETE)[^|;&]*api\.cloudflare\.com|curl[^|;&]*api\.cloudflare\.com[^|;&]*(-X|--request)[[:space:]]*(POST|PUT|PATCH|DELETE)|wrangler[[:space:]]+pages[[:space:]]+domain[[:space:]]+(add|remove|delete)|flarectl[[:space:]]+dns[[:space:]]+(create|update|delete|create-or-update)|terraform[[:space:]]+(apply|destroy)|tofu[[:space:]]+(apply|destroy))'; then
+  [[ "${ALLOW_DNS:-0}" == "1" ]] || block "DNS / domain change (can take the site and its email offline)." "ALLOW_DNS"
 fi
 
 # 5. Force push (rewrites remote history). The deny rule Bash(git push --force *)
