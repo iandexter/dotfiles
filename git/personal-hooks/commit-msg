@@ -44,4 +44,9 @@ printf '%s' "$subject" | grep -qE "$re" || reject "subject does not match the Co
 [ ${#subject} -gt 50 ] && reject "subject is ${#subject} chars; cap is 50"
 case "$subject" in *.) reject "subject ends with a period";; esac
 
+if grep -v '^#' "$msg_file" | grep -qiE '^Co-authored-by:'; then
+  echo "commit-msg: Co-authored-by trailers are not allowed in personal repos" >&2
+  exit 1
+fi
+
 exit 0
