@@ -97,7 +97,7 @@ See `.claude/rules/coding-guardrails.md` for: plan-before-code rules, code-comme
 
 ### Generated files
 
-Save Markdown output under `~/Downloads/ai/<subfolder>/` per the directory table in CLAUDE_domain-specific.md. Filename format: `<action>_<topic>.md` (e.g., `analyze_authentication.md`); for ticket analysis use `<ticket-number>_<topic>.md` (e.g., `BL-15861_scim_analysis.md`). Exception: if a plugin/skill defines its own output path, don't override it.
+Save Markdown output under `~/Downloads/ai/<subfolder>/` per the directory table in CLAUDE_domain-specific.md. Filename format: `<action>_<topic>.md` (e.g., `analyze_authentication.md`); for ticket analysis use `<ticket-number>_<topic>.md` (e.g., `BL-15861_scim_analysis.md`). Exception: if a plugin/skill defines its own output path, don't override it. On an Arclet, `~/Downloads` does not survive a stop. Write case outputs to the persisted git checkout the task names, and push before the session ends.
 
 ### Planning workflow
 

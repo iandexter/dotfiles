@@ -11,7 +11,7 @@ Rules that apply to git operations on non-Databricks repositories. Databricks-sp
 
 ### Personal projects — commit message format
 
-Conventional Commits subject + cbea.ms body discipline. Applies to non-Databricks repositories (e.g., personal GitHub repos under `~/projects/`).
+Conventional Commits subject + cbea.ms body discipline. Applies to non-Databricks repositories (e.g., personal GitHub repos under `~/projects/`), including EMU personal repos under `ian-marquez_data/` such as `scratch`.
 
 ```
 <type>[(scope)]: <description>
