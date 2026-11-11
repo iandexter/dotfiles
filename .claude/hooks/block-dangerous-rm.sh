@@ -1,15 +1,36 @@
 #!/usr/bin/env bash
 cmd=$(jq -r '.tool_input.command // .command // ""' 2>/dev/null)
 # Unwrap wrapped invocations (bash -c, env, docker/podman run, ...) so they can't bypass the matchers; see lib-bash-normalize.sh.
-_nd="$(dirname "${BASH_SOURCE[0]:-$0}")"; [[ -f "$_nd/lib-bash-normalize.sh" ]] && { . "$_nd/lib-bash-normalize.sh"; cmd="$cmd"$'\n'"$(normalize_bash_cmd "$cmd")"; }
-
-# Block rm with recursive+force in any order, any flag style
-if echo "$cmd" | grep -Eq '(^|[;&|])\s*(sudo\s+)?rm\s' && \
-   echo "$cmd" | grep -Eq -- '-[a-zA-Z]*r|--recursive' && \
-   echo "$cmd" | grep -Eq -- '-[a-zA-Z]*f|--force'; then
-  echo "Blocked: recursive forced rm commands are not allowed." >&2
-  exit 2
+# segs holds one sub-command per line; without the lib, fall back to splitting on ; & |.
+_nd="$(dirname "${BASH_SOURCE[0]:-$0}")"
+if [[ -f "$_nd/lib-bash-normalize.sh" ]]; then
+  . "$_nd/lib-bash-normalize.sh"; segs=$(normalize_bash_cmd "$cmd")
+else
+  segs=$(printf '%s' "$cmd" | tr ';&|' '\n\n\n')
 fi
+cmd="$cmd"$'\n'"$segs"
+
+# Block rm with recursive+force in any order, any flag style. Flags are read
+# per rm sub-command, so hyphenated words elsewhere in the line (hostnames like
+# omnigent-arclet, --format on a later git call) no longer count as -r or -f.
+while IFS= read -r seg; do
+  [[ "$seg" =~ ^[[:space:]]*(sudo[[:space:]]+)?rm[[:space:]] ]] || continue
+  read -ra toks <<< "$seg"   # read -a does not glob, unlike for tok in $seg
+  rec=0 force=0
+  for tok in "${toks[@]:1}"; do
+    case "$tok" in
+      --) break ;;
+      --recursive) rec=1 ;;
+      --force) force=1 ;;
+      --*) ;;
+      -*) [[ "$tok" == *[rR]* ]] && rec=1; [[ "$tok" == *f* ]] && force=1 ;;
+    esac
+  done
+  if (( rec && force )); then
+    echo "Blocked: recursive forced rm commands are not allowed." >&2
+    exit 2
+  fi
+done <<< "$segs"
 
 # Block rm --no-preserve-root
 if echo "$cmd" | grep -Eq '(^|[;&|])\s*(sudo\s+)?rm\s.*--no-preserve-root'; then
