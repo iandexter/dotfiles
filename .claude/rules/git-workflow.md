@@ -2,6 +2,16 @@
 
 Rules that apply to git operations on non-Databricks repositories. Databricks-specific overrides live in `rules/databricks-git-workflow.md`.
 
+### All repositories
+
+These apply to Databricks repositories too.
+
+- Never push without an explicit request.
+- Default to new commits, not amends. Project CLAUDE.md files may override this (for example, stacked PRs).
+- Keep commit messages short and direct.
+- Follow the project CLAUDE.md for branch naming and push commands.
+- Use `git -C <path>` for commands in other directories, not `(cd <path> && git ...)`.
+
 ### Pull request review (general principles)
 
 - Treat automated review (Copilot, Claude Code review, IDE pair-programming critique) as a prerequisite, not noise — let it catch the mechanical defects before a human has to.
