@@ -202,6 +202,10 @@ camel_to_snake() {
   echo "$result"
 }
 alias grep='grep --color'
+if [[ $(uname) == 'Linux' ]] ; then
+  alias pbcopy='xclip -selection clipboard'
+fi
+
 
 ### Java
 # Function to switch JDK versions
